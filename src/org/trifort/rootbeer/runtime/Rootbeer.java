@@ -9,20 +9,20 @@ public class Rootbeer {
 
   private IRuntime m_cudaRuntime;
   private List<GpuDevice> m_cards;
-  
+
   static {
     CUDALoader loader = new CUDALoader();
     loader.load();
   }
-  
+
   public Rootbeer(){
   }
-  
+
   public List<GpuDevice> getDevices(){
     if(m_cards != null){
       return m_cards;
     }
-    
+
     m_cards = new ArrayList<GpuDevice>();
     try {
       Class c = Class.forName("org.trifort.rootbeer.runtime.CUDARuntime");
@@ -33,7 +33,7 @@ public class Rootbeer {
       ex.printStackTrace();
       //ignore
     }
-    
+
     //if(m_cards.isEmpty()){
     //  try {
     //    Class c = Class.forName("org.trifort.rootbeer.runtime.OpenCLRuntime");
@@ -44,10 +44,10 @@ public class Rootbeer {
     //    //ignore
     //  }
     //}
-    
+
     return m_cards;
   }
-  
+
   public Context createDefaultContext(){
     List<GpuDevice> devices = getDevices();
     GpuDevice best = null;
@@ -66,14 +66,18 @@ public class Rootbeer {
       return best.createContext();
     }
   }
-  
+
   public ThreadConfig getThreadConfig(List<Kernel> kernels, GpuDevice device){
     BlockShaper block_shaper = new BlockShaper();
     block_shaper.run(kernels.size(), device.getMultiProcessorCount());
-    
-    return new ThreadConfig(block_shaper.getMaxThreadsPerBlock(), 1, 1,
-                            block_shaper.getMaxBlocksPerProc(), 1,
-                            kernels.size());
+
+    return new ThreadConfig( block_shaper.blockShape(), /* threadCountX */
+                             1, /* threadCountY */
+                             1, /* threadCountZ */
+                             block_shaper.gridShape(), /* blockCountX */
+                             1, /* blockCountY */
+                             kernels.size() /* numThreads */
+                           );
   }
 
   public void run(List<Kernel> work) {
