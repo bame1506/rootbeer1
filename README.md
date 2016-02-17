@@ -373,7 +373,7 @@ Context context0 = device0.createContext(4212880);
 Context context1 = device1.createContext(4212880);
 
 context0.setCacheConfig(CacheConfig.PREFER_SHARED);
-context`.setCacheConfig(CacheConfig.PREFER_SHARED);
+context1.setCacheConfig(CacheConfig.PREFER_SHARED);
 
 context0.setThreadConfig(sizeBy2, outerCount, outerCount * sizeBy2);
 context1.setThreadConfig(sizeBy2, outerCount, outerCount * sizeBy2);
@@ -384,13 +384,11 @@ context1.setKernel(new GPUSortKernel(array1));
 context0.buildState();
 context1.buildState();
 
-while(true){
-  //run using two gpus without blocking the current thread
-  GpuFuture future0 = context0.runAsync();
-  GpuFuture future1 = context1.runAsync();
-  future1.take();
-  future2.take();
-}
+//run using two gpus without blocking the current thread
+GpuFuture future0 = context0.runAsync();
+GpuFuture future1 = context1.runAsync();
+future0.take();
+future1.take();
 ```
 
 ### RootbeerGpu Builtins (compiles directly to CUDA statements)
