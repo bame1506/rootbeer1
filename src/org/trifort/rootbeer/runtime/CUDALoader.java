@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -22,12 +22,17 @@ public class CUDALoader {
   private List<String> m_libCudas;
   private List<String> m_rootbeerRuntimes;
   private List<String> m_rootbeerCudas;
-  
+
+  /**
+   * This constructor adds the CUDA shared library paths to the member
+   * variables and extracts shared libraries using JNI to getRootbeerHome
+   * after adding them too. No shared libraries are loaded yet.
+   **/
   public CUDALoader(){
     m_libCudas = new ArrayList<String>();
     m_rootbeerRuntimes = new ArrayList<String>();
     m_rootbeerCudas = new ArrayList<String>();
-    
+
     if ("Mac OS X".equals(System.getProperty("os.name"))){
         m_libCudas.add("/usr/local/cuda/lib/libcuda.dylib");
         m_rootbeerRuntimes.add(RootbeerPaths.v().getRootbeerHome()+"rootbeer.dylib");
@@ -52,13 +57,13 @@ public class CUDALoader {
       }
     } else {
       if(is32Bit()){
-        m_libCudas.add("C:\\Windows\\System32\\nvcuda.dll"); 
+        m_libCudas.add("C:\\Windows\\System32\\nvcuda.dll");
         m_rootbeerRuntimes.add(RootbeerPaths.v().getRootbeerHome()+"rootbeer_x86.dll");
         m_rootbeerCudas.add(RootbeerPaths.v().getRootbeerHome()+"rootbeer_cuda_x86.dll");
         extract("rootbeer_x86.dll");
         extract("rootbeer_cuda_x86.dll");
       } else {
-        m_libCudas.add("C:\\Windows\\System32\\nvcuda.dll"); 
+        m_libCudas.add("C:\\Windows\\System32\\nvcuda.dll");
         m_libCudas.add("C:\\Windows\\SysWow64\\nvcuda.dll");
         m_rootbeerRuntimes.add(RootbeerPaths.v().getRootbeerHome()+"rootbeer_x64.dll");
         m_rootbeerCudas.add(RootbeerPaths.v().getRootbeerHome()+"rootbeer_cuda_x64.dll");
@@ -67,25 +72,28 @@ public class CUDALoader {
       }
     }
   }
-  
+
   private boolean is32Bit(){
-    //http://mark.koli.ch/2009/10/javas-osarch-system-property-is-the-bitness-of-the-jre-not-the-operating-system.html  
+    //http://mark.koli.ch/2009/10/javas-osarch-system-property-is-the-bitness-of-the-jre-not-the-operating-system.html
     // The os.arch property will also say "x86" on a
     // 64-bit machine using a 32-bit runtime
-    String arch = System.getProperty("os.arch"); 
+    String arch = System.getProperty("os.arch");
     if(arch.equals("x86") || arch.equals("i386")){
       return true;
     } else {
       return false;
-    } 
+    }
   }
-  
-  public void load(){   
+
+  public void load(){
     doLoad(m_libCudas);
     doLoad(m_rootbeerRuntimes);
     doLoad(m_rootbeerCudas);
   }
 
+  /**
+   * Loads all dynamic libraries in paths
+   **/
   private void doLoad(List<String> paths) {
     for(String path : paths){
       File file = new File(path);
@@ -96,6 +104,13 @@ public class CUDALoader {
     }
   }
 
+  /**
+   * this function extracts the shared libraries from inside the .jar file
+   * compiled with Rootbeer.jar to ~/.rootbeer/ in order to use them
+   *
+   * @param[in] filename binary to extract. Must be in
+   *                     /org/trifort/rootbeer/runtime/binaries/
+   **/
   private void extract(String filename) {
     String path = "/org/trifort/rootbeer/runtime/binaries/"+filename;
     try {
