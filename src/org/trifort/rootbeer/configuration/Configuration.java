@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -18,16 +18,16 @@ public class Configuration {
   public static final int MODE_GPU = 0;
   public static final int MODE_NEMU = 1;
   public static final int MODE_JEMU = 2;
-  
+
   private static Configuration m_Instance;
-  
+
   public static Configuration compilerInstance(){
     if(m_Instance == null){
       m_Instance = new Configuration();
     }
     return m_Instance;
   }
-  
+
   public static Configuration runtimeInstance(){
     if(m_Instance == null){
       m_Instance = new Configuration(true);
@@ -54,11 +54,11 @@ public class Configuration {
   private boolean m_manualCuda;
   private String m_manualCudaFilename;
   private ComputeCapability m_computeCapability;
-  
+
   static {
     m_printMem = false;
   }
-  
+
   private Configuration() {
     m_compilerInstance = true;
     m_remapAll = true;
@@ -77,7 +77,7 @@ public class Configuration {
   private Configuration(boolean load) {
     m_compilerInstance = false;
     try {
-      List<byte[]> data = ResourceReader.getResourceArray("org/trifort/rootbeer/runtime/config.txt");
+      List<byte[]> data = ResourceReader.getResourceArray("/org/trifort/rootbeer/runtime/config.txt");
       int mode = data.get(0)[0];
       int exceptions = data.get(0)[1];
       m_mode = mode;
@@ -90,35 +90,35 @@ public class Configuration {
       m_mode = MODE_GPU;
     }
   }
-  
+
   public void setMode(int mode) {
     m_mode = mode;
   }
-  
+
   public int getMode() {
     return m_mode;
   }
-  
+
   public void setRemapSparse() {
     m_remapAll = false;
   }
-  
+
   public boolean getRemapAll() {
     return m_remapAll;
   }
-  
+
   public static void setRunAllTests(boolean run_all) {
     m_runAll = run_all;
   }
-  
+
   public static boolean getRunAllTests() {
     return m_runAll;
   }
-  
+
   public static boolean getPrintMem() {
     return m_printMem;
   }
-  
+
   public static void setPrintMem(boolean print) {
     m_printMem = print;
   }
@@ -127,11 +127,11 @@ public class Configuration {
     m_maxRegCount = value;
     m_maxRegCountSet = true;
   }
-  
+
   public boolean isMaxRegCountSet() {
     return m_maxRegCountSet;
   }
-  
+
   public int getMaxRegCount() {
     return m_maxRegCount;
   }
@@ -139,11 +139,11 @@ public class Configuration {
   public void setArrayChecks(boolean value) {
     m_arrayChecks = value;
   }
-  
+
   public boolean getArrayChecks() {
     return m_arrayChecks;
   }
-  
+
   public void setDoubles(boolean value) {
     m_doubles = value;
   }
@@ -151,7 +151,7 @@ public class Configuration {
   public void setRecursion(boolean value) {
     m_recursion = value;
   }
-  
+
   public boolean getDoubles() {
     return m_doubles;
   }
@@ -163,7 +163,7 @@ public class Configuration {
   public void setExceptions(boolean value) {
     m_exceptions = value;
   }
-  
+
   public boolean getExceptions() {
     return m_exceptions;
   }
@@ -171,7 +171,7 @@ public class Configuration {
   public boolean getKeepMains() {
     return m_keepMains;
   }
-  
+
   public void setKeepMains(boolean value) {
     m_keepMains = value;
   }
@@ -179,7 +179,7 @@ public class Configuration {
   public void setSharedMemSize(int size) {
     m_sharedMemSize = size;
   }
-  
+
   public int getSharedMemSize() {
     return m_sharedMemSize;
   }
@@ -193,21 +193,21 @@ public class Configuration {
   }
 
   public void setManualCuda() {
-    m_manualCuda = true;  
+    m_manualCuda = true;
   }
 
   public void setManualCudaFilename(String filename) {
     m_manualCudaFilename = filename;
   }
-  
+
   public boolean isManualCuda(){
     return m_manualCuda;
   }
-  
+
   public String getManualCudaFilename(){
     return m_manualCudaFilename;
   }
-  
+
   public void setComputeCapability(ComputeCapability computeCapability) {
     m_computeCapability = computeCapability;
   }
