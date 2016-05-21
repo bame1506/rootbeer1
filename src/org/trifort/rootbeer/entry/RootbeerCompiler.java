@@ -286,7 +286,9 @@ public class RootbeerCompiler {
     String main_jar = RootbeerPaths.v().getOutputJarFolder() + File.separator + "partial-ret.jar";
     List<String> lib_jars = new ArrayList<String>();
     CurrJarName jar_name = new CurrJarName();
-    lib_jars.add(jar_name.get());
+    /* don't pack Rootbeer.jar using the pack Routine. User can do it himself
+     * e.g. with zipmerge, thereby saving time */
+    //lib_jars.add(jar_name.get());
     p.run(main_jar, lib_jars, outjar_name);
   }
 
