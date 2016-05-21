@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,7 +15,7 @@ import org.trifort.rootbeer.runtime.Kernel;
 public class TreeSetRunOnGpu implements Kernel {
 
   private Set<Integer> m_set;
-  
+
   public void gpuMethod() {
     m_set = new TreeSet<Integer>();
     for(int i = 0; i < 5; ++i){

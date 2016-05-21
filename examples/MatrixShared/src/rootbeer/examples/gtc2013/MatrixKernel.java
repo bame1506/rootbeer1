@@ -57,7 +57,7 @@ public class MatrixKernel implements Kernel {
 
     int m_size = block_size / 32;
 
-    for(int block_iter = 0; block_iter < block_iters; ++block_iter){ 
+    for(int block_iter = 0; block_iter < block_iters; ++block_iter){
       for(int sub_matrix = 0; sub_matrix < sub_matrix_size; ++sub_matrix){
         float sum = 0;
         int sub_matrix_row = sub_matrix / m_size;
@@ -66,8 +66,8 @@ public class MatrixKernel implements Kernel {
         int dest_row = (32 * sub_matrix_row) + thread_row;
         int dest_col = (32 * sub_matrix_col) + thread_col;
 
-        int dest_index = (block_iter * block_size * block_size * grid_size) + (block_idxx * block_size * block_size) + dest_row * block_size + dest_col;   
-  
+        int dest_index = (block_iter * block_size * block_size * grid_size) + (block_idxx * block_size * block_size) + dest_row * block_size + dest_col;
+
         for(int m = 0; m < m_size; ++m){
           int a_src_row = (sub_matrix_row * 32) + thread_row;
           int a_src_col = (m * 32) + thread_col;

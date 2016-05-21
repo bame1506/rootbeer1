@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -19,7 +19,7 @@ import org.trifort.rootbeer.testcases.rootbeertest.serialization.MMult;
 
 
 public class PerformanceTests implements TestSerializationFactory {
-  
+
   public List<TestSerialization> getProviders() {
     List<TestSerialization> ret = new ArrayList<TestSerialization>();
     ret.add(new MMult());

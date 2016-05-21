@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -19,7 +19,7 @@ public class LoadTestSerialization {
     }
     return factory.getProviders();
   }
-  
+
   public List<TestKernelTemplate> loadKernelTemplate(ClassLoader loader, String class_name) throws Exception {
     Object instance = doLoad(loader, class_name);
     TestKernelTemplateFactory factory = (TestKernelTemplateFactory) instance;
@@ -31,7 +31,7 @@ public class LoadTestSerialization {
     TestExceptionFactory factory = (TestExceptionFactory) instance;
     return factory.getProviders();
   }
-  
+
   private Object doLoad(ClassLoader loader, String class_name) throws Exception {
     Class classToLoad = Class.forName(class_name, true, loader);
     Object instance = classToLoad.newInstance();

@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -11,10 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AcceptableGpuTypes {
-  
+
   private List<String> m_ExcludedPackages;
-  
-  public AcceptableGpuTypes(){    
+
+  public AcceptableGpuTypes(){
     m_ExcludedPackages = new ArrayList<String>();
     m_ExcludedPackages.add("java.");
     m_ExcludedPackages.add("sun.");
@@ -26,7 +26,7 @@ public class AcceptableGpuTypes {
     m_ExcludedPackages.add("apple.awt.");
     m_ExcludedPackages.add("com.apple.");
   }
-  
+
   boolean shouldGenerateCtor(String type) {
     if(type.equals("java.lang.StringBuilder"))
       return false;
@@ -34,5 +34,5 @@ public class AcceptableGpuTypes {
       return false;
     return true;
   }
-  
+
 }

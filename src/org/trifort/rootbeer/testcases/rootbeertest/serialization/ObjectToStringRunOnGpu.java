@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -19,7 +19,7 @@ public class ObjectToStringRunOnGpu implements Kernel {
   private String m_toString4;
   private String m_toString5;
   private String m_toString6;
-  
+
   public ObjectToStringRunOnGpu(){
     m_toString0 = "";
     m_toString1 = "";
@@ -29,7 +29,7 @@ public class ObjectToStringRunOnGpu implements Kernel {
     m_toString5 = "";
     m_toString6 = "";
   }
-  
+
   public void gpuMethod() {
     m_toString0 = String.valueOf(returnObject0());
     m_toString1 = String.valueOf(returnObject1());
@@ -39,31 +39,31 @@ public class ObjectToStringRunOnGpu implements Kernel {
     m_toString5 = String.valueOf(returnObject5());
     m_toString6 = String.valueOf(returnObject6());
   }
-  
+
   private Object returnObject0() {
     return null;
   }
-  
+
   private Object returnObject1() {
     return new Integer(0);
   }
-  
+
   private Object returnObject2() {
     return new Long(1);
   }
-  
+
   private Object returnObject3() {
     return new Float(0.125678f);
   }
-  
+
   private Object returnObject4() {
     return new Double(0.125678);
   }
-  
+
   private Object returnObject5() {
     return new String("str");
   }
-  
+
   private Object returnObject6() {
     return new Boolean(true);
   }

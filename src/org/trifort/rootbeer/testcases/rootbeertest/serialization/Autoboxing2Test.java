@@ -21,5 +21,5 @@ public class Autoboxing2Test implements TestSerialization {
     Autoboxing2RunOnGpu rhs = (Autoboxing2RunOnGpu) from_heap;
     return lhs.compare(rhs);
   }
-  
+
 }

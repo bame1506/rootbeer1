@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -12,11 +12,11 @@ import org.trifort.rootbeer.runtime.Kernel;
 public class ChangeThreadRunOnGpu implements Kernel {
 
   private int m_result;
-  
+
   public void gpuMethod() {
     m_result = 10;
   }
-  
+
   public int getResult(){
     return m_result;
   }

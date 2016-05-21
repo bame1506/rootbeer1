@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -27,7 +27,7 @@ public class ReadOnlyTypes {
   private SootClass m_RootClass;
   private Set<String> m_WrittenClasses;
   private Set<String> m_Inspected;
-  
+
   public ReadOnlyTypes(SootMethod gpuMethod) {
     m_RootClass = gpuMethod.getDeclaringClass();
     m_WrittenClasses = new HashSet<String>();
@@ -38,7 +38,7 @@ public class ReadOnlyTypes {
   public boolean isRootReadOnly(){
     return isReadOnly(m_RootClass);
   }
-  
+
   public boolean isReadOnly(SootClass soot_class){
     String name = soot_class.getName();
     if(m_WrittenClasses.contains(name))
@@ -51,7 +51,7 @@ public class ReadOnlyTypes {
     if(m_Inspected.contains(sig))
       return;
     m_Inspected.add(sig);
-    
+
     if(method.isConcrete() == false){
       return;
     }
@@ -62,7 +62,7 @@ public class ReadOnlyTypes {
     if(body == null)
       return;
     inspectBody(body);
-    
+
     FindMethodCalls finder = new FindMethodCalls();
     Set<SootMethod> calls = finder.findForMethod(method);
     Iterator<SootMethod> iter = calls.iterator();
@@ -78,13 +78,13 @@ public class ReadOnlyTypes {
       Unit curr = iter.next();
       if(curr instanceof AssignStmt == false)
         continue;
-      
+
       AssignStmt assign = (AssignStmt) curr;
       Value lhs = assign.getLeftOp();
-      
+
       if(lhs instanceof FieldRef == false)
         continue;
-        
+
       FieldRef ref = (FieldRef) lhs;
       SootField field = ref.getField();
       String name = field.getDeclaringClass().getName();

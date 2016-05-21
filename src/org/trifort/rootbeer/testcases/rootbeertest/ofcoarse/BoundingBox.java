@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -48,8 +48,8 @@ public class BoundingBox {
     m_UpperRight = new Point(max_x + border, max_y + border);
     m_LowerLeft = new Point(min_x - border, min_y - border);
   }
-  
-  public BoundingBox(BoundingBox other){    
+
+  public BoundingBox(BoundingBox other){
     m_UpperLeft = new Point(other.m_UpperLeft);
     m_LowerRight = new Point(other.m_LowerRight);
     m_UpperRight = new Point(other.m_UpperRight);

@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -13,7 +13,7 @@ public class SynchronizedStaticMethodRunOnGpu implements Kernel {
 
   private SynchronizedStaticMethodShared m_Shared;
   private int value1;
-  
+
   public SynchronizedStaticMethodRunOnGpu(SynchronizedStaticMethodShared obj){
     m_Shared = obj;
   }
@@ -24,14 +24,14 @@ public class SynchronizedStaticMethodRunOnGpu implements Kernel {
       increment();
     } catch(Throwable ex){
       value1++;
-    }    
+    }
   }
-  
+
   private void increment(){
     m_Shared.increment();
     throw new RuntimeException();
   }
-  
+
   boolean compare(SynchronizedStaticMethodRunOnGpu grhs) {
     if(grhs == null){
       System.out.println("grhs == null");
@@ -45,7 +45,7 @@ public class SynchronizedStaticMethodRunOnGpu implements Kernel {
     }
     if(value1 != grhs.value1){
       System.out.println("value1");
-      return false; 
+      return false;
     }
     return true;
   }

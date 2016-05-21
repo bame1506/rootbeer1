@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class LiveMethodDetector {
-  
+
   public Set<String> parse(List<Block> blocks){
     Map<String, Method> method_map = new HashMap<String, Method>();
     for(Block block : blocks){
@@ -26,7 +26,7 @@ public class LiveMethodDetector {
       Method method = block.getMethod();
       method_map.put(method.getName(), method);
     }
-    
+
     LinkedList<String> queue = new LinkedList<String>();
     Set<String> visited = new HashSet<String>();
     queue.add("entry");

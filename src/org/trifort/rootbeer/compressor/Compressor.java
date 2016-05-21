@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -73,7 +73,7 @@ public class Compressor {
     compressMap.put("true", "1");
     compressMap.put("false", "0");
     compressMap.put("bool", "int");
-    
+
     //static math functions
     put("abs");
     put("acos");

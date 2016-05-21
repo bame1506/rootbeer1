@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -20,7 +20,7 @@ public class SharedMemSimpleRunOnGpu implements Kernel {
   private long m_long;
   private float m_float;
   private double m_double;
-  
+
   public void gpuMethod() {
     RootbeerGpu.setSharedBoolean(0, true);
     RootbeerGpu.setSharedByte(1, (byte) 2);
@@ -30,9 +30,9 @@ public class SharedMemSimpleRunOnGpu implements Kernel {
     RootbeerGpu.setSharedLong(10, 6);
     RootbeerGpu.setSharedFloat(18, 7.1f);
     RootbeerGpu.setSharedDouble(22, 8.2);
-    
+
     RootbeerGpu.syncthreads();
-    
+
     m_boolean = RootbeerGpu.getSharedBoolean(0);
     m_byte = RootbeerGpu.getSharedByte(1);
     m_char = RootbeerGpu.getSharedChar(2);
@@ -51,7 +51,7 @@ public class SharedMemSimpleRunOnGpu implements Kernel {
     }
     return str;
   }
-  
+
   private String doubleToString(double value){
     long bits = Double.doubleToLongBits(value);
     String str = Long.toBinaryString(bits);
@@ -60,7 +60,7 @@ public class SharedMemSimpleRunOnGpu implements Kernel {
     }
     return str;
   }
-  
+
   private String byteToString(byte value){
     String str = Integer.toBinaryString(value);
     while(str.length() < 8){
@@ -68,7 +68,7 @@ public class SharedMemSimpleRunOnGpu implements Kernel {
     }
     return str;
   }
-  
+
   private String longToString(long value){
     String str = Long.toBinaryString(value);
     while(str.length() < 64){
@@ -76,7 +76,7 @@ public class SharedMemSimpleRunOnGpu implements Kernel {
     }
     return str;
   }
-  
+
   public boolean compare(SharedMemSimpleRunOnGpu rhs) {
     if(m_boolean != rhs.m_boolean){
       System.out.println("m_boolean");
@@ -89,7 +89,7 @@ public class SharedMemSimpleRunOnGpu implements Kernel {
     if(m_char != rhs.m_char){
       System.out.println("m_char");
       return false;
-    } 
+    }
     if(m_short != rhs.m_short){
       System.out.println("m_short");
       return false;

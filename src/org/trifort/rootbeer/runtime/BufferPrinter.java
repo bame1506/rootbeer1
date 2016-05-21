@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -39,7 +39,7 @@ public class BufferPrinter {
       System.out.println(lines.get(i));
     }
   }
-  
+
   public void print(Memory mem, long start_ptr, int length){
     if(start_ptr < 0){
       start_ptr = 0;
@@ -72,7 +72,7 @@ public class BufferPrinter {
       System.out.print(line_numbers.get(i));
       System.out.println(lines.get(i));
     }
-    
+
     mem.setAddress(previous);
   }
 

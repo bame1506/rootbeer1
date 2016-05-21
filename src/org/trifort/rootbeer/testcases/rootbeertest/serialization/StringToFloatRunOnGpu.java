@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -13,11 +13,11 @@ public class StringToFloatRunOnGpu implements Kernel {
 
   private String m_strValue;
   private float m_toFloat;
-  
+
   public StringToFloatRunOnGpu(String value) {
     m_strValue = value;
   }
-  
+
   public void gpuMethod() {
     m_toFloat = Float.parseFloat(m_strValue);
   }

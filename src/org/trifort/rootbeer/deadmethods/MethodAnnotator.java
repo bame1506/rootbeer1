@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MethodAnnotator {
-  
+
   public void parse(List<Block> blocks, List<String> method_names){
     for(Block block : blocks){
       if(block.isMethod() == false){
@@ -31,7 +31,7 @@ public class MethodAnnotator {
         continue;
       }
       int start_pos = 0;
-      
+
       outer_while:
       while(true){
         int pos = str.indexOf(method_name, start_pos);

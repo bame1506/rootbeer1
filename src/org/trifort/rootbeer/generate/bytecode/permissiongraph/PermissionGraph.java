@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -16,7 +16,7 @@ import soot.rbclassload.RootbeerClassLoader;
 public class PermissionGraph {
 
   private List<PermissionGraphNode> m_Roots;
-  
+
   public PermissionGraph(){
     m_Roots = new ArrayList<PermissionGraphNode>();
     build(RootbeerClassLoader.v().getDfsInfo().getOrderedRefTypes());
@@ -40,7 +40,7 @@ public class PermissionGraph {
       }
     }
   }
-  
+
   public List<PermissionGraphNode> getRoots(){
     return m_Roots;
   }

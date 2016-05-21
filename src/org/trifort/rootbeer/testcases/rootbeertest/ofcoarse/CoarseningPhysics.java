@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -31,11 +31,11 @@ public class CoarseningPhysics {
     m_UsingVariableAgeStep = false;
     mDebug = new GpuList<GpuNumber>();
   }
-  
+
   public GpuList<GpuNumber> getDebug(){
     return mDebug;
   }
-  
+
   public GpuList<Droplet> makePrediction(GpuList<Droplet> droplets) {
     mPrevDroplets = new GpuList<Droplet>();
     for(int i = 0; i < droplets.size(); ++i){
@@ -58,8 +58,8 @@ public class CoarseningPhysics {
     mAgeStep = age_step;
     mBorder = border;
     m_UsingVariableAgeStep = false;
-  }  
-  
+  }
+
   public void setParameters(double cnum, double volumescale, double timestep,
     int border, VariableAgeCutoff age_step){
 
@@ -91,7 +91,7 @@ public class CoarseningPhysics {
     v2_k *= mVolumeScale;
     return v2_k - (v1_k_plus_1 - v1_k);
 	}
-  
+
   double log10(double value){
     return StrictMath.log(value) / StrictMath.log(10.0);
   }
@@ -135,33 +135,33 @@ public class CoarseningPhysics {
   private void doPairDropletPrediction() {
     for(int i = 0; i < mPrevDroplets.size(); ++i){
       Droplet drop1 = mPrevDroplets.get(i);
-      
+
       if(drop1.getVolume() < 0.000000001)
         continue;
-      
+
       for(int j = i + 1; j < mPrevDroplets.size(); ++j){
-        Droplet drop2 = mPrevDroplets.get(j);        
-        
+        Droplet drop2 = mPrevDroplets.get(j);
+
         if(drop2.getVolume() < 0.000000001)
-          continue;      
-        
+          continue;
+
         double drop1_volume;
         double drop2_volume;
-        
+
         if(pastAgeStep(drop1.getCenter(), drop2.getCenter())){
           drop1_volume = drop1.getVolume();
-          drop2_volume = drop2.getVolume();        
+          drop2_volume = drop2.getVolume();
         } else {
           drop1_volume = volume_update_drop1(drop1.getVolume(), drop2.getVolume(), drop1.getCenter(),
                 drop2.getCenter());
           drop2_volume = volume_update_drop2(drop1.getVolume(), drop2.getVolume(), drop1_volume);
         }
         if(drop1_volume <= 0.000000001){
-          continue; 
-        }        
-        
+          continue;
+        }
+
         if(drop2_volume <= 0.000000001){
-          continue; 
+          continue;
         }
 
         if(dropletsTooClose(drop1.getCenter(), drop2.getCenter())){
@@ -236,8 +236,8 @@ public class CoarseningPhysics {
       if(mCurrAge > mAgeStep)
         return true;
       return false;
-    } 
-    
+    }
+
     if(m_VariableAgeStep.pastAgeStep(x1_k, mCurrAge))
       return true;
     if(m_VariableAgeStep.pastAgeStep(x2_k, mCurrAge))

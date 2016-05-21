@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,8 +15,8 @@ public class BigGridSizeTest implements TestKernelTemplate {
 
   private int m_blockSize;
   private int m_gridSize;
-  
-  public BigGridSizeTest(){ 
+
+  public BigGridSizeTest(){
     m_blockSize = 1024;
     m_gridSize = 1024;
   }

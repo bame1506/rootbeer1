@@ -64,9 +64,9 @@ public class MyKernel implements Kernel {
         //int b = (int) (0xff * (RootbeerGpu.sin((double) (0.04 * d + 0.1) + 1)) / 2);
         int dest_index = j * w + i + offset;
 
-        //result[dest_index] = r;  
+        //result[dest_index] = r;
         //result[dest_index] = g;
-        //result[dest_index] = b;      
+        //result[dest_index] = b;
         result[dest_index] =
                 (int) ((0xff * (0.01 * d + 0) + 1) / 2) << 16
                 | (int) ((0xff * (0.02 * d + 0.01) + 1) / 2) << 8

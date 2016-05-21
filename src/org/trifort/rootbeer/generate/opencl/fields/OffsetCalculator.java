@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -20,11 +20,11 @@ import org.trifort.rootbeer.generate.opencl.OpenCLScene;
 import soot.SootClass;
 
 public class OffsetCalculator {
- 
+
   private Map<SootClass, Map<OpenCLField, Integer>> m_OffsetMap;
   private Map<OpenCLField, Integer> m_CurrOffsetSubMap;
-  private int m_CurrOffset;  
-  
+  private int m_CurrOffset;
+
   public OffsetCalculator(CompositeField composite) {
     m_OffsetMap = new HashMap<SootClass, Map<OpenCLField, Integer>>();
     //classes are sorted with base at index 0, most derived at index size-1
@@ -50,27 +50,27 @@ public class OffsetCalculator {
       m_OffsetMap.put(curr_key_class, m_CurrOffsetSubMap);
     }
   }
-  
-  private void alignCurrOffset(){    
+
+  private void alignCurrOffset(){
     //non_ref starts on alignment of 8
     int mod = m_CurrOffset % 8;
     if(mod != 0)
       m_CurrOffset += (8 - mod);
   }
-  
+
   private void calculateForSet(List<OpenCLField> sorted){
     if(sorted.isEmpty())
       return;
-    
+
     OpenCLField first = sorted.get(0);
-    
+
     int prev_size = first.getSize();
-    
+
     for(OpenCLField field : sorted){
-      
+
       if(field.isCloned())
         continue;
-      
+
       if(prev_size != field.getSize()){
         int mod = m_CurrOffset % prev_size;
         if(mod != 0)
@@ -128,7 +128,7 @@ public class OffsetCalculator {
     OpenCLClass ocl_class = OpenCLScene.v().getOpenCLClass(curr_field_class);
     List<OpenCLField> used_fields;
     if(ref_fields){
-      used_fields = ocl_class.getInstanceRefFields();  
+      used_fields = ocl_class.getInstanceRefFields();
     } else {
       used_fields = ocl_class.getInstanceNonRefFields();
     }
@@ -136,10 +136,10 @@ public class OffsetCalculator {
     for(OpenCLField field : org_fields){
       if(listContains(used_fields, field.getName()))
         ret.add(field);
-    }    
+    }
     return ret;
   }
-  
+
   private boolean listContains(List<OpenCLField> lst, String name){
     for(OpenCLField field : lst){
       if(field.getName().equals(name))
@@ -147,5 +147,5 @@ public class OffsetCalculator {
     }
     return false;
   }
-  
+
 }

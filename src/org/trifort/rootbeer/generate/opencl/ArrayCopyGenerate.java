@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,7 +15,7 @@ import java.util.Set;
 import org.trifort.rootbeer.generate.opencl.tweaks.Tweaks;
 
 public class ArrayCopyGenerate {
-  
+
   private List<OpenCLArrayType> m_ArrayTypes;
 
   public String get(Set<OpenCLArrayType> array_types_set){
@@ -36,13 +36,13 @@ public class ArrayCopyGenerate {
     ret.append("      if(0){}\n");
     ret.append(generateForList());
     ret.append("  } else {\n");
-    ret.append("      if(0){}\n");    
+    ret.append("      if(0){}\n");
     ret.append(generateForList());
     ret.append("  }\n");
     ret.append("}\n");
     return ret.toString();
   }
-  
+
   private String generateForList(){
     StringBuilder ret = new StringBuilder();
     for(int i = 0; i < m_ArrayTypes.size(); ++i){
@@ -69,13 +69,13 @@ public class ArrayCopyGenerate {
       m_ArrayTypes.add(iter.next());
     }
   }
-  
+
   private String getDecl(){
     String device_function_qual = Tweaks.v().getDeviceFunctionQualifier();
     StringBuilder ret = new StringBuilder();
     ret.append(device_function_qual+" void \n");
     ret.append("java_lang_System_arraycopy(");
-    ret.append("int src_handle, int srcPos, int dest_handle, int destPos, int length, int * exception)"); 
+    ret.append("int src_handle, int srcPos, int dest_handle, int destPos, int length, int * exception)");
     return ret.toString();
   }
 

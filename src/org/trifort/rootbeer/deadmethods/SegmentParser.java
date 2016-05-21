@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -17,10 +17,10 @@ public class SegmentParser {
   public static final int TYPE_STRING = 2;
   public static final int TYPE_CHAR = 3;
   public static final int TYPE_DEFINE = 4;
-  
+
   public SegmentParser(){
   }
-  
+
   public List<Segment> parse(String contents) {
     List<Segment> ret = new ArrayList<Segment>();
     int state = TYPE_FREE;
@@ -31,7 +31,7 @@ public class SegmentParser {
       if(i < contents.length() - 1){
         cc = contents.charAt(i+1);
       }
-      
+
       switch(state){
         case TYPE_FREE:
           if(c == '/' && cc == '/'){
@@ -137,7 +137,7 @@ public class SegmentParser {
     }
     return ret;
   }
-  
+
   private boolean insideEscape(String contents, int index){
     int count = 0;
     for(int i = index; i >= 0; --i){
@@ -154,7 +154,7 @@ public class SegmentParser {
       return true;
     }
   }
-  
+
   private boolean onlyWhitespace(StringBuilder builder){
     for(int i = 0; i < builder.length(); ++i){
       char c = builder.charAt(i);

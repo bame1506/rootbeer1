@@ -11,9 +11,9 @@ public class AtomicGlobalsRunOnGpu implements Kernel {
   private int[] intArray2;
   private long[] longArray2;
   private float[] floatArray2;
-  
-  public AtomicGlobalsRunOnGpu(int[] intArray, long[] longArray, 
-      float[] floatArray, int[] intArray2, long[] longArray2, 
+
+  public AtomicGlobalsRunOnGpu(int[] intArray, long[] longArray,
+      float[] floatArray, int[] intArray2, long[] longArray2,
       float[] floatArray2){
     this.intArray = intArray;
     this.longArray = longArray;
@@ -22,7 +22,7 @@ public class AtomicGlobalsRunOnGpu implements Kernel {
     this.longArray2 = longArray2;
     this.floatArray2 = floatArray2;
   }
-  
+
   @Override
   public void gpuMethod() {
     RootbeerGpu.atomicAddGlobal(intArray, 0, 2);
@@ -34,18 +34,18 @@ public class AtomicGlobalsRunOnGpu implements Kernel {
     RootbeerGpu.atomicAddGlobal(intArray, 2, 2);
     RootbeerGpu.atomicAddGlobal(longArray, 2, 2);
     RootbeerGpu.atomicAddGlobal(floatArray, 2, 2);
-    
+
     RootbeerGpu.atomicSubGlobal(intArray, 0, 1);
     RootbeerGpu.atomicSubGlobal(intArray, 1, 1);
     RootbeerGpu.atomicSubGlobal(intArray, 2, 1);
-    
+
     RootbeerGpu.atomicExchGlobal(intArray2, 0, 2);
     RootbeerGpu.atomicExchGlobal(longArray2, 0, 2);
     RootbeerGpu.atomicExchGlobal(floatArray2, 0, 2);
-    
+
     RootbeerGpu.atomicMinGlobal(intArray2, 0, 2);
     RootbeerGpu.atomicMaxGlobal(intArray2, 0, 2);
-    
+
     RootbeerGpu.atomicCASGlobal(intArray2, 0, 2, 1);
     RootbeerGpu.atomicAndGlobal(intArray2, 0, 2);
     RootbeerGpu.atomicOrGlobal(intArray2, 0, 2);
@@ -63,7 +63,7 @@ public class AtomicGlobalsRunOnGpu implements Kernel {
         System.out.println("value2: "+value2);
         return false;
       }
-    }    
+    }
     for(int i = 0; i < longArray.length; ++i){
       long value1 = longArray[i];
       long value2 = rhs.longArray[i];
@@ -74,7 +74,7 @@ public class AtomicGlobalsRunOnGpu implements Kernel {
         System.out.println("value2: "+value2);
         return false;
       }
-    }  
+    }
     for(int i = 0; i < floatArray.length; ++i){
       float value1 = floatArray[i];
       float value2 = rhs.floatArray[i];

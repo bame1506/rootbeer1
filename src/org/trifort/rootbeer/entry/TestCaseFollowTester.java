@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -17,7 +17,7 @@ import soot.rbclassload.HierarchySootClass;
 public class TestCaseFollowTester implements ClassTester {
 
   private Set<String> m_testCaseInterfaces;
-  
+
   public TestCaseFollowTester(){
     m_testCaseInterfaces = new HashSet<String>();
     m_testCaseInterfaces.add("org.trifort.rootbeer.test.TestApplication");
@@ -25,7 +25,7 @@ public class TestCaseFollowTester implements ClassTester {
     m_testCaseInterfaces.add("org.trifort.rootbeer.test.TestKernelTemplate");
     m_testCaseInterfaces.add("org.trifort.rootbeer.test.TestSerialization");
   }
-  
+
   public boolean test(HierarchySootClass hsc) {
     List<String> interfaces = hsc.getInterfaces();
     for(String iface : interfaces){
@@ -35,5 +35,5 @@ public class TestCaseFollowTester implements ClassTester {
     }
     return false;
   }
-  
+
 }

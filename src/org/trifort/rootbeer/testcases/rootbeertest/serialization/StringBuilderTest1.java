@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -28,5 +28,5 @@ public class StringBuilderTest1 implements TestSerialization {
     StringBuilderRunOnGpu1 rhs = (StringBuilderRunOnGpu1) from_heap;
     return lhs.compare(rhs);
   }
-  
+
 }

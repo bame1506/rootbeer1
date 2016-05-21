@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -17,21 +17,21 @@ import soot.rbclassload.DfsInfo;
 import soot.rbclassload.RootbeerClassLoader;
 
 public class Transform2 {
-  
+
   private int m_Uuid;
-  
+
   public Transform2(){
     m_Uuid = 1;
   }
 
-  public void run(String cls){    
+  public void run(String cls){
     OpenCLScene scene = new OpenCLScene();
     OpenCLScene.setInstance(scene);
     scene.init();
-    
+
     SootClass soot_class1 = Scene.v().getSootClass(cls);
     SootMethod method = soot_class1.getMethod("void gpuMethod()");
-    
+
     String uuid = getUuid();
     GenerateForKernel generator = new GenerateForKernel(method, uuid);
     try {
@@ -46,12 +46,12 @@ public class Transform2 {
     SootClass soot_class = method.getDeclaringClass();
     SootClass iface_class = Scene.v().getSootClass("org.trifort.rootbeer.runtime.CompiledKernel");
     soot_class.addInterface(iface_class);
-    
+
     System.out.println("added interface CompiledKernel");
-    
+
     OpenCLScene.releaseV();
   }
-  
+
   private String getUuid(){
     int uuid = m_Uuid;
     m_Uuid++;

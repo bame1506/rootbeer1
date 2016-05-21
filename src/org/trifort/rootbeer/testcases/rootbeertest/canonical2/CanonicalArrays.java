@@ -4,7 +4,7 @@ class CanonicalArrays {
 
   private float[][] floatArray;
   private float arraySum;
-  
+
   public CanonicalArrays(){
     floatArray = new float[2][];
     for(int i = 0; i < 2; ++i){
@@ -14,7 +14,7 @@ class CanonicalArrays {
       }
     }
   }
-  
+
   public void sum(){
     arraySum = 0;
     for(int i = 0; i < floatArray.length; ++i){
@@ -23,7 +23,7 @@ class CanonicalArrays {
       }
     }
   }
-  
+
   public float getResult(){
     synchronized(this){
       return arraySum;

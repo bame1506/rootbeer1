@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -20,11 +20,11 @@ import soot.rbclassload.MethodTester;
 public class KernelEntryPointDetector implements MethodTester {
 
   private boolean m_runTests;
-  
+
   public KernelEntryPointDetector(boolean run_tests){
     m_runTests = run_tests;
   }
-  
+
   public boolean test(HierarchySootMethod sm) {
     if(sm.getSubSignature().equals("void gpuMethod()") == false){
       return false;

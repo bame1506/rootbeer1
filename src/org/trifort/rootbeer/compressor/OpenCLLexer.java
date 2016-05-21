@@ -23,7 +23,7 @@ public class OpenCLLexer extends Lexer {
     // delegates
     // delegators
 
-    public OpenCLLexer() {;} 
+    public OpenCLLexer() {;}
     public OpenCLLexer(CharStream input) {
         this(input, new RecognizerSharedState());
     }
@@ -48,7 +48,7 @@ public class OpenCLLexer extends Lexer {
                 case 1 :
                     // OpenCL.g:36:11: '&&'
                     {
-                    match("&&"); 
+                    match("&&");
 
 
                     }
@@ -56,7 +56,7 @@ public class OpenCLLexer extends Lexer {
                 case 2 :
                     // OpenCL.g:36:18: '||'
                     {
-                    match("||"); 
+                    match("||");
 
 
                     }
@@ -64,7 +64,7 @@ public class OpenCLLexer extends Lexer {
                 case 3 :
                     // OpenCL.g:36:25: '=='
                     {
-                    match("=="); 
+                    match("==");
 
 
                     }
@@ -72,21 +72,21 @@ public class OpenCLLexer extends Lexer {
                 case 4 :
                     // OpenCL.g:36:32: '='
                     {
-                    match('='); 
+                    match('=');
 
                     }
                     break;
                 case 5 :
                     // OpenCL.g:36:38: '>'
                     {
-                    match('>'); 
+                    match('>');
 
                     }
                     break;
                 case 6 :
                     // OpenCL.g:36:44: '>='
                     {
-                    match(">="); 
+                    match(">=");
 
 
                     }
@@ -94,7 +94,7 @@ public class OpenCLLexer extends Lexer {
                 case 7 :
                     // OpenCL.g:36:51: '<='
                     {
-                    match("<="); 
+                    match("<=");
 
 
                     }
@@ -102,49 +102,49 @@ public class OpenCLLexer extends Lexer {
                 case 8 :
                     // OpenCL.g:36:58: '<'
                     {
-                    match('<'); 
+                    match('<');
 
                     }
                     break;
                 case 9 :
                     // OpenCL.g:36:64: '/'
                     {
-                    match('/'); 
+                    match('/');
 
                     }
                     break;
                 case 10 :
                     // OpenCL.g:36:70: '?'
                     {
-                    match('?'); 
+                    match('?');
 
                     }
                     break;
                 case 11 :
                     // OpenCL.g:36:76: '+'
                     {
-                    match('+'); 
+                    match('+');
 
                     }
                     break;
                 case 12 :
                     // OpenCL.g:36:82: '-'
                     {
-                    match('-'); 
+                    match('-');
 
                     }
                     break;
                 case 13 :
                     // OpenCL.g:36:88: ':'
                     {
-                    match(':'); 
+                    match(':');
 
                     }
                     break;
                 case 14 :
                     // OpenCL.g:36:94: '//'
                     {
-                    match("//"); 
+                    match("//");
 
 
                     }
@@ -152,7 +152,7 @@ public class OpenCLLexer extends Lexer {
                 case 15 :
                     // OpenCL.g:36:101: '/*'
                     {
-                    match("/*"); 
+                    match("/*");
 
 
                     }
@@ -160,7 +160,7 @@ public class OpenCLLexer extends Lexer {
                 case 16 :
                     // OpenCL.g:36:108: '\\\\*'
                     {
-                    match("\\*"); 
+                    match("\\*");
 
 
                     }
@@ -168,7 +168,7 @@ public class OpenCLLexer extends Lexer {
                 case 17 :
                     // OpenCL.g:36:116: '+='
                     {
-                    match("+="); 
+                    match("+=");
 
 
                     }
@@ -176,7 +176,7 @@ public class OpenCLLexer extends Lexer {
                 case 18 :
                     // OpenCL.g:36:123: '-='
                     {
-                    match("-="); 
+                    match("-=");
 
 
                     }
@@ -184,7 +184,7 @@ public class OpenCLLexer extends Lexer {
                 case 19 :
                     // OpenCL.g:36:130: '++'
                     {
-                    match("++"); 
+                    match("++");
 
 
                     }
@@ -192,14 +192,14 @@ public class OpenCLLexer extends Lexer {
                 case 20 :
                     // OpenCL.g:37:12: '%'
                     {
-                    match('%'); 
+                    match('%');
 
                     }
                     break;
                 case 21 :
                     // OpenCL.g:37:18: '--'
                     {
-                    match("--"); 
+                    match("--");
 
 
                     }
@@ -207,7 +207,7 @@ public class OpenCLLexer extends Lexer {
                 case 22 :
                     // OpenCL.g:37:25: '>>'
                     {
-                    match(">>"); 
+                    match(">>");
 
 
                     }
@@ -215,7 +215,7 @@ public class OpenCLLexer extends Lexer {
                 case 23 :
                     // OpenCL.g:37:32: '<<'
                     {
-                    match("<<"); 
+                    match("<<");
 
 
                     }
@@ -223,14 +223,14 @@ public class OpenCLLexer extends Lexer {
                 case 24 :
                     // OpenCL.g:37:39: '\\\\'
                     {
-                    match('\\'); 
+                    match('\\');
 
                     }
                     break;
                 case 25 :
                     // OpenCL.g:37:46: '!='
                     {
-                    match("!="); 
+                    match("!=");
 
 
                     }
@@ -238,7 +238,7 @@ public class OpenCLLexer extends Lexer {
                 case 26 :
                     // OpenCL.g:37:53: '\\\\\"'
                     {
-                    match("\\\""); 
+                    match("\\\"");
 
 
                     }
@@ -293,7 +293,7 @@ public class OpenCLLexer extends Lexer {
             // OpenCL.g:39:17: ( ';' )
             // OpenCL.g:39:19: ';'
             {
-            match(';'); 
+            match(';');
 
             }
 
@@ -313,7 +313,7 @@ public class OpenCLLexer extends Lexer {
             // OpenCL.g:40:4: ( '&' )
             // OpenCL.g:40:6: '&'
             {
-            match('&'); 
+            match('&');
 
             }
 
@@ -333,7 +333,7 @@ public class OpenCLLexer extends Lexer {
             // OpenCL.g:41:6: ( '*' )
             // OpenCL.g:41:8: '*'
             {
-            match('*'); 
+            match('*');
 
             }
 
@@ -479,7 +479,7 @@ public class OpenCLLexer extends Lexer {
                         case 1 :
                             // OpenCL.g:44:15: '-'
                             {
-                            match('-'); 
+                            match('-');
 
                             }
                             break;
@@ -535,7 +535,7 @@ public class OpenCLLexer extends Lexer {
                         case 1 :
                             // OpenCL.g:44:39: 'L'
                             {
-                            match('L'); 
+                            match('L');
 
                             }
                             break;
@@ -554,7 +554,7 @@ public class OpenCLLexer extends Lexer {
                     // OpenCL.g:44:47: ( '0x' ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' )+ ( 'L' )? )
                     // OpenCL.g:44:48: '0x' ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' )+ ( 'L' )?
                     {
-                    match("0x"); 
+                    match("0x");
 
                     // OpenCL.g:44:53: ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' )+
                     int cnt6=0;
@@ -605,7 +605,7 @@ public class OpenCLLexer extends Lexer {
                         case 1 :
                             // OpenCL.g:44:87: 'L'
                             {
-                            match('L'); 
+                            match('L');
 
                             }
                             break;
@@ -674,7 +674,7 @@ public class OpenCLLexer extends Lexer {
                 cnt9++;
             } while (true);
 
-            _channel = HIDDEN; 
+            _channel = HIDDEN;
 
             }
 
@@ -694,63 +694,63 @@ public class OpenCLLexer extends Lexer {
             case 1 :
                 // OpenCL.g:1:10: SPECIAL
                 {
-                mSPECIAL(); 
+                mSPECIAL();
 
                 }
                 break;
             case 2 :
                 // OpenCL.g:1:18: SEP
                 {
-                mSEP(); 
+                mSEP();
 
                 }
                 break;
             case 3 :
                 // OpenCL.g:1:22: END_OF_STATEMENT
                 {
-                mEND_OF_STATEMENT(); 
+                mEND_OF_STATEMENT();
 
                 }
                 break;
             case 4 :
                 // OpenCL.g:1:39: AMP
                 {
-                mAMP(); 
+                mAMP();
 
                 }
                 break;
             case 5 :
                 // OpenCL.g:1:43: POINT
                 {
-                mPOINT(); 
+                mPOINT();
 
                 }
                 break;
             case 6 :
                 // OpenCL.g:1:49: STRING_DELIM
                 {
-                mSTRING_DELIM(); 
+                mSTRING_DELIM();
 
                 }
                 break;
             case 7 :
                 // OpenCL.g:1:62: VARIABLE
                 {
-                mVARIABLE(); 
+                mVARIABLE();
 
                 }
                 break;
             case 8 :
                 // OpenCL.g:1:71: INT_LITERAL
                 {
-                mINT_LITERAL(); 
+                mINT_LITERAL();
 
                 }
                 break;
             case 9 :
                 // OpenCL.g:1:83: WHITESPACE
                 {
-                mWHITESPACE(); 
+                mWHITESPACE();
 
                 }
                 break;
@@ -914,6 +914,6 @@ public class OpenCLLexer extends Lexer {
             return "1:1: Tokens : ( SPECIAL | SEP | END_OF_STATEMENT | AMP | POINT | STRING_DELIM | VARIABLE | INT_LITERAL | WHITESPACE );";
         }
     }
- 
+
 
 }

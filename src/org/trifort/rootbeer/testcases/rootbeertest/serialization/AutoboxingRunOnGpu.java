@@ -8,7 +8,7 @@ public class AutoboxingRunOnGpu implements Kernel {
   private Integer m_int0;
   private Integer m_int1;
   private Integer m_int2;
-  
+
   public void gpuMethod() {
     m_double0 = returnDouble();
     m_int0 = returnInteger0();
@@ -19,7 +19,7 @@ public class AutoboxingRunOnGpu implements Kernel {
   private double returnDouble() {
     return 10;
   }
-  
+
   // values between -128 and 0 will fail because of problems in
   // static_getter_java_lang_Integer$IntegerCache_high or
   // static_getter_java_lang_Integer$IntegerCache_cache
@@ -35,25 +35,25 @@ public class AutoboxingRunOnGpu implements Kernel {
      return  $r1 ;
    */
   private int returnInteger0() {
-    return -30; 
+    return -30;
   }
-  
+
   private int returnInteger1() {
-    return 0; 
+    return 0;
   }
-  
+
   private int returnInteger2() {
-    return 30; 
+    return 30;
   }
-  
+
   public double getDouble(){
     return m_double0;
   }
-  
+
   public int getInteger0(){
     return m_int0;
   }
-  
+
   public int getInteger1(){
     return m_int1;
   }
@@ -61,8 +61,8 @@ public class AutoboxingRunOnGpu implements Kernel {
   public int getInteger2(){
     return m_int2;
   }
-  
-  
+
+
   public boolean compare(AutoboxingRunOnGpu rhs) {
     if(getDouble() != rhs.getDouble()){
       System.out.println("m_double0");
@@ -90,5 +90,5 @@ public class AutoboxingRunOnGpu implements Kernel {
     }
     return true;
   }
-  
+
 }

@@ -6,7 +6,7 @@ import java.util.Set;
 public class JavaNumberTypes {
 
   private Set<String> m_types;
-  
+
   public JavaNumberTypes(){
     m_types = new HashSet<String>();
     m_types.add("java.lang.Byte");
@@ -18,7 +18,7 @@ public class JavaNumberTypes {
     m_types.add("java.lang.Float");
     m_types.add("java.lang.Double");
   }
-  
+
   public Set<String> get(){
     return m_types;
   }

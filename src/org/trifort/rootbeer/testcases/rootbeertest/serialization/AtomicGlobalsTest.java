@@ -16,7 +16,7 @@ public class AtomicGlobalsTest implements TestSerialization {
     int[] intArray2 = new int[1];
     long[] longArray2 = new long[1];
     float[] floatArray2 = new float[1];
-    
+
     List<Kernel> ret = new ArrayList<Kernel>();
     for(int i = 0; i < 10; ++i){
       Kernel kernel = new AtomicGlobalsRunOnGpu(intArray, longArray, floatArray,

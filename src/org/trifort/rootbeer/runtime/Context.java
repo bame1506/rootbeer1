@@ -11,9 +11,9 @@ public interface Context extends Closeable {
   public void setCacheConfig(CacheConfig config);
   public void setThreadConfig(ThreadConfig threadConfig);
   public void setThreadConfig(int threadCountX, int blockCountX, int num_threads);
-  public void setThreadConfig(int threadCountX, int threadCountY, 
+  public void setThreadConfig(int threadCountX, int threadCountY,
       int blockCountX, int blockCountY, int num_threads);
-  public void setThreadConfig(int threadCountX, int threadCountY, int threadCountZ, 
+  public void setThreadConfig(int threadCountX, int threadCountY, int threadCountZ,
       int blockCountX, int blockCountY, int num_threads);
   public void setKernel(Kernel kernelTemple);
   public void useCheckedMemory();
@@ -25,5 +25,5 @@ public interface Context extends Closeable {
   public long getRequiredMemory();
   public void close();
   public StatsRow getStats();
-  
+
 }

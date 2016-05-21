@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -19,7 +19,7 @@ import org.trifort.rootbeer.runtime.GpuDevice;
 import org.trifort.rootbeer.runtime.Rootbeer;
 
 public class Main {
-  
+
   public int m_mode;
   private int m_num_args;
   private boolean m_runTests;
@@ -33,7 +33,7 @@ public class Main {
   private List<String> m_libJars;
   private List<String> m_directories;
   private String m_destJar;
-  
+
   public Main(){
     m_libJars = new ArrayList<String>();
     m_directories = new ArrayList<String>();
@@ -41,14 +41,14 @@ public class Main {
     m_simpleCompile = false;
     m_runHardTests = false;
   }
-  
+
   public static boolean largeMemTests(){
     return m_largeMemTests;
   }
-  
+
   private void parseArgs(String[] args) {
     m_num_args = args.length;
-    
+
     boolean arch32bit = false;
     boolean arch64bit = false;
     for(int i = 0; i < args.length; ++i){
@@ -57,7 +57,7 @@ public class Main {
         m_mode = Configuration.MODE_NEMU;
       } else if(arg.equals("-jemu")){
         m_mode = Configuration.MODE_JEMU;
-      } else if(arg.equals("-remap-sparse")){ 
+      } else if(arg.equals("-remap-sparse")){
         Configuration.compilerInstance().setRemapSparse();
       } else if(arg.equals("-mainjar")){
         m_mainJar = safeGet(args, i+1, "-mainjar");
@@ -138,25 +138,25 @@ public class Main {
         } else {
           System.out.println("Unsupported compute capability: "+ computeCapability);
         }
-      } else if(m_simpleCompile == false){      
+      } else if(m_simpleCompile == false){
         m_mainJar = arg;
         m_destJar = safeGet(args, i+1, arg);
-        
+
         File main_jar = new File(m_mainJar);
         if(main_jar.exists() == false){
           System.out.println("Cannot find: "+m_mainJar);
           System.exit(0);
         }
-        
+
         ++i;
         m_simpleCompile = true;
       }
     }
-    
+
     if(Configuration.compilerInstance().getRecursion() && m_printDeviceInfo == false){
       System.out.println("warning: sm_12 and sm_11 not supported with recursion. use -norecursion to enable.");
     }
-    
+
     if(Configuration.compilerInstance().getDoubles() && m_printDeviceInfo == false){
       System.out.println("warning: sm_12 and sm_11 not supported with doubles. use -nodoubles to enable.");
     }
@@ -168,10 +168,10 @@ public class Main {
     } else {
       Configuration.compilerInstance().setCompileArchitecture(CompileArchitecture.Arch32bit64bit);
     }
-    
+
     Configuration.compilerInstance().setMode(m_mode);
   }
-  
+
   private String safeGet(String[] args, int index, String argname) {
     if(index >= args.length){
       System.out.println(argname+" needs another argument after it.");
@@ -186,23 +186,23 @@ public class Main {
       if(m_num_args == 1){
         printDeviceInfo();
       } else {
-        System.out.println("-printdeviceinfo can only be used by itself. Remove other arguments.");  
+        System.out.println("-printdeviceinfo can only be used by itself. Remove other arguments.");
         System.out.flush();
         return;
       }
     }
-    
+
     if(m_runTests){
       RootbeerTest test = new RootbeerTest();
       test.runTests(m_testCase, m_runHardTests);
       return;
-    } 
-    
+    }
+
     RootbeerCompiler compiler = new RootbeerCompiler();
     if(m_disableClassRemapping){
-      compiler.disableClassRemapping(); 
+      compiler.disableClassRemapping();
     }
-    
+
     if(m_simpleCompile){
       try {
         compiler.compile(m_mainJar, m_destJar);
@@ -217,7 +217,7 @@ public class Main {
       }
     }
   }
-  
+
   private void printDeviceInfo() {
     Rootbeer rootbeer = new Rootbeer();
     List<GpuDevice> devices = rootbeer.getDevices();

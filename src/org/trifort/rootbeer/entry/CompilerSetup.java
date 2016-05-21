@@ -47,7 +47,7 @@ public class CompilerSetup {
     ret.add("<org.trifort.rootbeer.runtime.GpuStopwatch: void start()>");
     ret.add("<org.trifort.rootbeer.runtime.GpuStopwatch: void stop()>");
     ret.add("<org.trifort.rootbeer.runtime.RootbeerGpu: boolean isOnGpu()>");
-    ret.add("<org.trifort.rootbeer.runtime.RootbeerGpu: int getThreadId()>"); 
+    ret.add("<org.trifort.rootbeer.runtime.RootbeerGpu: int getThreadId()>");
     ret.add("<org.trifort.rootbeer.runtime.RootbeerGpu: int getThreadIdxx()>");
     ret.add("<org.trifort.rootbeer.runtime.RootbeerGpu: int getThreadIdxy()>");
     ret.add("<org.trifort.rootbeer.runtime.RootbeerGpu: int getThreadIdxz()>");
@@ -109,7 +109,7 @@ public class CompilerSetup {
     ret.add("<java.lang.String: java.lang.String substring(int)>");
     ret.add("<java.lang.String: java.lang.String substring(int,int)>");
     ret.add("<java.lang.String: int indexOf(java.lang.String)>");
-    ret.add("<java.lang.String: int indexOf(java.lang.String,int)>");  
+    ret.add("<java.lang.String: int indexOf(java.lang.String,int)>");
     ret.add("<java.lang.String: java.lang.String[] split(java.lang.String)>");
     ret.add("<java.lang.String: java.lang.String[] split(java.lang.String,int)>");
     ret.add("<java.lang.String: java.lang.String valueOf(java.lang.Object)>");
@@ -117,30 +117,30 @@ public class CompilerSetup {
     ret.add("<java.io.PrintStream: void println()>");
     ret.add("<java.io.PrintStream: void println(java.lang.String)>");
     ret.add("<java.io.PrintStream: void println(java.lang.Object)>");
-    ret.add("<java.io.PrintStream: void println(boolean)>");   
-    ret.add("<java.io.PrintStream: void println(byte)>");   
-    ret.add("<java.io.PrintStream: void println(char)>");    
-    ret.add("<java.io.PrintStream: void println(short)>");   
-    ret.add("<java.io.PrintStream: void println(int)>");     
-    ret.add("<java.io.PrintStream: void println(long)>");   
+    ret.add("<java.io.PrintStream: void println(boolean)>");
+    ret.add("<java.io.PrintStream: void println(byte)>");
+    ret.add("<java.io.PrintStream: void println(char)>");
+    ret.add("<java.io.PrintStream: void println(short)>");
+    ret.add("<java.io.PrintStream: void println(int)>");
+    ret.add("<java.io.PrintStream: void println(long)>");
     ret.add("<java.io.PrintStream: void println(float)>");
     ret.add("<java.io.PrintStream: void println(double)>");
     ret.add("<java.io.PrintStream: void print(java.lang.String)>");
     ret.add("<java.io.PrintStream: void print(java.lang.Object)>");
-    ret.add("<java.io.PrintStream: void print(boolean)>");   
-    ret.add("<java.io.PrintStream: void print(byte)>");   
-    ret.add("<java.io.PrintStream: void print(char)>");    
-    ret.add("<java.io.PrintStream: void print(short)>");   
-    ret.add("<java.io.PrintStream: void print(int)>");     
-    ret.add("<java.io.PrintStream: void print(long)>");   
+    ret.add("<java.io.PrintStream: void print(boolean)>");
+    ret.add("<java.io.PrintStream: void print(byte)>");
+    ret.add("<java.io.PrintStream: void print(char)>");
+    ret.add("<java.io.PrintStream: void print(short)>");
+    ret.add("<java.io.PrintStream: void print(int)>");
+    ret.add("<java.io.PrintStream: void print(long)>");
     ret.add("<java.io.PrintStream: void print(float)>");
     ret.add("<java.io.PrintStream: void print(double)>");
-    
+
     ret.add("<java.lang.Double: long doubleToLongBits(double)>");
     ret.add("<java.lang.Double: double longBitsToDouble(long)>");
     ret.add("<java.lang.Float: int floatToIntBits(float)>");
     ret.add("<java.lang.Float: float intBitsToFloat(int)>");
-    
+
     ret.add("<java.lang.Double: java.lang.String toString(double)>");
     ret.add("<java.lang.Float: java.lang.String toString(float)>");
     ret.add("<java.lang.Integer: java.lang.String toString(int)>");
@@ -155,10 +155,10 @@ public class CompilerSetup {
 
     ret.add("<java.lang.StringBuilder: java.lang.StringBuilder append(double)>");
     ret.add("<java.lang.StringBuilder: java.lang.StringBuilder append(float)>");
-    
+
     return ret;
   }
-  
+
   public Set<String> getDontEmit(){
     Set<String> ret = new HashSet<String>();
     ret.add("<java.lang.String: void <init>(java.lang.String)>");
@@ -180,7 +180,7 @@ public class CompilerSetup {
     ret.add("<java.lang.Object: java.lang.String toString()>");
     return ret;
   }
-  
+
   public Set<String> getDontMangle(){
     Set<String> ret = new HashSet<String>();
     ret.add("<java.lang.Object: void <clinit>()>");
@@ -218,7 +218,7 @@ public class CompilerSetup {
     ret.add("<org.trifort.rootbeer.runtime.GpuStopwatch: void start()>");
     ret.add("<org.trifort.rootbeer.runtime.GpuStopwatch: void stop()>");
     ret.add("<org.trifort.rootbeer.runtime.RootbeerGpu: boolean isOnGpu()>");
-    ret.add("<org.trifort.rootbeer.runtime.RootbeerGpu: int getThreadId()>"); 
+    ret.add("<org.trifort.rootbeer.runtime.RootbeerGpu: int getThreadId()>");
     ret.add("<org.trifort.rootbeer.runtime.RootbeerGpu: int getThreadIdxx()>");
     ret.add("<org.trifort.rootbeer.runtime.RootbeerGpu: int getThreadIdxy()>");
     ret.add("<org.trifort.rootbeer.runtime.RootbeerGpu: int getThreadIdxz()>");
@@ -266,7 +266,7 @@ public class CompilerSetup {
     ret.add("<java.lang.String: java.lang.String substring(int)>");
     ret.add("<java.lang.String: java.lang.String substring(int,int)>");
     ret.add("<java.lang.String: int indexOf(java.lang.String)>");
-    ret.add("<java.lang.String: int indexOf(java.lang.String,int)>");  
+    ret.add("<java.lang.String: int indexOf(java.lang.String,int)>");
     ret.add("<java.lang.String: java.lang.String[] split(java.lang.String)>");
     ret.add("<java.lang.String: java.lang.String[] split(java.lang.String,int)>");
     ret.add("<java.lang.String: java.lang.String valueOf(java.lang.Object)>");

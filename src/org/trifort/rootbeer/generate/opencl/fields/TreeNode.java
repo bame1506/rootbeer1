@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -30,19 +30,19 @@ public class TreeNode {
     TreeNode new_node = new TreeNode(child, ocl_class);
     m_Children.add(new_node);
   }
-  
+
   public void addChild(TreeNode new_node){
     m_Children.add(new_node);
   }
-  
+
   public SootClass getSootClass(){
     return m_Curr;
   }
-  
+
   public OpenCLClass getOpenCLClass(){
     return m_CurrOcl;
   }
-  
+
   public List<TreeNode> getChildren(){
     return m_Children;
   }

@@ -6,11 +6,11 @@ public class ShortToStringRunOnGpu implements Kernel {
 
   private short m_short;
   private String m_string;
-  
+
   public ShortToStringRunOnGpu(){
     m_short = 10;
   }
-  
+
   @Override
   public void gpuMethod() {
     m_string = Short.valueOf(m_short).toString();

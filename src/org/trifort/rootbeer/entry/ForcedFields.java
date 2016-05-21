@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -13,7 +13,7 @@ import java.util.List;
 public class ForcedFields {
 
   private List<String> m_fields;
-  
+
   public ForcedFields(){
     m_fields = new ArrayList<String>();
     m_fields.add("<java.lang.Boolean: boolean value>");
@@ -30,7 +30,7 @@ public class ForcedFields {
     m_fields.add("<org.trifort.rootbeer.runtime.GpuStopwatch: long m_start>");
     m_fields.add("<org.trifort.rootbeer.runtime.GpuStopwatch: long m_stop>");
   }
-  
+
   public List<String> get(){
     return m_fields;
   }

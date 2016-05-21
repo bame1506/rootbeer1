@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -22,7 +22,7 @@ public class AtomicLongTest implements TestSerialization {
     List<Kernel> jobs = new ArrayList<Kernel>();
     AtomicLong along = new AtomicLong(0);
     Random random = new Random();
-    
+
     //if I comment this out, the test case fails. this is because Math.random
     //initializes the static state of the random number generator.
     //when this is active, the first static pointer in memory is non null
@@ -30,7 +30,7 @@ public class AtomicLongTest implements TestSerialization {
     //
     //also, making m_Num2 not used on the gpu makes the test case work
     //System.out.println(Math.random());
-    
+
     int size = 5;
     for(int i = 0; i < size; ++i){
       AtomicLongRunOnGpu curr = new AtomicLongRunOnGpu(along, random);

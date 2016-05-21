@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -49,7 +49,7 @@ public class ResourceReader {
     }
     return ret;
   }
-  
+
   public static List<byte[]> getResourceArray(String jar_path) throws IOException {
     InputStream is = ResourceReader.class.getResourceAsStream(jar_path);
     if(is == null){
@@ -76,7 +76,7 @@ public class ResourceReader {
     List<byte[]> bytes = getResourceArray(jar_filename);
     FileOutputStream fout = new FileOutputStream(dest_filename);
     for(byte[] byte_array : bytes){
-      fout.write(byte_array); 
+      fout.write(byte_array);
     }
     fout.flush();
     fout.close();

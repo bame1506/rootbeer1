@@ -6,11 +6,11 @@ public class ByteToStringRunOnGpu implements Kernel {
 
   private byte m_byte;
   private String m_string;
-  
+
   public ByteToStringRunOnGpu(){
     m_byte = 10;
   }
-  
+
   @Override
   public void gpuMethod() {
     m_string = Byte.valueOf(m_byte).toString();

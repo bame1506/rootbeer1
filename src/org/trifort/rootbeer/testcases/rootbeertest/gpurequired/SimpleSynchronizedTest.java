@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -28,14 +28,14 @@ public class SimpleSynchronizedTest implements TestSerialization {
   public boolean compare(Kernel original, Kernel from_gpu) {
     SimpleSynchronizedRunOnGpu lhs = (SimpleSynchronizedRunOnGpu) original;
     SimpleSynchronizedRunOnGpu rhs = (SimpleSynchronizedRunOnGpu) from_gpu;
-            
+
     if(lhs.getSyncObj().get() != rhs.getSyncObj().get()){
       System.out.println("lhs: "+lhs.getSyncObj().get());
       System.out.println("rhs: "+rhs.getSyncObj().get());
       return false;
     }
-    
+
     return true;
   }
-  
+
 }

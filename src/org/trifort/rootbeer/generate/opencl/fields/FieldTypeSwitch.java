@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -25,12 +25,12 @@ public class FieldTypeSwitch {
 
   private Map<String, String> m_BodyToNameMap;
   private int m_CurrFunctionNum;
-  
+
   public FieldTypeSwitch(){
     m_BodyToNameMap = new HashMap<String, String>();
     m_CurrFunctionNum = 0;
   }
-  
+
   public String getFunctions() {
     StringBuilder ret = new StringBuilder();
     Iterator<String> iter = m_BodyToNameMap.keySet().iterator();

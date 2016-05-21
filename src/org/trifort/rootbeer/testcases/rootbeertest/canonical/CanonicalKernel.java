@@ -6,20 +6,20 @@ import org.trifort.rootbeer.testcases.rootbeertest.canonical2.CanonicalObject;
 public class CanonicalKernel implements Kernel {
 
   private static CanonicalObject staticObject;
-  
+
   private CanonicalObject instanceObject;
   private float result;
-  
+
   static {
     staticObject = new CanonicalObject(true);
   }
-  
+
   @Override
   public void gpuMethod() {
     instanceObject = new CanonicalObject(true);
     instanceObject.sumContents();
     staticObject.sumContents();
-    
+
     result = instanceObject.getResult() + staticObject.getResult();
   }
 

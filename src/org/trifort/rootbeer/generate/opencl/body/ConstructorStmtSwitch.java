@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -24,10 +24,10 @@ public class ConstructorStmtSwitch extends MethodStmtSwitch {
   private boolean m_EmitRetVoid;
   public ConstructorStmtSwitch(OpenCLBody parent, SootMethod soot_method,
     boolean emit_ret_void){
-  
+
     super(parent, soot_method);
-    
-    m_EmitRetVoid = emit_ret_void;    
+
+    m_EmitRetVoid = emit_ret_void;
     m_SootClass = soot_method.getDeclaringClass();
     m_SootClass = Scene.v().getSootClass(m_SootClass.getName());
   }
@@ -40,7 +40,7 @@ public class ConstructorStmtSwitch extends MethodStmtSwitch {
       return super.methodReturnsAValue();
     }
   }
-  
+
   @Override
   public void caseReturnStmt(ReturnStmt arg0) {
     //intentionally left blank
@@ -51,7 +51,7 @@ public class ConstructorStmtSwitch extends MethodStmtSwitch {
     if(m_EmitRetVoid)
       m_output.append("return;\n");
   }
-  
+
   @Override
   public void caseInvokeStmt(InvokeStmt arg0) {
     InvokeExpr expr = arg0.getInvokeExpr();

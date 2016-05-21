@@ -6,11 +6,11 @@ import org.trifort.rootbeer.runtime.RootbeerGpu;
 public class MultiDimThreadIdxKernelTemplateRunOnGpu implements Kernel {
 
   private int[] results;
-  
+
   public MultiDimThreadIdxKernelTemplateRunOnGpu(int[] results){
     this.results = results;
   }
-  
+
   @Override
   public void gpuMethod() {
     int index = RootbeerGpu.getThreadId();

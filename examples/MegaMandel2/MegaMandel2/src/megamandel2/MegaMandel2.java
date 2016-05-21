@@ -20,7 +20,7 @@ public class MegaMandel2 {
     boolean cpu = true;
     if(args.length == 1 && args[0].equals("-gpu")){
       cpu = false;
-    }    
+    }
 
     JFrame f = new JFrame();
     f.setSize(256, 256);

@@ -9,13 +9,13 @@ public class ArrayCloneRunOnGpu implements Kernel {
   private int[] m_array2;
   private int[][] m_array3;
   private int[][] m_array4;
-  
+
   public ArrayCloneRunOnGpu(){
     m_array1 = new int[10];
     for(int i = 0; i < 10; ++i){
       m_array1[i] = i;
     }
-    
+
     m_array3 = new int[10][];
     for(int i = 0; i < 10; ++i){
       m_array3[i] = new int[10];
@@ -24,7 +24,7 @@ public class ArrayCloneRunOnGpu implements Kernel {
       }
     }
   }
-  
+
   public void gpuMethod(){
     m_array2 = m_array1.clone();
     m_array4 = m_array3.clone();

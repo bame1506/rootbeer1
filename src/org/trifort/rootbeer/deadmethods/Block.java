@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -11,13 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Block {
-  
+
   private List<Segment> m_segments;
   private int m_type;
   private Method m_method;
   private String m_fullString;
   private String m_fullStringNoStrings;
-  
+
   public Block(List<Segment> segments, int type){
     m_segments = segments;
     m_type = type;
@@ -37,41 +37,41 @@ public class Block {
       m_fullStringNoStrings = builder2.toString();
     }
   }
-  
+
   public Block(Segment segment, int type){
     m_segments = new ArrayList<Segment>();
     m_segments.add(segment);
     m_type = type;
   }
-  
+
   public int getType(){
     return m_type;
   }
-  
+
   public List<Segment> getSegments(){
     return m_segments;
   }
-  
+
   public String getFullString(){
     return m_fullString;
   }
-  
+
   public String getFullStringNoStrings(){
     return m_fullStringNoStrings;
   }
-  
+
   public boolean isMethod(){
     return getType() == BlockParser.TYPE_METHOD;
   }
-  
+
   public Method getMethod(){
     return m_method;
   }
-  
+
   public void setMethod(Method method){
     m_method = method;
   }
-   
+
   @Override
   public String toString(){
     StringBuilder ret = new StringBuilder();

@@ -4,10 +4,10 @@ import org.trifort.rootbeer.runtime.Kernel;
 import org.trifort.rootbeer.runtime.RootbeerGpu;
 
 public class DoubleToStringKernelTemplateRunOnGpu implements Kernel {
-  
+
   private String[] m_toString;
   private double[] m_value;
-  
+
   public DoubleToStringKernelTemplateRunOnGpu(double value, int kernel_count){
     m_toString = new String[kernel_count];
     for (int i = 0; i < m_toString.length; i++) {
@@ -18,13 +18,13 @@ public class DoubleToStringKernelTemplateRunOnGpu implements Kernel {
       m_value[i] = value;
     }
   }
-  
+
   public void gpuMethod() {
-    int thread_id = RootbeerGpu.getThreadId();    
+    int thread_id = RootbeerGpu.getThreadId();
     double value = m_value[thread_id];
     value += thread_id;
     m_value[thread_id] = value;
-    
+
     //this is most likely not working because of Strings being cached in
     //the jvm. when printing out "" + line in BufferPrinter, some of the
     //data from here is printed.
@@ -34,7 +34,7 @@ public class DoubleToStringKernelTemplateRunOnGpu implements Kernel {
     //          Soot fails verfication errors with Java 7.
     m_toString[thread_id] = "" + value * value;
   }
-  
+
   public boolean compare(DoubleToStringKernelTemplateRunOnGpu rhs) {
     for (int i = 0; i < m_toString.length; i++) {
       if(rhs.m_toString[i] == null){

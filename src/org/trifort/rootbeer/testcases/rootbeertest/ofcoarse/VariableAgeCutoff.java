@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -13,11 +13,11 @@ public class VariableAgeCutoff {
 
   private GpuList<VAgeStepItem> m_VAgeStepItems;
   private int m_MovieSize;
-  
+
   public VariableAgeCutoff(int width, int height, int movie_size){
     m_VAgeStepItems = new GpuList<VAgeStepItem>();
     m_MovieSize = movie_size;
-    
+
     int item_size = 150;
     for(int x = 0; x < width; x += item_size){
       for(int y = 0; y < height; y += item_size){
@@ -25,7 +25,7 @@ public class VariableAgeCutoff {
       }
     }
   }
-  
+
   public int getAgeStepItemsSize(){
     return m_VAgeStepItems.size();
   }
@@ -40,17 +40,17 @@ public class VariableAgeCutoff {
     }
   }
 
-  private VariableAgeCutoff(){ 
+  private VariableAgeCutoff(){
     m_VAgeStepItems = new GpuList<VAgeStepItem>();
   }
-  
+
   public boolean pastAgeStep(Point p, double time) {
     VAgeStepItem item = get(p);
     if(item == null)
       return false;
     return item.pastAgeStep((int) time);
   }
-  
+
   @Override
   public VariableAgeCutoff clone(){
     VariableAgeCutoff ret = new VariableAgeCutoff();
@@ -98,7 +98,7 @@ public class VariableAgeCutoff {
       item.m_AgeStep = rand.nextInt(m_MovieSize);
     }
   }
-  
+
   public String toCsvString(){
     StringBuilder ret = new StringBuilder();
     int count = 0;
@@ -146,12 +146,12 @@ public class VariableAgeCutoff {
   void setAgeStep(int index, int age_step) {
     m_VAgeStepItems.get(index).m_AgeStep = age_step;
   }
-  
+
   public class VAgeStepItem {
 
     private BoundingBox m_Box;
     public int m_AgeStep;
-    
+
     public VAgeStepItem(int x, int y, int item_size) {
       GpuList<Point> points = new GpuList<Point>();
       points.add(new Point(x+item_size, y+item_size));
@@ -160,7 +160,7 @@ public class VariableAgeCutoff {
       points.add(new Point(x-item_size, y-item_size));
       m_Box = new BoundingBox(points, 1);
     }
-    
+
     private VAgeStepItem(){
     }
 
@@ -174,7 +174,7 @@ public class VariableAgeCutoff {
         return true;
       return false;
     }
-    
+
     @Override
     public VAgeStepItem clone(){
       VAgeStepItem ret = new VAgeStepItem();

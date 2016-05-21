@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -13,11 +13,11 @@ public class ByteByteValueRunOnGpu implements Kernel {
 
   private Byte m_byte;
   private byte m_ret;
-  
+
   public ByteByteValueRunOnGpu(){
     m_byte = 20;
   }
-  
+
   public void gpuMethod() {
     m_ret = m_byte;
   }

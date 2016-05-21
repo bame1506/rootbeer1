@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -13,7 +13,7 @@ import java.util.Set;
 public class AcceptableNativeMethods {
 
   private Set<String> m_OkMethods;
-  
+
   public AcceptableNativeMethods(){
     m_OkMethods = new HashSet<String>();
     m_OkMethods.add("<java.lang.Throwable: java.lang.Throwable fillInStackTrace()>");
@@ -23,7 +23,7 @@ public class AcceptableNativeMethods {
     m_OkMethods.add("<java.lang.Float: int floatToRawIntBits(float)>");
     m_OkMethods.add("<java.lang.Float: float intBitsToFloat(int)>");
   }
-  
+
   public boolean isOk(String method_signature){
     return m_OkMethods.contains(method_signature);
   }

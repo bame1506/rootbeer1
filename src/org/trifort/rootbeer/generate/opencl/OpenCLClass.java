@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -25,11 +25,11 @@ public class OpenCLClass {
   private List<OpenCLField> m_instanceRefFields;
   private List<OpenCLField> m_instanceNonRefFields;
   private List<OpenCLField> m_allUsedInstanceFields;
-  
+
   private List<OpenCLField> m_staticRefFields;
   private List<OpenCLField> m_staticNonRefFields;
   private List<OpenCLField> m_allUsedStaticFields;
-  
+
   private int m_staticFieldSize;
 
   public OpenCLClass(SootClass soot_class){
@@ -43,11 +43,11 @@ public class OpenCLClass {
     m_staticNonRefFields = null;
     m_allUsedStaticFields = null;
   }
-  
+
   public void addField(SootField soot_field){
-    
+
   }
-  
+
   public SootClass getSootClass(){
     return m_sootClass;
   }
@@ -72,7 +72,7 @@ public class OpenCLClass {
     int max = org.trifort.rootbeer.generate.bytecode.Constants.SizeGcInfo;
     try {
       SootClass soot_class = m_sootClass;
-      
+
       //find the largest size from all super classes
       while(true){
         OffsetCalculator calc = OpenCLScene.v().getOffsetCalculator(soot_class);
@@ -90,16 +90,16 @@ public class OpenCLClass {
       return max;
     }
   }
-  
+
   public String getName(){
     OpenCLType ocl_type = new OpenCLType(m_sootClass.getType());
     return ocl_type.getDerefString();
   }
-  
+
   public String getJavaName(){
     return m_sootClass.getName();
   }
-  
+
   public void addMethod(OpenCLMethod method){
     m_methods.add(method);
   }
@@ -142,7 +142,7 @@ public class OpenCLClass {
     m_staticRefFields = new ArrayList<OpenCLField>();
     m_staticNonRefFields = new ArrayList<OpenCLField>();
     m_allUsedStaticFields = new ArrayList<OpenCLField>();
-    
+
     for(OpenCLField field : m_fields){
       OpenCLType type = field.getType();
       if(type.isRefType()){
@@ -162,11 +162,11 @@ public class OpenCLClass {
 
     m_allUsedInstanceFields.addAll(m_instanceRefFields);
     m_allUsedInstanceFields.addAll(m_instanceNonRefFields);
-    
+
     m_allUsedStaticFields.addAll(m_staticRefFields);
     m_allUsedStaticFields.addAll(m_staticNonRefFields);
   }
-  
+
   public int getRefFieldsSize() {
     determineFieldTypes();
     return m_instanceRefFields.size();
@@ -191,19 +191,19 @@ public class OpenCLClass {
     FieldPackingSorter sorter = new FieldPackingSorter();
     return sorter.sort(m_instanceNonRefFields);
   }
-  
+
   public List<OpenCLField> getStaticRefFields() {
     determineFieldTypes();
     FieldPackingSorter sorter = new FieldPackingSorter();
     return sorter.sort(m_staticRefFields);
   }
-  
+
   public List<OpenCLField> getStaticNonRefFields() {
     determineFieldTypes();
     FieldPackingSorter sorter = new FieldPackingSorter();
     return sorter.sort(m_staticNonRefFields);
   }
-  
+
   public List<OpenCLField> getAllUsedStaticFields(){
     return m_allUsedStaticFields;
   }

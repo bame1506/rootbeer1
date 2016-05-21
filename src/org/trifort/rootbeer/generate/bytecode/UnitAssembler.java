@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -99,7 +99,7 @@ public class UnitAssembler {
         //using the addIf method makes targets null
         if(input_target == null)
           continue;
-        
+
         int target_i = findTarget(input_target);
         output_box.setUnit(m_outputUnits.get(target_i));
       }

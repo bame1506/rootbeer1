@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -2497,7 +2497,7 @@ public final strictfp class StrictMath
    * <li>If <code>a</code> is positive or negative zero, the result is the
    * same.</li>
    * </ul>
-   * 
+   *
    * @param a the numeric argument.
    * @return the sign of the argument.
    * @since 1.5.
@@ -2519,7 +2519,7 @@ public final strictfp class StrictMath
    * <li>If <code>a</code> is positive or negative zero, the result is the
    * same.</li>
    * </ul>
-   * 
+   *
    * @param a the numeric argument.
    * @return the sign of the argument.
    * @since 1.5.

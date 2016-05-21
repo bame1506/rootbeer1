@@ -8,7 +8,7 @@ public class GpuEvent {
   private GpuEventCommand value;
   private List<Kernel> work;
   final private GpuFuture future;
-  
+
   public GpuEvent(){
     future = new GpuFuture();
   }
@@ -16,7 +16,7 @@ public class GpuEvent {
   public GpuEventCommand getValue() {
     return value;
   }
-  
+
   public GpuFuture getFuture(){
     return future;
   }
@@ -28,7 +28,7 @@ public class GpuEvent {
   public void setKernelList(List<Kernel> work) {
     this.work = work;
   }
-  
+
   public List<Kernel> getKernelList(){
     return work;
   }

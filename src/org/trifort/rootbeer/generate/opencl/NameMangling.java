@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -22,19 +22,19 @@ public class NameMangling {
   private static NameMangling m_instance = null;
   private Map<String, Integer> m_mangleMap;
   private int m_lastInt;
-  
+
   public static NameMangling v(){
     if(m_instance == null)
       m_instance = new NameMangling();
     return m_instance;
   }
-  
+
   private NameMangling(){
     m_mangleMap = new HashMap<String, Integer>();
     m_lastInt = 0;
     addBuiltIns();
   }
-  
+
   private void addBuiltIns(){
     addBuiltIn("void");                         //0
     addBuiltIn("boolean");                      //1
@@ -56,18 +56,18 @@ public class NameMangling {
     addBuiltIn("float[]");                      //17
     addBuiltIn("double[]");                     //18
   }
-  
+
   private void addBuiltIn(String type){
     m_mangleMap.put(type, m_lastInt);
     ++m_lastInt;
   }
-  
+
   public String mangleArgs(SootMethod method){
     String ret = "";
 
     Type return_type = method.getReturnType();
     ret += mangle(return_type);
-    
+
     List parameter_types = method.getParameterTypes();
     for(int i = 0; i < parameter_types.size(); ++i){
       Type type = (Type) parameter_types.get(i);
@@ -107,7 +107,7 @@ public class NameMangling {
     }
     return ret;
   }
-  
+
   public void writeTypesToFile(){
     try {
       PrintWriter writer = new PrintWriter(RootbeerPaths.v().getRootbeerHome()+"mangling");

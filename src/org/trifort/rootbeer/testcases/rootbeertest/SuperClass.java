@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -31,5 +31,5 @@ public class SuperClass implements TestSerialization {
     SuperClassRunOnGpu brhs = (SuperClassRunOnGpu) rhs;
     return blhs.compare(brhs);
   }
-  
+
 }

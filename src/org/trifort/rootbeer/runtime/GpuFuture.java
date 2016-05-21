@@ -3,14 +3,14 @@ package org.trifort.rootbeer.runtime;
 import org.trifort.rootbeer.runtimegpu.GpuException;
 
 public class GpuFuture {
-  
+
   private volatile boolean ready;
   private volatile Throwable ex;
-  
+
   public GpuFuture(){
     ready = false;
   }
-  
+
   public void signal() {
     ready = true;
   }

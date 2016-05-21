@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -24,5 +24,5 @@ public class GpuMethodTest implements TestSerialization{
   public boolean compare(Kernel original, Kernel from_heap) {
     return true;
   }
-    
+
 }

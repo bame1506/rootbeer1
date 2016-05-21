@@ -18,5 +18,5 @@ public class SystemOutHandler extends Handler {
   @Override
   public void close() throws SecurityException {
   }
-  
+
 }

@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -17,15 +17,15 @@ import java.util.zip.ZipInputStream;
 public class JarToFolder {
 
   private StringDelegate m_StringDelegate;
-  
+
   public JarToFolder(){
     m_StringDelegate = null;
   }
-  
+
   public JarToFolder(StringDelegate del){
     m_StringDelegate = del;
   }
-  
+
   public void writeJar(String jar, String folder) throws Exception {
     folder = normalizeFolder(folder);
     ZipInputStream zin = new ZipInputStream(new FileInputStream(jar));
@@ -44,7 +44,7 @@ public class JarToFolder {
         name = name.replace("/", "\\");
       }
       String outname = folder+name;
-      
+
       JarEntryHelp.mkdir(outname);
 
       if(entry.isDirectory() == false){

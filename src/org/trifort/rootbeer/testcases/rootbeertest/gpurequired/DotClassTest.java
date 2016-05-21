@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -26,7 +26,7 @@ public class DotClassTest implements TestSerialization {
   public boolean compare(Kernel original, Kernel from_heap) {
     DotClassRunOnGpu lhs = (DotClassRunOnGpu) original;
     DotClassRunOnGpu rhs = (DotClassRunOnGpu) from_heap;
-    
+
     return lhs.compare(rhs);
   }
 }

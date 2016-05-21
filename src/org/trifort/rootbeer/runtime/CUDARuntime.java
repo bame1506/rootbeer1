@@ -5,8 +5,8 @@ import java.util.List;
 public class CUDARuntime implements IRuntime {
 
   private List<GpuDevice> m_cards;
-  
-  public CUDARuntime(){    
+
+  public CUDARuntime(){
     m_cards = loadGpuDevices();
   }
 

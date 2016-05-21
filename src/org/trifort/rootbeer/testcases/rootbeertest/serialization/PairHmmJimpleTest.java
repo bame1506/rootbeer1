@@ -21,5 +21,5 @@ public class PairHmmJimpleTest implements TestSerialization {
     PairHmmJimpleRunOnGpu rhs = (PairHmmJimpleRunOnGpu) from_heap;
     return lhs.compare(rhs);
   }
-  
+
 }

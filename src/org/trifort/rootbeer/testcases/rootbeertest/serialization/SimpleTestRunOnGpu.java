@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -16,12 +16,12 @@ public class SimpleTestRunOnGpu implements Kernel {
   SimpleTestRunOnGpu(int index) {
     m_value = index;
   }
-  
+
   @Override
   public void gpuMethod() {
     m_value = 5;
   }
-  
+
   public int getValue(){
     return m_value;
   }

@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -12,9 +12,9 @@ import org.trifort.rootbeer.runtime.Kernel;
 public class PrintRunOnGpu implements Kernel {
 
   private int m_num;
-  
+
   public void gpuMethod(){
-    m_num = 10;  
+    m_num = 10;
   }
 
   boolean compare(PrintRunOnGpu rhs) {

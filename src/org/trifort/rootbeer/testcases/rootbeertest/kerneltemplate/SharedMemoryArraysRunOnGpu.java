@@ -8,27 +8,27 @@ public class SharedMemoryArraysRunOnGpu implements Kernel {
   private int[][][] inputArray;
   private int[][][] outputArray;
   private int subArrayLength;
-  
+
   public SharedMemoryArraysRunOnGpu(int[][][] inputArray, int[][][] outputArray,
       int subArrayLength){
-    
+
     this.inputArray = inputArray;
     this.outputArray = outputArray;
     this.subArrayLength = subArrayLength;
   }
-  
+
   @Override
   public void gpuMethod() {
     int blockIdxx = RootbeerGpu.getBlockIdxx();
     int threadIdxx = RootbeerGpu.getThreadIdxx();
     int[] localInputArray = inputArray[blockIdxx][threadIdxx];
     int[] localOutputArray = outputArray[blockIdxx][threadIdxx];
-    
+
     //RootbeerGpu.createSharedIntArray(threadIdxx, subArrayLength);
     //RootbeerGpu.syncthreads();
-    
+
     /*
-     * 
+     *
      * / Allocate an array for this thread
         RootbeerGpu.createSharedIntArray(threadIdx, subArrayLength);
 

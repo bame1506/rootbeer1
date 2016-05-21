@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -31,22 +31,22 @@ public class CudaTweaks extends Tweaks {
   public String getUnixHeaderPath() {
     return "/org/trifort/rootbeer/generate/opencl/CudaHeader.c";
   }
-  
+
   @Override
   public String getWindowsHeaderPath() {
     return "/org/trifort/rootbeer/generate/opencl/CudaHeader.c";
   }
-  
+
   @Override
   public String getBothHeaderPath() {
     return null;
   }
-  
+
   @Override
   public String getBarrierPath() {
     return null;
   }
-  
+
   @Override
   public String getGarbageCollectorPath() {
     return "/org/trifort/rootbeer/generate/opencl/GarbageCollector.c";
@@ -56,7 +56,7 @@ public class CudaTweaks extends Tweaks {
   public String getUnixKernelPath() {
     return "/org/trifort/rootbeer/generate/opencl/CudaKernel.c";
   }
-  
+
   @Override
   public String getWindowsKernelPath() {
     return "/org/trifort/rootbeer/generate/opencl/CudaKernel.c";
@@ -66,14 +66,14 @@ public class CudaTweaks extends Tweaks {
   public String getBothKernelPath() {
     return null;
   }
-      
+
   /**
    * Compiles CUDA code.
    *
    * @param cuda_code string containing code.
    * @param compileArch determine if we need to build 32bit, 64bit or both.
-   * @return an array containing compilation results. You can use <tt>is32Bit()</tt> on each element 
-   * to determine if it is 32 bit or 64bit code. If compilation for an architecture fails, only the 
+   * @return an array containing compilation results. You can use <tt>is32Bit()</tt> on each element
+   * to determine if it is 32 bit or 64bit code. If compilation for an architecture fails, only the
    * offending element is returned.
    */
   public CompileResult[] compileProgram(String cuda_code, CompileArchitecture compileArch) {
@@ -100,7 +100,7 @@ public class CudaTweaks extends Tweaks {
       CudaPath cuda_path = new CudaPath();
       GencodeOptions options_gen = new GencodeOptions();
       String gencode_options = options_gen.getOptions();
-      
+
       ParallelCompile parallel_compile = new ParallelCompile();
       return parallel_compile.compile(generated, cuda_path, gencode_options, compileArch);
     } catch (Exception ex) {

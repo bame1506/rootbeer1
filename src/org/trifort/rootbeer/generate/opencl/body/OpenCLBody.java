@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -48,7 +48,7 @@ public class OpenCLBody {
   /**
    * Use this for either a constructor with header or a normal body
    * @param body
-   * @param is_constructor 
+   * @param is_constructor
    */
   public OpenCLBody(SootMethod method, boolean is_constructor){
     m_labels = new ArrayList<Unit>();
@@ -60,12 +60,12 @@ public class OpenCLBody {
 
     m_sootClass = method.getDeclaringClass();
     Body body = method.retrieveActiveBody();
-    m_body = body;  
+    m_body = body;
   }
-  
+
   /**
    * Use this ctor for a body that is a constructor body without a header
-   * @param body 
+   * @param body
    */
   public OpenCLBody(Body body){
     m_labels = new ArrayList<Unit>();
@@ -73,10 +73,10 @@ public class OpenCLBody {
     m_allTraps = new ArrayList<TrapItem>();
     m_isConstructor = false;
     m_isConstructorBodyWithoutHeader = true;
-    m_body = body;  
+    m_body = body;
     m_sootMethod = body.getMethod();
   }
-  
+
   private Iterator<Unit> bodyIterator(){
     PatchingChain<Unit> chain_units = m_body.getUnits();
     return chain_units.iterator();
@@ -90,19 +90,19 @@ public class OpenCLBody {
     ret.append(writeBody());
     return ret.toString();
   }
-  
+
   public String getBodyNoLocals(){
     determineLabels();
 
     StringBuilder ret = new StringBuilder();
     ret.append(writeBody());
-    return ret.toString();  
+    return ret.toString();
   }
-  
+
   public String getLocals(){
     return writeLocals();
   }
-  
+
   private void addTrapItem(Unit unit, TrapItem item){
     if(m_trapMap.containsKey(unit)){
       List<TrapItem> traps = m_trapMap.get(unit);
@@ -135,27 +135,27 @@ public class OpenCLBody {
     }
     return m_stmtSwitch.toString();
   }
-  
+
   private void handleMonitorGroupItem(MonitorGroupItem item){
     List<Unit> units = item.getPrefixUnits();
     for(Unit next : units){
       handleUnit(next);
-    } 
+    }
     Unit enter = item.getEnterMonitor();
     if(enter != null){
-      handleUnit(enter); 
+      handleUnit(enter);
     }
     List<MonitorGroupItem> items = item.getGroups();
     for(MonitorGroupItem sub_item : items){
       handleMonitorGroupItem(sub_item);
     }
-    if(enter != null){     
+    if(enter != null){
       m_stmtSwitch.append("  }\n");
       m_stmtSwitch.append("}\n");
-      m_stmtSwitch.popMonitor(); 
+      m_stmtSwitch.popMonitor();
     }
   }
-  
+
   private void handleUnit(Unit next){
     int label_num = labelNum(next);
     if(label_num != -1){
@@ -175,9 +175,9 @@ public class OpenCLBody {
     next.apply(m_stmtSwitch);
     if(m_stmtSwitch.hasCaughtExceptionRef()){
       m_stmtSwitch.append("*exception = 0;\n");
-    } 
+    }
   }
-  
+
   private void determineConstructorInfo(){
     SootMethod soot_method = m_body.getMethod();
     SootClass soot_class = soot_method.getDeclaringClass();
@@ -187,10 +187,10 @@ public class OpenCLBody {
     m_refFieldsSize = ocl_class.getRefFieldsSize();
     m_derivedType = OpenCLScene.v().getClassType(soot_class);
   }
-  
+
   private String writeConstructorBody(){
     determineConstructorInfo();
-    
+
     StringBuilder ret = new StringBuilder();
     String pointer_namespace_qual = Tweaks.v().getGlobalAddressSpaceQualifier();
     ret.append("int thisref;\n");
@@ -215,23 +215,23 @@ public class OpenCLBody {
     ret.append("org_trifort_gc_set_ctor_used(thisref_deref, 1);\n");
     ret.append("org_trifort_gc_set_size(thisref_deref, "+Integer.toString(alloc_size)+");\n");
     ret.append("org_trifort_gc_init_monitor(thisref_deref);\n");
-    
+
     if(m_sootClass != null){
       ret.append(initFields());
     }
-    
+
     m_stmtSwitch = new ConstructorStmtSwitch(this, m_body.getMethod(), false);
     ret.append(writeMethodBody());
 
     ret.append("return "+m_stmtSwitch.getThisRef()+";\n");
     return ret.toString();
   }
-  
+
   private String initFields(){
     StringBuilder ret = new StringBuilder();
     SootClass soot_class = m_sootClass;
     while(true){
-      initFieldsForClass(soot_class, ret);      
+      initFieldsForClass(soot_class, ret);
       if(soot_class.getName().equals("java.lang.Object"))
         break;
       soot_class = Scene.v().getSootClass(soot_class.getSuperclass().getName());
@@ -245,21 +245,21 @@ public class OpenCLBody {
     List<OpenCLField> ref_fields = getFields(soot_class, true);
     for(OpenCLField field : ref_fields){
       ret.append(field.getInstanceSetterInvokeWithoutThisref()+"thisref, -1, exception);\n");
-    }    
+    }
     List<OpenCLField> non_ref_fields = getFields(soot_class, false);
     for(OpenCLField field : non_ref_fields){
       ret.append(field.getInstanceSetterInvokeWithoutThisref()+"thisref, 0, exception);\n");
-    }   
+    }
   }
-  
+
   private List<OpenCLField> getFields(SootClass soot_class, boolean ref_fields){
-    OpenCLClass ocl_class = OpenCLScene.v().getOpenCLClass(soot_class);  
+    OpenCLClass ocl_class = OpenCLScene.v().getOpenCLClass(soot_class);
     if(ref_fields)
       return ocl_class.getInstanceRefFields();
     else
       return ocl_class.getInstanceNonRefFields();
   }
-  
+
   private String writeBody(){
     if(m_isConstructorBodyWithoutHeader == false){
       if(m_isConstructor)
@@ -275,7 +275,7 @@ public class OpenCLBody {
       return ret.toString();
     }
   }
-  
+
   private String writeLocals() {
     Chain<Local> locals = m_body.getLocals();
     String ret = "";
@@ -313,7 +313,7 @@ public class OpenCLBody {
       }
     }
   }
-  
+
   private void addTargets(List<Unit> units){
     for(Unit unit : units){
       m_labels.add(unit);

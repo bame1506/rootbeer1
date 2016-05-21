@@ -10,7 +10,7 @@ public class GpuParametersRunOnGpu implements Kernel {
   private int[] m_blockIdxxs;
   private int[] m_blockDims;
   private long[] m_gridDims;
-  
+
   public GpuParametersRunOnGpu(int thread_count){
     m_threadIds = new int[thread_count];
     m_threadIdxxs = new int[thread_count];
@@ -18,7 +18,7 @@ public class GpuParametersRunOnGpu implements Kernel {
     m_blockDims = new int[thread_count];
     m_gridDims = new long[thread_count];
   }
-  
+
   @Override
   public void gpuMethod() {
     int thread_id = RootbeerGpu.getThreadId();
@@ -32,7 +32,7 @@ public class GpuParametersRunOnGpu implements Kernel {
   public boolean compare(GpuParametersRunOnGpu rhs) {
     if(m_threadIds.length != rhs.m_threadIds.length){
       return false;
-    }    
+    }
     if(m_threadIdxxs.length != rhs.m_threadIdxxs.length){
       return false;
     }

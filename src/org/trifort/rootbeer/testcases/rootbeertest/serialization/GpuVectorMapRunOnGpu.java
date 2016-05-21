@@ -7,12 +7,12 @@ public class GpuVectorMapRunOnGpu implements Kernel {
   private int m_n;
   private GpuVectorMap m_map;
   private int m_vectorLen;
-  
+
   public GpuVectorMapRunOnGpu(int n){
     m_n = n;
     m_map = new GpuVectorMap(n);
   }
-  
+
   @Override
   public void gpuMethod() {
     double[] vector1 = new double[m_n];

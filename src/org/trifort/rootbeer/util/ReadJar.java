@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -89,7 +89,7 @@ public class ReadJar {
 
       if(m_UseDirectories)
         JarEntryHelp.mkdir(outfilename);
-      
+
       writeToFile(fin, outfilename);
     } catch(Exception ex){
       throw new RuntimeException(ex);

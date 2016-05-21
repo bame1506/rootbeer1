@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -16,10 +16,10 @@ public class NullPointer4RunOnGpu implements Kernel {
   private NullPointer4Object m_Obj;
   private int m_Result;
   private int m_Result2;
-  
+
   public NullPointer4RunOnGpu(){
   }
-  
+
   @Override
   public void gpuMethod() {
     try {

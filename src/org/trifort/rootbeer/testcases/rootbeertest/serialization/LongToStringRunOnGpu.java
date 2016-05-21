@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -13,12 +13,12 @@ public class LongToStringRunOnGpu implements Kernel {
 
   private String m_toString;
   private long m_value;
-  
+
   public LongToStringRunOnGpu(long value){
     m_toString = "str";
     m_value = value;
   }
-  
+
   public void gpuMethod() {
     m_toString = "" + m_value * m_value;
   }

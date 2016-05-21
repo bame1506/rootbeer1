@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -24,14 +24,14 @@ import soot.SootField;
 import soot.rbclassload.FieldSignatureUtil;
 
 public class FieldCodeGeneration {
-  
+
   private FieldTypeSwitch m_TypeSwitch;
   private List<String> m_fieldsToForce;
-  
+
   public FieldCodeGeneration(){
     m_fieldsToForce = new ArrayList<String>();
   }
- 
+
   public String prototypes(Map<String, OpenCLClass> classes) {
     Set<String> set = new HashSet<String>();
     List<CompositeField> fields = OpenCLScene.v().getCompositeFields();
@@ -53,7 +53,7 @@ public class FieldCodeGeneration {
     }
     return setToString(set);
   }
-  
+
   public String bodies(Map<String, OpenCLClass> classes, FieldTypeSwitch type_switch) {
     m_TypeSwitch = type_switch;
     Set<String> set = new HashSet<String>();
@@ -78,7 +78,7 @@ public class FieldCodeGeneration {
     }
     return setToString(set);
   }
-  
+
   private Set<String> getFieldBodies(CompositeField composite){
     Set<String> ret = new HashSet<String>();
     FieldPackingSorter sorter = new FieldPackingSorter();
@@ -105,7 +105,7 @@ public class FieldCodeGeneration {
     }
     return ret;
   }
-  
+
   private String setToString(Set<String> set){
     String ret = "";
     Iterator<String> iter = set.iterator();

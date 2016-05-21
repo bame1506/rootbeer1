@@ -74,7 +74,7 @@ public class MatrixApp {
         row_count = 0;
         System.out.println();
       }
-    } 
+    }
   }
 
   private void printRow(int[] matrix, int block_size, int row){
@@ -109,7 +109,7 @@ public class MatrixApp {
     }
     m_cpuWatch.stop();
     System.out.println("avg cpu time: "+m_cpuWatch.getAverageTime()+" ms");
-    
+
     //runs on cpu without transpose
     //threads = new ArrayList<MatrixCpuThread>();
     //for(int i = 0; i < num_cores; ++i){
@@ -125,7 +125,7 @@ public class MatrixApp {
 
   private void gpuRun(){
     m_gpuWatch.start();
-    MatrixKernel matrix_kernel = new MatrixKernel(m_a, m_bgpu, m_cgpu, m_blockSize, 
+    MatrixKernel matrix_kernel = new MatrixKernel(m_a, m_bgpu, m_cgpu, m_blockSize,
       m_gridSize, m_blockIters);
     Rootbeer rootbeer = new Rootbeer();
     ThreadConfig thread_config = new ThreadConfig(1024, m_gridSize, 1024 * m_gridSize);

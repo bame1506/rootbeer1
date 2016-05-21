@@ -8,12 +8,12 @@ public class SharedMemoryArraysTest implements TestKernelTemplate {
 
   private int threadSize;
   private int blockSize;
-  
+
   public SharedMemoryArraysTest(){
     threadSize = 32;
     blockSize = 2;
   }
-  
+
   @Override
   public Kernel create() {
     int subArraySize = 255;

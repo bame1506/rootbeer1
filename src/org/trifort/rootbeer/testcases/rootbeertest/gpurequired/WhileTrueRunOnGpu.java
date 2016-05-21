@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,12 +15,12 @@ public class WhileTrueRunOnGpu implements Kernel {
 
   private AtomicLong m_along;
   private volatile long m_threadId;
-  
+
   public WhileTrueRunOnGpu(AtomicLong along, long id){
     m_along = along;
     m_threadId = id;
   }
-  
+
   public void gpuMethod() {
     int count = 0;
     while(count < 100){
@@ -31,12 +31,12 @@ public class WhileTrueRunOnGpu implements Kernel {
       long last = m_along.get();
       if(m_along.compareAndSet(last, last + 1)){
         count = 200;
-      } 
+      }
     }
   }
-  
+
   public AtomicLong get(){
     return m_along;
   }
-  
+
 }

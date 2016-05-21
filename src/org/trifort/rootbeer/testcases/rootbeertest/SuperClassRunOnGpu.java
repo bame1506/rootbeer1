@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -16,12 +16,12 @@ public class SuperClassRunOnGpu implements Kernel {
   private CompositeClass6 m_Class;
   private int ret;
   private String str;
-  
+
   public SuperClassRunOnGpu(){
-    m_Class = new CompositeClass6(); 
+    m_Class = new CompositeClass6();
     str = "hello";
   }
-  
+
   @Override
   public void gpuMethod() {
     m_Class = new CompositeClass6();
@@ -31,7 +31,7 @@ public class SuperClassRunOnGpu implements Kernel {
     //  str += "!";
     //}
   }
-  
+
   public int getRet(){
     return ret;
   }

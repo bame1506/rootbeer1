@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -13,11 +13,11 @@ import java.io.FileReader;
 public class ReadFile {
 
   private String m_Filename;
-  
+
   public ReadFile(String filename){
-    m_Filename = filename;  
+    m_Filename = filename;
   }
-  
+
   public String read() throws Exception {
     StringBuilder ret = new StringBuilder();
     BufferedReader reader = new BufferedReader(new FileReader(m_Filename));
@@ -28,6 +28,6 @@ public class ReadFile {
       ret.append(line);
       ret.append("\n");
     }
-    return ret.toString();    
+    return ret.toString();
   }
 }

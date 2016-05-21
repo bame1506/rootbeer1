@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -21,7 +21,7 @@ public class StaticsTest2RunOnGpu extends StaticsTest2BaseClass implements Kerne
   private static float m_Float;
   private static double m_Double;
   private static boolean m_Bool;
-  
+
   private char m_Char2;
   private short m_Short2;
   private int m_Int2;
@@ -29,11 +29,11 @@ public class StaticsTest2RunOnGpu extends StaticsTest2BaseClass implements Kerne
   private float m_Float2;
   private double m_Double2;
   private boolean m_Bool2;
-  
+
   static {
-    m_Bool = false; 
+    m_Bool = false;
   }
-  
+
   public StaticsTest2RunOnGpu(){
     m_Char = 5;
     m_Short = 10;
@@ -43,7 +43,7 @@ public class StaticsTest2RunOnGpu extends StaticsTest2BaseClass implements Kerne
     m_Double = 30.0;
     m_Bool2 = false;
   }
-  
+
   @Override
   public void gpuMethod() {
     m_Char2 = (char) (m_Char + 1);
@@ -59,7 +59,7 @@ public class StaticsTest2RunOnGpu extends StaticsTest2BaseClass implements Kerne
       cls.setNumber2(90);
     }
   }
-  
+
   boolean compare(StaticsTest2RunOnGpu brhs) {
     if(m_Char2 != brhs.m_Char2){
       System.out.println("char");
@@ -99,8 +99,8 @@ public class StaticsTest2RunOnGpu extends StaticsTest2BaseClass implements Kerne
     }
     StaticsTest2PublicClass cls = new StaticsTest2PublicClass();
     int get_number = cls.getNumber2();
-    if(get_number != 90){      
-      System.out.println("getNumber: "+get_number);      
+    if(get_number != 90){
+      System.out.println("getNumber: "+get_number);
       return false;
     }
     return true;

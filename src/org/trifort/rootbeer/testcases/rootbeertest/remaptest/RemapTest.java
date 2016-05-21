@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -26,13 +26,13 @@ public class RemapTest implements TestSerialization {
   public boolean compare(Kernel original, Kernel from_heap) {
     RemapRunOnGpu lhs = (RemapRunOnGpu) original;
     RemapRunOnGpu rhs = (RemapRunOnGpu) from_heap;
-    
+
     if(lhs.getRet() != rhs.getRet()){
       return false;
     }
-    
+
     return true;
   }
 
-  
+
 }

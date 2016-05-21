@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -12,7 +12,7 @@ import org.trifort.rootbeer.runtime.RootbeerGpu;
 
 public class String2RunOnGpu implements Kernel {
   private String str;
-  
+
   public String2RunOnGpu(){
     str = "hello";
   }

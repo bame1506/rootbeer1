@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -13,11 +13,11 @@ public class ArrayLengthRunOnGpu implements Kernel {
 
   private int[] m_array;
   private int m_len;
-  
+
   public ArrayLengthRunOnGpu(int[] array){
     m_array = array;
   }
-  
+
   public void gpuMethod() {
     m_len = m_array.length;
   }

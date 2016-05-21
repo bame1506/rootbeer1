@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -13,7 +13,7 @@ public class CompileResult {
   private final boolean m_32bit;
   private final byte[] m_binary;
   private final List<String> m_errors;
-  
+
   public CompileResult(boolean m32, List<byte[]> binary, List<String> errors){
     m_32bit = m32;
     m_binary = convert(binary);
@@ -40,11 +40,11 @@ public class CompileResult {
   public boolean is32Bit() {
     return m_32bit;
   }
-  
+
   public byte[] getBinary(){
     return m_binary;
   }
-  
+
   public List<String> getErrors(){
     return m_errors;
   }

@@ -35,9 +35,9 @@ public class OpenCLParser extends Parser {
         }
         public OpenCLParser(TokenStream input, RecognizerSharedState state) {
             super(input, state);
-             
+
         }
-        
+
     protected TreeAdaptor adaptor = new CommonTreeAdaptor();
 
     public void setTreeAdaptor(TreeAdaptor adaptor) {
@@ -135,7 +135,7 @@ public class OpenCLParser extends Parser {
             	        throw mse;
             	    }
 
-            	     retval.ret.add((e1!=null?e1.getText():null)); retval.modify.add(false); retval.string.add(false); 
+            	     retval.ret.add((e1!=null?e1.getText():null)); retval.modify.add(false); retval.string.add(false);
 
             	    }
 
@@ -145,22 +145,22 @@ public class OpenCLParser extends Parser {
             	case 2 :
             	    // OpenCL.g:30:7: e3= STRING_DELIM
             	    {
-            	    e3=(Token)match(input,STRING_DELIM,FOLLOW_STRING_DELIM_in_program114); 
+            	    e3=(Token)match(input,STRING_DELIM,FOLLOW_STRING_DELIM_in_program114);
             	    e3_tree = (Object)adaptor.create(e3);
             	    adaptor.addChild(root_0, e3_tree);
 
-            	     retval.ret.add((e3!=null?e3.getText():null)); retval.modify.add(false); retval.string.add(true); 
+            	     retval.ret.add((e3!=null?e3.getText():null)); retval.modify.add(false); retval.string.add(true);
 
             	    }
             	    break;
             	case 3 :
             	    // OpenCL.g:31:7: e2= VARIABLE
             	    {
-            	    e2=(Token)match(input,VARIABLE,FOLLOW_VARIABLE_in_program126); 
+            	    e2=(Token)match(input,VARIABLE,FOLLOW_VARIABLE_in_program126);
             	    e2_tree = (Object)adaptor.create(e2);
             	    adaptor.addChild(root_0, e2_tree);
 
-            	     retval.ret.add((e2!=null?e2.getText():null)); retval.modify.add(true); retval.string.add(false); 
+            	     retval.ret.add((e2!=null?e2.getText():null)); retval.modify.add(true); retval.string.add(false);
 
             	    }
             	    break;
@@ -170,7 +170,7 @@ public class OpenCLParser extends Parser {
                 }
             } while (true);
 
-            EOF1=(Token)match(input,EOF,FOLLOW_EOF_in_program133); 
+            EOF1=(Token)match(input,EOF,FOLLOW_EOF_in_program133);
             EOF1_tree = (Object)adaptor.create(EOF1);
             adaptor.addChild(root_0, EOF1_tree);
 
@@ -196,7 +196,7 @@ public class OpenCLParser extends Parser {
     // Delegated rules
 
 
- 
+
 
     public static final BitSet FOLLOW_set_in_program73 = new BitSet(new long[]{0x0000000000001FF0L});
     public static final BitSet FOLLOW_STRING_DELIM_in_program114 = new BitSet(new long[]{0x0000000000001FF0L});

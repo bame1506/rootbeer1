@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -62,13 +62,13 @@ public class VisitorGen extends AbstractVisitorGen {
     m_className = base_name+"Serializer";
     m_bcl.top().makeClass(m_className, "org.trifort.rootbeer.runtime.Serializer");
   }
-    
-  private void makeGetLengthMethod(){    
+
+  private void makeGetLengthMethod(){
     SootClass object_soot_class = Scene.v().getSootClass("java.lang.Object");
     m_bcl.top().startMethod("doGetSize", IntType.v(), object_soot_class.getType());
     m_thisRef = m_bcl.top().refThis();
     m_param0 = m_bcl.top().refParameter(0);
-    
+
     List<Type> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefLikeTypes();
     for(Type type : types){
       makeGetSizeMethodForType(type);
@@ -83,7 +83,7 @@ public class VisitorGen extends AbstractVisitorGen {
     m_bcl.top().startMethod("getArrayLength", IntType.v(), object_soot_class.getType());
     m_thisRef = m_bcl.top().refThis();
     m_param0 = m_bcl.top().refParameter(0);
-    
+
     List<Type> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefLikeTypes();
     for(Type type : types){
       makeGetLengthMethodForType(type);
@@ -92,11 +92,11 @@ public class VisitorGen extends AbstractVisitorGen {
     m_bcl.top().returnValue(IntConstant.v(0));
     m_bcl.top().endMethod();
   }
-  
+
   private void makeGetLengthMethodForType(Type type){
     if(type instanceof ArrayType == false)
       return;
-    
+
     String label = getNextLabel();
     m_bcl.top().ifInstanceOfStmt(m_param0, type, label);
     Local object_to_write_from = m_bcl.top().cast(type, m_param0);
@@ -110,30 +110,30 @@ public class VisitorGen extends AbstractVisitorGen {
        type instanceof RefType == false){
       return;
     }
-    
+
     if(m_getSizeMethodsMade.contains(type))
       return;
     m_getSizeMethodsMade.add(type);
-    
+
     if(type instanceof RefType){
       RefType ref_type = (RefType) type;
       SootClass soot_class = ref_type.getSootClass();
       if(soot_class.getName().equals("java.lang.Object"))
-        return; 
+        return;
       if(soot_class.isInterface()){
         return;
       }
       if(differentPackageAndPrivate(ref_type)){
-        return;  
+        return;
       }
     }
-    
+
     if(typeIsPublic(type) == false)
       return;
-    
+
     String label = getNextLabel();
     m_bcl.top().ifInstanceOfStmt(m_param0, type, label);
-        
+
     if(type instanceof ArrayType){
       ArrayType atype = (ArrayType) type;
       Local size = m_bcl.top().local(IntType.v());
@@ -156,19 +156,19 @@ public class VisitorGen extends AbstractVisitorGen {
       m_bcl.top().returnValue(IntConstant.v(size));
     }
     m_bcl.top().label(label);
-    
+
   }
-  
+
   private void makeWriteToHeapMethod() {
     List<Type> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefLikeTypes();
-    VisitorWriteGen write_gen = new VisitorWriteGen(types, 
+    VisitorWriteGen write_gen = new VisitorWriteGen(types,
       m_className, m_bcl.top());
     write_gen.makeWriteToHeapMethod();
   }
-      
+
   private void makeReadFromHeapMethod() {
     List<Type> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefLikeTypes();
-    VisitorReadGen read_gen = new VisitorReadGen(types, 
+    VisitorReadGen read_gen = new VisitorReadGen(types,
       m_className, m_bcl.top());
     read_gen.makeReadFromHeapMethod();
   }
@@ -182,7 +182,7 @@ public class VisitorGen extends AbstractVisitorGen {
     VisitorReadGenStatic static_read_gen = new VisitorReadGenStatic(m_bcl.top());
     static_read_gen.makeMethod();
   }
-  
+
   private void addGetSerializerMethod() {
     m_bcl.top().openClass(m_runtimeBasicBlock);
     SootClass gc_object_visitor_soot_class = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Serializer");
@@ -214,15 +214,15 @@ public class VisitorGen extends AbstractVisitorGen {
     if(m_sentinalCtorsCreated.contains(soot_class.getName()))
       return;
     m_sentinalCtorsCreated.add(soot_class.getName());
-    
+
     soot_class = Scene.v().getSootClass(soot_class.getName());
     if(soot_class.isApplicationClass() == false)
       return;
-    
+
     if(soot_class.declaresMethod("void <init>(org.trifort.rootbeer.runtime.Sentinal)")){
-      return; 
+      return;
     }
-    
+
     SootClass parent_class = soot_class.getSuperclass();
     parent_class = Scene.v().getSootClass(parent_class.getName());
 

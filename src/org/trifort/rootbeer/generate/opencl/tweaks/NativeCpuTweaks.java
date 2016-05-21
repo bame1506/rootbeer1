@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -18,17 +18,17 @@ public class NativeCpuTweaks extends Tweaks {
   public String getUnixHeaderPath() {
     return "/org/trifort/rootbeer/generate/opencl/UnixNativeHeader.c";
   }
-  
+
   @Override
   public String getWindowsHeaderPath() {
     return "/org/trifort/rootbeer/generate/opencl/WindowsNativeHeader.c";
   }
-  
+
   @Override
   public String getBothHeaderPath() {
     return "/org/trifort/rootbeer/generate/opencl/BothNativeHeader.c";
   }
-  
+
   @Override
   public String getBarrierPath() {
     return "/org/trifort/rootbeer/generate/opencl/BarrierNativeBoth.c";
@@ -57,5 +57,5 @@ public class NativeCpuTweaks extends Tweaks {
   @Override
   public String getDeviceFunctionQualifier() {
     return "";
-  }  
+  }
 }

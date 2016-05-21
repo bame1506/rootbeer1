@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -13,12 +13,12 @@ public class DoubleToStringRunOnGpu implements Kernel {
 
   private String m_toString;
   private double m_value;
-  
+
   public DoubleToStringRunOnGpu(double value){
     m_toString = "str";
     m_value = value;
   }
-  
+
   public void gpuMethod() {
     m_toString = "" + m_value * m_value;
   }

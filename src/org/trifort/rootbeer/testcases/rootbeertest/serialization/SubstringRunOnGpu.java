@@ -7,11 +7,11 @@ public class SubstringRunOnGpu implements Kernel {
   private String m_start;
   private String m_end1;
   private String m_end2;
-  
+
   public SubstringRunOnGpu(){
     m_start = "substring_test";
   }
-  
+
   @Override
   public void gpuMethod() {
     m_end1 = m_start.substring(2);

@@ -6,11 +6,11 @@ public class PolymorphicRunOnGpu implements Kernel {
 
   private PolymorphicClassBase m_object;
   private int[] m_array;
-  
+
   public PolymorphicRunOnGpu(){
     m_object = new PolymorphicClassBase();
   }
-  
+
   @Override
   public void gpuMethod() {
     PolymorphicClassDerived derived = new PolymorphicClassDerived();

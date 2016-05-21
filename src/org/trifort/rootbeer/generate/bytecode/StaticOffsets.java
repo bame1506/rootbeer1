@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -27,7 +27,7 @@ import soot.Type;
 import soot.rbclassload.RootbeerClassLoader;
 
 public class StaticOffsets {
-  
+
   private Map<Integer, SortableField> m_offsetToFieldMap;
   private Map<OpenCLField, Integer> m_fieldToOffsetMap;
   private Map<SootClass, Integer> m_classToOffsetMap;
@@ -35,31 +35,31 @@ public class StaticOffsets {
   private int m_endIndex;
   private int m_lockStart;
   private int m_zerosSize;
-  
-  public StaticOffsets(){   
+
+  public StaticOffsets(){
     m_offsetToFieldMap = new HashMap<Integer, SortableField>();
     m_fieldToOffsetMap = new HashMap<OpenCLField, Integer>();
     m_classToOffsetMap = new HashMap<SootClass, Integer>();
     m_staticFields = new HashMap<SootClass, List<OpenCLField>>();
-    buildMaps(); 
+    buildMaps();
   }
-  
+
   public OpenCLField getField(int index){
     return m_offsetToFieldMap.get(index).m_field;
   }
-  
+
   public int getIndex(OpenCLField field){
     return m_fieldToOffsetMap.get(field);
   }
-  
+
   public int getIndex(SootClass soot_class){
-    return m_classToOffsetMap.get(soot_class); 
+    return m_classToOffsetMap.get(soot_class);
   }
 
   public int getEndIndex(){
     return m_endIndex;
   }
-  
+
   public List<OpenCLField> getStaticFields(SootClass soot_class){
     List<OpenCLField> ret = m_staticFields.get(soot_class);
     if(ret == null){
@@ -67,7 +67,7 @@ public class StaticOffsets {
     }
     return ret;
   }
-  
+
   private void buildMaps() {
     List<CompositeField> composites = OpenCLScene.v().getCompositeFields();
     Set<SortableField> sortable_fields = new HashSet<SortableField>();
@@ -76,7 +76,7 @@ public class StaticOffsets {
       for(SootClass soot_class : classes){
         sortable_fields.addAll(convert(composite.getRefFieldsByClass(soot_class), soot_class));
         sortable_fields.addAll(convert(composite.getNonRefFieldsByClass(soot_class), soot_class));
-        
+
         List<OpenCLField> static_fields = new ArrayList<OpenCLField>();
         static_fields.addAll(staticFilter(composite.getRefFieldsByClass(soot_class)));
         static_fields.addAll(staticFilter(composite.getNonRefFieldsByClass(soot_class)));
@@ -121,7 +121,7 @@ public class StaticOffsets {
     m_endIndex += 32;
     m_zerosSize += 32;
   }
-  
+
   public int getZerosSize(){
     return m_zerosSize;
   }
@@ -134,7 +134,7 @@ public class StaticOffsets {
     }
     return ret;
   }
-  
+
   private List<OpenCLField> staticFilter(List<OpenCLField> fields){
     List<OpenCLField> ret = new ArrayList<OpenCLField>();
     for(OpenCLField field : fields){
@@ -152,11 +152,11 @@ public class StaticOffsets {
   public int getLockStart() {
     return m_lockStart;
   }
-  
+
   private class SortableField implements Comparable<SortableField> {
     public OpenCLField m_field;
     public SootClass m_sootClass;
-    
+
     public SortableField(OpenCLField field, SootClass soot_class){
       m_field = field;
       m_sootClass = soot_class;
@@ -167,10 +167,10 @@ public class StaticOffsets {
       int o_size = o.m_field.getSize();
       return Integer.valueOf(o_size).compareTo(Integer.valueOf(this_size));
     }
-    
+
     @Override
     public boolean equals(Object other){
-      if(other instanceof SortableField == false){ 
+      if(other instanceof SortableField == false){
         return false;
       }
       SortableField rhs = (SortableField) other;

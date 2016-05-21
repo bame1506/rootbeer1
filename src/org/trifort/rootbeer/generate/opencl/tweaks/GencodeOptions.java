@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -21,15 +21,15 @@ public class GencodeOptions {
   public enum CompileArchitecture {
     Arch32bit, Arch64bit, Arch32bit64bit;
   }
-  
+
   public enum ComputeCapability {
     ALL, SM_11, SM_12, SM_20, SM_21, SM_30, SM_35;
   }
-  
+
   private boolean versionMatches(String versionString, String version){
     return versionString.contains("release "+version);
   }
-  
+
   public String getOptions(){
     String version = getVersion();
     String sm_35;
@@ -49,23 +49,23 @@ public class GencodeOptions {
       sm_35 = "--generate-code arch=compute_35,code=\"sm_35\" ";
       sm_30 = "--generate-code arch=compute_30,code=\"sm_30\" ";
       sm_21 = "--generate-code arch=compute_20,code=\"sm_21\" ";
-      sm_20 = "--generate-code arch=compute_20,code=\"sm_20\" ";  
-      sm_12 = "--generate-code arch=compute_12,code=\"sm_12\" "; 
-      sm_11 = "--generate-code arch=compute_11,code=\"sm_11\" "; 
+      sm_20 = "--generate-code arch=compute_20,code=\"sm_20\" ";
+      sm_12 = "--generate-code arch=compute_12,code=\"sm_12\" ";
+      sm_11 = "--generate-code arch=compute_11,code=\"sm_11\" ";
     }
-    
+
     //sm_12 doesn't support recursion
     if(Configuration.compilerInstance().getRecursion()){
       sm_12 = "";
       sm_11 = "";
     }
-    
+
     //sm_12 doesn't support doubles
     if(Configuration.compilerInstance().getDoubles()){
       sm_12 = "";
       sm_11 = "";
     }
-    
+
     if(versionMatches(version, "7.0") ||
        versionMatches(version, "6.5") ||
        versionMatches(version, "6.0") ||
@@ -140,7 +140,7 @@ public class GencodeOptions {
       cmd[0] = nvcc_path;
       cmd[1] = "--version";
     }
-    
+
     CmdRunner runner = new CmdRunner();
     runner.run(cmd, new File("."));
     List<String> lines = runner.getOutput();
@@ -151,8 +151,8 @@ public class GencodeOptions {
       }
       throw new RuntimeException("error detecting nvcc version.");
     }
-    
+
     String last_line = lines.get(lines.size()-1);
     return last_line;
-  } 
+  }
 }

@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,7 +15,7 @@ import org.trifort.rootbeer.runtime.Kernel;
 public class TreeMapRunOnGpu implements Kernel {
 
   private Map<Integer, String> m_map;
-  
+
   public void gpuMethod() {
     m_map = new TreeMap<Integer, String>();
     m_map.put(0, "a");
@@ -25,7 +25,7 @@ public class TreeMapRunOnGpu implements Kernel {
     m_map.put(4, "e");
     m_map.put(5, "f");
   }
-  
+
   public boolean compare(TreeMapRunOnGpu rhs) {
     if(m_map.size() != rhs.m_map.size()){
       System.out.println("size");
@@ -45,5 +45,5 @@ public class TreeMapRunOnGpu implements Kernel {
     }
     return true;
   }
-  
+
 }

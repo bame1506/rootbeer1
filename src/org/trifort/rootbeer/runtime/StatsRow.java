@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -16,72 +16,72 @@ public class StatsRow {
   private long totalDriverExecutionTime;
   private long deserializationTime;
   private long overallTime;
-  
+
   public StatsRow() {
   }
-  
+
   public void setDriverTimes(long memcopyToDevice, long execTime, long memcopyFromDevice){
     driverMemcopyToDeviceTime = memcopyToDevice;
     driverExecTime = execTime;
     driverMemcopyFromDeviceTime = memcopyFromDevice;
   }
-  
+
   public long getDriverMemcopyToDeviceTime(){
     return driverMemcopyToDeviceTime;
   }
-  
+
   public long getDriverMemcopyFromDeviceTime(){
     return driverMemcopyFromDeviceTime;
   }
-  
+
   public long getDriverExecTime(){
     return driverExecTime;
   }
-  
+
   /**
    * Time to serialize from Java to GPU
-   * @return 
+   * @return
    */
   public long getSerializationTime(){
     return serializationTime;
   }
-  
+
   public void setSerializationTime(long time){
     serializationTime = time;
   }
-  
+
   /**
    * Time to execute on GPU
-   * @return 
+   * @return
    */
   public long getTotalDriverExecutionTime(){
     return totalDriverExecutionTime;
   }
-  
+
   public void setExecutionTime(long time){
     totalDriverExecutionTime = time;
   }
-  
+
   /**
    * Time to deserialize from GPU to Java
-   * @return 
+   * @return
    */
   public long getDeserializationTime(){
     return deserializationTime;
   }
-  
+
   public void setDeserializationTime(long time){
     deserializationTime = time;
   }
 
   /**
    * Overall time ((de)serialization + exec + time in runtime)
-   * @return 
+   * @return
    */
   public long getOverallTime(){
     return overallTime;
   }
-  
+
   public void setOverallTime(long time){
     overallTime = time;
   }

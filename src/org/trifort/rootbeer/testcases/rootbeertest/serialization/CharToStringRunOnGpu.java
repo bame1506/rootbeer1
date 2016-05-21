@@ -6,11 +6,11 @@ public class CharToStringRunOnGpu implements Kernel {
 
   private char m_char;
   private String m_string;
-  
+
   public CharToStringRunOnGpu(){
     m_char = 'a';
   }
-  
+
   @Override
   public void gpuMethod() {
     m_string = Character.valueOf(m_char).toString();

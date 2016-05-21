@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -33,7 +33,7 @@ public class TestCaseEntryPointDetector implements MethodTester {
   private boolean m_initialized;
   private String m_signature;
   private List<String> m_entryPoints;
-  
+
   public TestCaseEntryPointDetector(String test_case){
     m_testCase = test_case;
     m_testCasePackages = new ArrayList<String>();
@@ -55,7 +55,7 @@ public class TestCaseEntryPointDetector implements MethodTester {
     m_initialized = false;
     m_entryPoints = new ArrayList<String>();
   }
-  
+
   private void init(){
     if(m_testCase.contains(".") == false){
       String new_test_case = findTestCaseClass(m_testCase);
@@ -66,7 +66,7 @@ public class TestCaseEntryPointDetector implements MethodTester {
       m_testCase = new_test_case;
     }
     m_provider = m_testCase;
-    
+
     ClassHierarchy class_hierarchy = RootbeerClassLoader.v().getClassHierarchy();
     HierarchySootClass prov_class = class_hierarchy.getHierarchySootClass(m_provider);
     HierarchySootMethod create_method = prov_class.findMethodByName("create");
@@ -79,7 +79,7 @@ public class TestCaseEntryPointDetector implements MethodTester {
   public String getProvider() {
     return m_provider;
   }
-    
+
   private HierarchySootClass searchMethod(HierarchySootMethod method) {
     ClassHierarchy class_hierarchy = RootbeerClassLoader.v().getClassHierarchy();
     List<HierarchyInstruction> instructions = method.getInstructions();

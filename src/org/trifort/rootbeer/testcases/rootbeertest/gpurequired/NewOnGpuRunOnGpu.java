@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,7 +15,7 @@ public class NewOnGpuRunOnGpu implements Kernel {
   private NewOnGpuRefObject[] test;
   //private long[][] element2;
   private NewOnGpuRefObject obj;
-  
+
   public NewOnGpuRunOnGpu(){
     element1 = new long[10];
     test = new NewOnGpuRefObject[20];
@@ -32,7 +32,7 @@ public class NewOnGpuRunOnGpu implements Kernel {
     }
     //element2 = new long[50][50];
     obj = new NewOnGpuRefObject();
-    
+
     int x = 20;
     switch(x){
       case 10:

@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,7 +15,7 @@ import org.trifort.rootbeer.runtime.Kernel;
 public class HashMapRunOnGpu implements Kernel {
 
   private Map<Integer, String> m_map;
-  
+
   public void gpuMethod() {
     m_map = new HashMap<Integer, String>();
     m_map.put(0, "a");
@@ -45,5 +45,5 @@ public class HashMapRunOnGpu implements Kernel {
     }
     return true;
   }
-  
+
 }

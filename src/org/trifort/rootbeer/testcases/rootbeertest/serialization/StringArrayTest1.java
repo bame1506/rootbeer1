@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -16,17 +16,17 @@ import org.trifort.rootbeer.runtime.Kernel;
 import org.trifort.rootbeer.test.TestSerialization;
 
 public class StringArrayTest1 implements TestSerialization {
-  
+
   public List<Kernel> create() {
     List<String[]> arrays = new ArrayList<String[]>();
     for(int i = 0; i < 50; ++i) {
       String[] array = new String[512];
       for(int j = 0; j < array.length; ++j) {
         array[j] = "new";
-      }	    	
+      }
 		  arrays.add(array);
     }
-    
+
     List<Kernel> jobs = new ArrayList<Kernel>();
     String [] ret = new String[arrays.size()];
     for(int i = 0; i < arrays.size(); ++i)

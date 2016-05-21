@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,7 +15,7 @@ public class GpuCodeSplitter {
   public List<String> split(String code){
     List<String> ret = new ArrayList<String>();
     String[] lines = code.split("\n");
-    
+
     StringBuilder curr_block = new StringBuilder();
     for(int i = 0; i < lines.length; ++i){
       String line = lines[i];
@@ -24,7 +24,7 @@ public class GpuCodeSplitter {
         curr_block = new StringBuilder();
         curr_block.append(line);
         curr_block.append("\n");
-      } else {        
+      } else {
         curr_block.append(line);
         curr_block.append("\n");
       }

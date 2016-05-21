@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -28,9 +28,9 @@ public class NullPointer3Test implements TestException {
   @Override
   public boolean catchException(Throwable thrwbl) {
     if(thrwbl instanceof NullPointerException){
-      return true; 
+      return true;
     }
     return false;
   }
-  
+
 }

@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -46,24 +46,24 @@ public class RootbeerCompiler {
   private boolean m_enableClassRemapping;
   private MethodTester m_entryDetector;
   private Set<String> m_runtimePackages;
-  
+
   public RootbeerCompiler(){
     clearOutputFolders();
-    
+
     m_classOutputFolder = RootbeerPaths.v().getOutputClassFolder();
     m_jimpleOutputFolder = RootbeerPaths.v().getOutputJimpleFolder();
-    
-    if(Configuration.compilerInstance().getMode() == Configuration.MODE_GPU){      
+
+    if(Configuration.compilerInstance().getMode() == Configuration.MODE_GPU){
       Tweaks.setInstance(new CudaTweaks());
     } else {
       Tweaks.setInstance(new NativeCpuTweaks());
     }
-    
+
     m_enableClassRemapping = true;
     m_runtimePackages = new HashSet<String>();
     addRuntimePackages();
   }
-  
+
   private void addRuntimePackages(){
     m_runtimePackages.add("com.lmax.disruptor.");
     m_runtimePackages.add("org.trifort.rootbeer.compiler.");
@@ -75,22 +75,22 @@ public class RootbeerCompiler {
     m_runtimePackages.add("org.trifort.rootbeer.test.");
     m_runtimePackages.add("org.trifort.rootbeer.util.");
   }
-  
+
   public void disableClassRemapping(){
-    m_enableClassRemapping = false; 
+    m_enableClassRemapping = false;
   }
-  
+
   public void compile(String main_jar, List<String> lib_jars, List<String> dirs, String dest_jar) {
-    
+
   }
-    
+
   private void setupSoot(String jar_filename, String rootbeer_jar, boolean runtests){
     RootbeerClassLoader.v().setUserJar(jar_filename);
     //extractJar(jar_filename);
-    
+
     List<String> proc_dir = new ArrayList<String>();
     proc_dir.add(jar_filename);
-    
+
     Options.v().set_allow_phantom_refs(true);
     Options.v().set_rbclassload(true);
     Options.v().set_prepend_classpath(true);
@@ -101,13 +101,13 @@ public class RootbeerCompiler {
     if(rootbeer_jar.equals("") == false){
       Options.v().set_soot_classpath(rootbeer_jar);
     }
-    
+
     //Options.v().set_rbcl_remap_all(Configuration.compilerInstance().getRemapAll());
     Options.v().set_rbcl_remap_all(false);
     Options.v().set_rbcl_remap_prefix("org.trifort.rootbeer.runtime.remap.");
-    
+
     RootbeerClassLoader.v().addEntryMethodTester(m_entryDetector);
-    
+
     ListClassTester ignore_packages = new ListClassTester();
     ignore_packages.addPackage("com.lmax.disruptor.");
     ignore_packages.addPackage("org.trifort.rootbeer.compressor.");
@@ -137,15 +137,15 @@ public class RootbeerCompiler {
     ignore_packages.addPackage("android.content.res.");
     ignore_packages.addPackage("org.apache.commons.codec.");
     RootbeerClassLoader.v().addDontFollowClassTester(ignore_packages);
-    
+
     ListClassTester keep_packages = new ListClassTester();
     for(String runtime_class : m_runtimePackages){
       keep_packages.addPackage(runtime_class);
     }
     RootbeerClassLoader.v().addToSignaturesClassTester(keep_packages);
-    
+
     RootbeerClassLoader.v().addNewInvoke("java.lang.StringBuilder");
-  
+
     ListMethodTester follow_tester = new ListMethodTester();
     follow_tester.addSignature("<java.lang.String: void <init>()>");
     follow_tester.addSignature("<java.lang.String: void <init>(char[])>");
@@ -162,15 +162,15 @@ public class RootbeerCompiler {
     follow_tester.addSignature("<org.trifort.rootbeer.runtime.Serializer: void <init>(org.trifort.rootbeer.runtime.Memory,org.trifort.rootbeer.runtime.Memory)>");
     follow_tester.addSignature("<org.trifort.rootbeer.testcases.rootbeertest.serialization.CovarientTest: void <init>()>");
     RootbeerClassLoader.v().addFollowMethodTester(follow_tester);
-    
+
     if(runtests){
       RootbeerClassLoader.v().addFollowClassTester(new TestCaseFollowTester());
     }
-    
+
     if(Configuration.compilerInstance().getKeepMains()){
       MainTester main_tester = new MainTester();
       RootbeerClassLoader.v().addFollowMethodTester(main_tester);
-    }    
+    }
 
     ListMethodTester dont_dfs_tester = new ListMethodTester();
 
@@ -179,76 +179,76 @@ public class RootbeerCompiler {
       dont_dfs_tester.addSignature(no_dfs);
     }
     RootbeerClassLoader.v().addDontFollowMethodTester(dont_dfs_tester);
-    
+
     ForcedFields forced_fields = new ForcedFields();
     for(String field_sig : forced_fields.get()){
       RootbeerClassLoader.v().loadField(field_sig);
     }
-    
+
     ListMethodTester to_sig_methods = new ListMethodTester();
     to_sig_methods.addSignature("<java.lang.Object: int hashCode()>");
     to_sig_methods.addSignature("<java.io.PrintStream: void println(java.lang.String)>");
     to_sig_methods.addSignature("<java.io.PrintStream: void println(int)>");
     to_sig_methods.addSignature("<java.io.PrintStream: void println(long)>");
     RootbeerClassLoader.v().addToSignaturesMethodTester(to_sig_methods);
-    
+
     RootbeerClassLoader.v().addClassRemapping("java.util.concurrent.atomic.AtomicLong", "org.trifort.rootbeer.remap.GpuAtomicLong");
     RootbeerClassLoader.v().addClassRemapping("org.trifort.rootbeer.testcases.rootbeertest.remaptest.CallsPrivateMethod", "org.trifort.rootbeer.remap.DoesntCallPrivateMethod");
-    
+
     RootbeerClassLoader.v().loadNecessaryClasses();
   }
-  
+
   public void compile(String jar_filename, String outname, String test_case) throws Exception {
     TestCaseEntryPointDetector detector = new TestCaseEntryPointDetector(test_case);
     m_entryDetector = detector;
     CurrJarName jar_name = new CurrJarName();
     setupSoot(jar_filename, jar_name.get(), true);
     m_provider = detector.getProvider();
-        
+
     List<SootMethod> kernel_methods = RootbeerClassLoader.v().getEntryPoints();
     compileForKernels(outname, kernel_methods, jar_filename);
   }
-  
+
   public void compile(String jar_filename, String outname) throws Exception {
     compile(jar_filename, outname, false);
   }
-  
+
   public void compile(String jar_filename, String outname, boolean run_tests) throws Exception {
     m_entryDetector = new KernelEntryPointDetector(run_tests);
     CurrJarName jar_name = new CurrJarName();
     setupSoot(jar_filename, jar_name.get(), run_tests);
-    
+
     List<SootMethod> kernel_methods = RootbeerClassLoader.v().getEntryPoints();
     compileForKernels(outname, kernel_methods, jar_filename);
   }
-  
+
   private void compileForKernels(String outname, List<SootMethod> kernel_methods, String jar_filename) throws Exception {
-    
+
     if(kernel_methods.isEmpty()){
       System.out.println("There are no kernel classes. Please implement the following interface to use rootbeer:");
       System.out.println("org.trifort.runtime.Kernel");
       System.exit(0);
     }
-       
+
     Transform2 transform2 = new Transform2();
-    for(SootMethod kernel_method : kernel_methods){   
-      
+    for(SootMethod kernel_method : kernel_methods){
+
       System.out.println("running transform2 on: "+kernel_method.getSignature()+"...");
       RootbeerClassLoader.v().loadDfsInfo(kernel_method);
       DfsInfo dfs_info = RootbeerClassLoader.v().getDfsInfo();
-      
+
       RootbeerDfs rootbeer_dfs = new RootbeerDfs();
       rootbeer_dfs.run(dfs_info);
-      
+
       dfs_info.expandArrayTypes();
       dfs_info.finalizeTypes();
 
       SootClass soot_class = kernel_method.getDeclaringClass();
       transform2.run(soot_class.getName());
     }
-    
+
     System.out.println("writing classes out...");
-    
+
     Iterator<SootClass> iter = Scene.v().getClasses().iterator();
     while(iter.hasNext()){
       SootClass soot_class = iter.next();
@@ -276,11 +276,11 @@ public class RootbeerCompiler {
         writeClassFile(class_name);
       }
     }
-    
+
     makeOutJar(jar_filename);
     pack(outname);
   }
-  
+
   public void pack(String outjar_name) throws Exception {
     Pack p = new Pack();
     String main_jar = RootbeerPaths.v().getOutputJarFolder() + File.separator + "partial-ret.jar";
@@ -301,7 +301,7 @@ public class RootbeerCompiler {
     zos.flush();
     zos.close();
   }
-  
+
   private void addJarInputManifestFiles(ZipOutputStream zos, String jar_filename) throws Exception {
     ZipInputStream jin = new ZipInputStream(new FileInputStream(jar_filename));
     while(true){
@@ -322,14 +322,14 @@ public class RootbeerCompiler {
       writeFileToOutput(f, zos, RootbeerPaths.v().getOutputClassFolder());
     }
   }
-  
+
   private List<File> getFiles(String path) {
     File f = new File(path);
     List<File> ret = new ArrayList<File>();
     getFiles(ret, f);
     return ret;
   }
-  
+
   private void getFiles(List<File> total_files, File dir){
     File[] files = dir.listFiles();
     for(File f : files){
@@ -345,7 +345,7 @@ public class RootbeerCompiler {
     try {
       String abs_path = f.getAbsolutePath();
       if(f.isDirectory()){
-        abs_path += File.separator; 
+        abs_path += File.separator;
       }
       folder += File.separator;
       folder = folder.replace("\\", "\\\\");
@@ -372,26 +372,26 @@ public class RootbeerCompiler {
     } else {
       contents[1] = (byte) 0;
     }
-    
+
     entry.setCrc(calcCrc32(contents));
     zos.putNextEntry(entry);
     zos.write(contents);
     zos.flush();
-    
+
     File file = new File(RootbeerPaths.v().getOutputClassFolder()+File.separator+folder_name);
     if(file.exists() == false){
       file.mkdirs();
     }
-    
+
     FileOutputStream fout = new FileOutputStream(RootbeerPaths.v().getOutputClassFolder()+File.separator+name);
     fout.write(contents);
     fout.flush();
     fout.close();
   }
-  
+
   private void writeFileToOutput(ZipInputStream jin, ZipEntry jar_entry, ZipOutputStream zos) throws Exception {
     if(jar_entry.isDirectory() == false){
-      
+
       List<byte[]> buffered = new ArrayList<byte[]>();
       int total_size = 0;
       while(true){
@@ -416,13 +416,13 @@ public class RootbeerCompiler {
       for(byte[] buffer : buffered){
         zos.write(buffer);
       }
-      
+
       zos.flush();
     } else {
       zos.putNextEntry(jar_entry);
     }
   }
-  
+
   private void writeFileToOutput(File f, ZipOutputStream zos, String folder) throws Exception {
     String name = makeJarFileName(f, folder);
     ZipEntry entry = new ZipEntry(name);
@@ -470,16 +470,16 @@ public class RootbeerCompiler {
     return ret;
   }
 
-  private void writeJimpleFile(String cls){  
+  private void writeJimpleFile(String cls){
     try {
       SootClass c = Scene.v().getSootClass(cls);
       JimpleWriter writer = new JimpleWriter();
       writer.write(classNameToFileName(cls, true), c);
     } catch(Exception ex){
       System.out.println("Error writing .jimple: "+cls);
-    }   
+    }
   }
-  
+
   private void writeClassFile(String cls, String filename){
     FileOutputStream fos = null;
     OutputStream out1 = null;
@@ -499,18 +499,18 @@ public class RootbeerCompiler {
       printMethodSigs(before_sigs);
       System.out.println("After sigs: ");
       printMethodSigs(after_sigs);
-    } finally { 
+    } finally {
       try {
         writer.flush();
         writer.close();
         out1.close();
-        fos.close(); 
-      } catch(Exception ex){ 
+        fos.close();
+      } catch(Exception ex){
         ex.printStackTrace();
       }
     }
   }
-  
+
   private List<String> getMethodSignatures(SootClass c){
     List<String> ret = new ArrayList<String>();
     List<SootMethod> methods = c.getMethods();
@@ -519,40 +519,40 @@ public class RootbeerCompiler {
     }
     return ret;
   }
-  
+
   private void printMethodSigs(List<String> sigs){
     for(String sig : sigs){
       System.out.println("  "+sig);
     }
   }
-  
+
   private void writeClassFile(String cls) {
     writeClassFile(cls, classNameToFileName(cls, false));
   }
-  
+
   private String classNameToFileName(String cls, boolean jimple){
     File f;
     if(jimple)
       f = new File(m_jimpleOutputFolder);
     else
       f = new File(m_classOutputFolder);
-    
+
     cls = cls.replace(".", File.separator);
-    
+
     if(jimple)
       cls += ".jimple";
     else
       cls += ".class";
-    
+
     cls = f.getAbsolutePath()+File.separator + cls;
-    
+
     File f2 = new File(cls);
     String folder = f2.getParent();
     new File(folder).mkdirs();
-    
+
     return cls;
   }
-  
+
   private void clearOutputFolders() {
     DeleteFolder deleter = new DeleteFolder();
     deleter.delete(RootbeerPaths.v().getOutputJarFolder());

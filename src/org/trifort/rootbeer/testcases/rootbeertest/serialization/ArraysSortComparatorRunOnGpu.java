@@ -12,14 +12,14 @@ import org.trifort.rootbeer.runtime.Kernel;
 public class ArraysSortComparatorRunOnGpu implements Kernel {
 
   private Integer[] m_array;
-  
+
   public ArraysSortComparatorRunOnGpu(){
     m_array = new Integer[8];
     for(int i = 0; i < m_array.length; ++i){
       m_array[i] = i;
     }
   }
-  
+
   @Override
   public void gpuMethod() {
     Arrays.sort(m_array, new DescendingComparator());

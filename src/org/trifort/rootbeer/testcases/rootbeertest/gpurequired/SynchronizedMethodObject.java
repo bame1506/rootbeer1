@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,7 +15,7 @@ public class SynchronizedMethodObject {
     if(recurse){
       increment(false);
     } else {
-      value++; 
+      value++;
     }
   }
 }

@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -35,7 +35,7 @@ public class TrapItem {
         found_start = true;
       }
       if(t.getEndUnit().equals(next)){
-        found_end = true; 
+        found_end = true;
       }
       if(found_start && !found_end){
         m_TryUnits.add(next);
@@ -56,7 +56,7 @@ public class TrapItem {
   boolean unitIsHandler(Unit next) {
     return m_Handler.equals(next);
   }
-  
+
   SootClass getException(){
     return m_Exception;
   }

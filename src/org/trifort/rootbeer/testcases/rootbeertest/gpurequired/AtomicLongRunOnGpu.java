@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -20,7 +20,7 @@ public class AtomicLongRunOnGpu implements Kernel {
   private Random random;
   private long m_num1;
   private long m_num2;
-  
+
   public AtomicLongRunOnGpu(AtomicLong along, Random random){
     m_along = along;
     m_random = -100;
@@ -38,7 +38,7 @@ public class AtomicLongRunOnGpu implements Kernel {
     m_num2 = m_along2.addAndGet(5);
     m_random2 = 10;
   }
-  
+
   boolean compare(AtomicLongRunOnGpu grhs) {
     if(grhs == null){
       System.out.println("grhs == null");
@@ -49,7 +49,7 @@ public class AtomicLongRunOnGpu implements Kernel {
       System.out.println("lhs: "+m_num1);
       System.out.println("rhs: "+grhs.m_num1);
       return false;
-    } 
+    }
     if(m_num2 != grhs.m_num2){
       System.out.println("m_num2");
       System.out.println("lhs: "+m_num2);

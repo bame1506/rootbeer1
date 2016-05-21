@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,11 +15,11 @@ public class SynchronizedMethod3RunOnGpu implements Kernel {
 
   private SynchronizedMethod3Object m_Object;
   private int m_Result2;
-  
+
   public SynchronizedMethod3RunOnGpu(SynchronizedMethod3Object obj){
     m_Object = obj;
   }
-  
+
   @Override
   public void gpuMethod() {
     try {

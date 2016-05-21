@@ -5,11 +5,11 @@ import org.trifort.rootbeer.runtime.Kernel;
 public class NestedMonitorRunOnGpu implements Kernel {
 
   private int m_value;
-  
+
   public NestedMonitorRunOnGpu(){
     m_value = 10;
   }
-  
+
   @Override
   public void gpuMethod() {
     //TODO: fix nested monitor test
@@ -19,7 +19,7 @@ public class NestedMonitorRunOnGpu implements Kernel {
       if(object1.toString().equals("")){
         return;
       }
-      
+
       synchronized (object1) {
         if(m_value == 10){
           throw new RuntimeException();

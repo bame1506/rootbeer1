@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -12,7 +12,7 @@ import org.trifort.rootbeer.runtime.Kernel;
 public class SynchronizedMethodRunOnGpu implements Kernel {
 
   private SynchronizedMethodObject m_Object;
-  
+
   public SynchronizedMethodRunOnGpu(SynchronizedMethodObject obj){
     m_Object = obj;
   }
@@ -21,7 +21,7 @@ public class SynchronizedMethodRunOnGpu implements Kernel {
   public void gpuMethod() {
     m_Object.increment(true);
   }
-  
+
   boolean compare(SynchronizedMethodRunOnGpu grhs) {
     if(grhs == null){
       System.out.println("grhs == null");

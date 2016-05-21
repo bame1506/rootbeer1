@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -13,5 +13,5 @@ public class EmptyRunOnGpu implements Kernel {
 
   public void gpuMethod() {
   }
-  
+
 }

@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -27,13 +27,13 @@ import soot.rbclassload.StringToType;
  * @author pcpratts
  */
 public class RootbeerDfs {
-  
+
   private DfsInfo m_currDfsInfo;
-  
+
   public void run(DfsInfo dfs_info) {
     m_currDfsInfo = dfs_info;
     String signature = dfs_info.getRootMethodSignature();
-    
+
     Set<HierarchySignature> visited = new HashSet<HierarchySignature>();
     //System.out.println("doing rootbeer dfs: "+signature);
     LinkedList<HierarchySignature> queue = new LinkedList<HierarchySignature>();
@@ -46,24 +46,24 @@ public class RootbeerDfs {
     for(String method : setup.getDontDfs()){
       visited.add(new HierarchySignature(method));
     }
-    
+
     while(queue.isEmpty() == false){
       HierarchySignature curr = queue.removeFirst();
       doDfsForRootbeer(curr, queue, visited);
     }
   }
 
-  private void doDfsForRootbeer(HierarchySignature signature, 
+  private void doDfsForRootbeer(HierarchySignature signature,
     LinkedList<HierarchySignature> queue, Set<HierarchySignature> visited){
 
     if(visited.contains(signature)){
       return;
     }
     visited.add(signature);
-        
+
     StringToType converter = new StringToType();
     FieldSignatureUtil futil = new FieldSignatureUtil();
-    
+
     //load all virtual methods to be followed
     ClassHierarchy class_hierarchy = RootbeerClassLoader.v().getClassHierarchy();
     List<HierarchySignature> virt_methods = class_hierarchy.getVirtualMethods(signature);
@@ -77,18 +77,18 @@ public class RootbeerDfs {
     if(RootbeerClassLoader.v().dontFollow(signature)){
       return;
     }
-    
+
     m_currDfsInfo.addType(signature.getClassName());
     m_currDfsInfo.addType(signature.getReturnType());
     m_currDfsInfo.addMethod(signature.toString());
-    
+
     //go into the method
     HierarchyValueSwitch value_switch = RootbeerClassLoader.v().getValueSwitch(signature);
     for(Integer num : value_switch.getAllTypesInteger()){
       String type_str = StringNumbers.v().getString(num);
       Type type = converter.convert(type_str);
       m_currDfsInfo.addType(type);
-    }    
+    }
 
     for(HierarchySignature method_sig : value_switch.getMethodRefsHierarchy()){
       m_currDfsInfo.addMethod(signature.toString());

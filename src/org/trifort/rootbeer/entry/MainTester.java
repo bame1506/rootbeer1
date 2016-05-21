@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -18,5 +18,5 @@ public class MainTester implements MethodTester {
     }
     return false;
   }
-  
+
 }

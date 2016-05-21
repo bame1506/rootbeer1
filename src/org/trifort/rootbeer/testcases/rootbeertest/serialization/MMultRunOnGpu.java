@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -16,7 +16,7 @@ public class MMultRunOnGpu implements Kernel {
   private int[] c;
   private int index;
   private int size;
-  
+
   public MMultRunOnGpu(int[] a, int[] b, int[] c, int index, int size){
     this.a = a;
     this.b = b;

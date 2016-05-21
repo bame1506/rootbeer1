@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -122,17 +122,17 @@ public class BclMemory {
     mBcl.pushMethod(mBcl.getTypeString(mMem), "useInstancePointer", VoidType.v());
     mBcl.invokeMethodNoRet(mMem);
   }
-  
+
   public void useStaticPointer(){
     mBcl.pushMethod(mBcl.getTypeString(mMem), "useStaticPointer", VoidType.v());
-    mBcl.invokeMethodNoRet(mMem);    
+    mBcl.invokeMethodNoRet(mMem);
   }
-  
+
   Local readByte() {
     mBcl.pushMethod(mMem, "readByte", ByteType.v());
     return mBcl.invokeMethodRet(mMem);
   }
-  
+
   Local readBoolean() {
     mBcl.pushMethod(mMem, "readBoolean", BooleanType.v());
     return mBcl.invokeMethodRet(mMem);
@@ -157,12 +157,12 @@ public class BclMemory {
     mBcl.pushMethod(mMem, "readRef", LongType.v());
     return mBcl.invokeMethodRet(mMem);
   }
-  
+
   public void writeRef(Value ref) {
     mBcl.pushMethod(mMem, "writeRef", VoidType.v(), LongType.v());
     mBcl.invokeMethodNoRet(mMem, ref);
   }
-  
+
   Local readFloat(){
     mBcl.pushMethod(mMem, "readFloat", FloatType.v());
     return mBcl.invokeMethodRet(mMem);

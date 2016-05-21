@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -20,7 +20,7 @@ public class CmdRunner {
   private List<String> m_outputLines;
   private List<String> m_errorLines;
   private Process m_process;
-  
+
   public int run(String cmd, File dir){
     try {
       m_process = Runtime.getRuntime().exec(cmd, new String[0], dir);
@@ -30,7 +30,7 @@ public class CmdRunner {
       throw new RuntimeException(ex);
     }
   }
-  
+
   public int run(String cmd[], File dir){
     try {
       m_process = Runtime.getRuntime().exec(cmd, new String[0], dir);
@@ -40,7 +40,7 @@ public class CmdRunner {
       throw new RuntimeException(ex);
     }
   }
-  
+
   private int processExec() throws InterruptedException{
     StreamEater out_eater = new StreamEater(m_process.getInputStream());
     StreamEater err_eater = new StreamEater(m_process.getErrorStream());
@@ -65,7 +65,7 @@ public class CmdRunner {
     private InputStream m_inputStream;
     private BufferedReader m_reader;
     private volatile boolean m_done;
-   
+
     public StreamEater(InputStream input_stream){
       m_inputStream = input_stream;
       m_reader = new BufferedReader(new InputStreamReader(m_inputStream));
@@ -87,7 +87,7 @@ public class CmdRunner {
         m_done = true;
       }
     }
-    
+
     public List<String> get(){
       while(!m_done){
         try {

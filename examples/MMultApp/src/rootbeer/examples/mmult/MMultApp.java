@@ -38,7 +38,7 @@ public class MMultApp {
     int[] b = new int[size*size];
     int[] c_gpu = new int[size*size];
     int[] c_cpu = new int[size*size];
-    
+
     for(int x = 0; x < size; ++x){
       for(int y = 0; y < size; ++y){
         a[x*size+y] = x*size+y;

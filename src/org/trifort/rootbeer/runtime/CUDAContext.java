@@ -34,22 +34,22 @@ public class CUDAContext implements Context {
   private Kernel kernelTemplate;
   private CompiledKernel compiledKernel;
   private boolean usingHandles;
-  
+
   final private StatsRow stats;
   final private Stopwatch writeBlocksStopwatch;
   final private Stopwatch runStopwatch;
   final private Stopwatch runOnGpuStopwatch;
   final private Stopwatch readBlocksStopwatch;
-  
+
   final private ExecutorService exec;
   final private Disruptor<GpuEvent> disruptor;
   final private EventHandler<GpuEvent> handler;
   final private RingBuffer<GpuEvent> ringBuffer;
-  
+
   static {
     initializeDriver();
   }
-  
+
   public CUDAContext(GpuDevice device){
     exec = Executors.newCachedThreadPool(new ThreadFactory() {
       public Thread newThread(Runnable r) {
@@ -64,22 +64,22 @@ public class CUDAContext implements Context {
     ringBuffer = disruptor.start();
     gpuDevice = device;
     memorySize = -1;
-    
+
     String arch = System.getProperty("os.arch");
     is32bit = arch.equals("x86") || arch.equals("i386");
-    
+
     usingUncheckedMemory = true;
     usingHandles = false;
     nativeContext = allocateNativeContext();
     cacheConfig = CacheConfig.PREFER_NONE;
-    
+
     stats = new StatsRow();
     writeBlocksStopwatch = new Stopwatch();
     runStopwatch = new Stopwatch();
     runOnGpuStopwatch = new Stopwatch();
     readBlocksStopwatch = new Stopwatch();
   }
-  
+
   @Override
   public GpuDevice getDevice() {
     return gpuDevice;
@@ -90,7 +90,7 @@ public class CUDAContext implements Context {
     disruptor.shutdown();
     exec.shutdown();
     freeNativeContext(nativeContext);
-    
+
     if(objectMemory != null){
       objectMemory.close();
     }
@@ -112,7 +112,7 @@ public class CUDAContext implements Context {
   public void setMemorySize(long memorySize) {
     this.memorySize = memorySize;
   }
-  
+
   @Override
   public void setKernel(Kernel kernelTemplate) {
     this.kernelTemplate = kernelTemplate;
@@ -123,12 +123,12 @@ public class CUDAContext implements Context {
   public void setCacheConfig(CacheConfig cacheConfig) {
     this.cacheConfig = cacheConfig;
   }
-  
+
   @Override
   public void setUsingHandles(boolean value){
     usingHandles = value;
   }
-  
+
   @Override
   public void useCheckedMemory(){
     this.usingUncheckedMemory = false;
@@ -138,13 +138,13 @@ public class CUDAContext implements Context {
   public void setThreadConfig(ThreadConfig threadConfig) {
     this.threadConfig = threadConfig;
   }
-  
+
   @Override
   public void setThreadConfig(int threadCountX, int blockCountX,
       int numThreads) {
     setThreadConfig(threadCountX, 1, 1, blockCountX, 1, numThreads);
   }
-  
+
   @Override
   public void setThreadConfig(int threadCountX, int threadCountY,
       int blockCountX, int blockCountY, int numThreads) {
@@ -158,13 +158,13 @@ public class CUDAContext implements Context {
     this.threadConfig = new ThreadConfig(threadCountX, threadCountY, threadCountZ,
         blockCountX, blockCountY, numThreads);
   }
-  
+
   @Override
   public void buildState(){
     String filename;
     int size = 0;
     boolean error = false;
-    
+
     if(is32bit){
       filename = compiledKernel.getCubin32();
       size = compiledKernel.getCubin32Size();
@@ -178,9 +178,9 @@ public class CUDAContext implements Context {
     if(error){
       throw new RuntimeException("CUDA code compiled with error");
     }
-    
+
     cubinFile = readCubinFile(filename, size);
-    
+
     if(usingUncheckedMemory){
       classMemory = new FixedMemory(1024);
       exceptionsMemory = new FixedMemory(getExceptionsMemSize(threadConfig));
@@ -208,7 +208,7 @@ public class CUDAContext implements Context {
     } else {
       objectMemory = new CheckedFixedMemory(memorySize);
     }
-    
+
     long seq = ringBuffer.next();
     GpuEvent gpuEvent = ringBuffer.get(seq);
     gpuEvent.setValue(GpuEventCommand.NATIVE_BUILD_STATE);
@@ -216,7 +216,7 @@ public class CUDAContext implements Context {
     ringBuffer.publish(seq);
     gpuEvent.getFuture().take();
   }
-  
+
   private long getExceptionsMemSize(ThreadConfig thread_config) {
     if(Configuration.runtimeInstance().getExceptions()){
       return 4L*thread_config.getNumThreads();
@@ -224,7 +224,7 @@ public class CUDAContext implements Context {
       return 4;
     }
   }
-  
+
   private byte[] readCubinFile(String filename, int length) {
     try {
       byte[] buffer = ResourceReader.getResourceArray(filename, length);
@@ -234,17 +234,17 @@ public class CUDAContext implements Context {
       throw new RuntimeException(ex);
     }
   }
-  
+
   private void findMemorySize(int cubinFileLength){
     long freeMemSizeGPU = gpuDevice.getFreeGlobalMemoryBytes();
     long freeMemSizeCPU = Runtime.getRuntime().freeMemory();
     long freeMemSize = Math.min(freeMemSizeGPU, freeMemSizeCPU);
-    
+
     freeMemSize -= cubinFileLength;
     freeMemSize -= exceptionsMemory.getSize();
     freeMemSize -= classMemory.getSize();
     freeMemSize -= 2048;
-    
+
     if(freeMemSize <= 0){
       StringBuilder error = new StringBuilder();
       error.append("OutOfMemory while allocating Java CPU and GPU memory.\n");
@@ -265,13 +265,13 @@ public class CUDAContext implements Context {
   public long getRequiredMemory() {
     return requiredMemorySize;
   }
-  
+
   @Override
   public void run(){
     GpuFuture future = runAsync();
     future.take();
   }
-  
+
   @Override
   public GpuFuture runAsync() {
     long seq = ringBuffer.next();
@@ -281,13 +281,13 @@ public class CUDAContext implements Context {
     ringBuffer.publish(seq);
     return gpuEvent.getFuture();
   }
-  
+
   @Override
   public void run(List<Kernel> work) {
     GpuFuture future = runAsync(work);
     future.take();
   }
-  
+
   @Override
   public GpuFuture runAsync(List<Kernel> work) {
     long seq = ringBuffer.next();
@@ -304,7 +304,7 @@ public class CUDAContext implements Context {
   public StatsRow getStats() {
     return stats;
   }
-  
+
   private class GpuEventHandler implements EventHandler<GpuEvent>{
     @Override
     public void onEvent(final GpuEvent gpuEvent, final long sequence, final boolean endOfBatch){
@@ -312,11 +312,11 @@ public class CUDAContext implements Context {
         switch(gpuEvent.getValue()){
         case NATIVE_BUILD_STATE:
           boolean usingExceptions = Configuration.runtimeInstance().getExceptions();
-          nativeBuildState(nativeContext, gpuDevice.getDeviceId(), cubinFile, 
+          nativeBuildState(nativeContext, gpuDevice.getDeviceId(), cubinFile,
               cubinFile.length, threadConfig.getThreadCountX(), threadConfig.getThreadCountY(),
               threadConfig.getThreadCountZ(), threadConfig.getBlockCountX(),
-              threadConfig.getBlockCountY(), threadConfig.getNumThreads(), 
-              objectMemory, handlesMemory, exceptionsMemory, classMemory, 
+              threadConfig.getBlockCountY(), threadConfig.getNumThreads(),
+              objectMemory, handlesMemory, exceptionsMemory, classMemory,
               b2i(usingExceptions), cacheConfig.ordinal());
           gpuEvent.getFuture().signal();
           break;
@@ -339,24 +339,24 @@ public class CUDAContext implements Context {
       }
     }
   }
-  
+
   private void writeBlocksTemplate(){
     writeBlocksStopwatch.start();
     objectMemory.clearHeapEndPtr();
     handlesMemory.setAddress(0);
-    
+
     Serializer serializer = compiledKernel.getSerializer(objectMemory, textureMemory);
     serializer.writeStaticsToHeap();
-    
+
     long handle = serializer.writeToHeap(compiledKernel);
     handlesMemory.writeRef(handle);
     objectMemory.align16();
-   
+
     if(Configuration.getPrintMem()){
       BufferPrinter printer = new BufferPrinter();
       printer.print(objectMemory, 0, 256);
     }
-    
+
     writeBlocksStopwatch.stop();
     stats.setSerializationTime(writeBlocksStopwatch.elapsedTimeMillis());
   }
@@ -364,25 +364,25 @@ public class CUDAContext implements Context {
   private void writeBlocksList(List<Kernel> work){
     writeBlocksStopwatch.start();
     objectMemory.clearHeapEndPtr();
-    
+
     Serializer serializer = compiledKernel.getSerializer(objectMemory, textureMemory);
     serializer.writeStaticsToHeap();
-    
+
     for(Kernel kernel : work){
       long handle = serializer.writeToHeap(kernel);
       handlesMemory.writeRef(handle);
     }
     objectMemory.align16();
-   
+
     if(Configuration.getPrintMem()){
       BufferPrinter printer = new BufferPrinter();
       printer.print(objectMemory, 0, 256);
     }
-    
+
     writeBlocksStopwatch.stop();
     stats.setSerializationTime(writeBlocksStopwatch.elapsedTimeMillis());
   }
-  
+
   private void runGpu(){
     runOnGpuStopwatch.start();
     cudaRun(nativeContext, objectMemory, b2i(!usingHandles), stats);
@@ -390,24 +390,24 @@ public class CUDAContext implements Context {
     requiredMemorySize = objectMemory.getHeapEndPtr();
     stats.setExecutionTime(runOnGpuStopwatch.elapsedTimeMillis());
   }
-  
+
   private void readBlocksSetup(Serializer serializer){
     readBlocksStopwatch.start();
     objectMemory.setAddress(0);
     exceptionsMemory.setAddress(0);
-    
+
     if(Configuration.runtimeInstance().getExceptions()){
       for(long i = 0; i < threadConfig.getNumThreads(); ++i){
         long ref = exceptionsMemory.readRef();
         if(ref != 0){
           long ref_num = ref >> 4;
           if(ref_num == compiledKernel.getNullPointerNumber()){
-            throw new NullPointerException("NPE while running on GPU"); 
+            throw new NullPointerException("NPE while running on GPU");
           } else if(ref_num == compiledKernel.getOutOfMemoryNumber()){
             throw new OutOfMemoryError("OOM error while running on GPU");
           }
-          
-          objectMemory.setAddress(ref);           
+
+          objectMemory.setAddress(ref);
           Object except = serializer.readFromHeap(null, true, ref);
           if(except instanceof Error){
             Error except_th = (Error) except;
@@ -420,20 +420,20 @@ public class CUDAContext implements Context {
             throw new RuntimeException((Throwable) except);
           }
         }
-      }    
+      }
     }
-    
+
     serializer.readStaticsFromHeap();
   }
-  
+
   private void readBlocksTemplate(){
     Serializer serializer = compiledKernel.getSerializer(objectMemory, textureMemory);
     readBlocksSetup(serializer);
     handlesMemory.setAddress(0);
-    
+
     long handle = handlesMemory.readRef();
     serializer.readFromHeap(compiledKernel, true, handle);
-    
+
     if(Configuration.getPrintMem()){
       BufferPrinter printer = new BufferPrinter();
       printer.print(objectMemory, 0, 256);
@@ -445,13 +445,13 @@ public class CUDAContext implements Context {
   public void readBlocksList(List<Kernel> kernelList) {
     Serializer serializer = compiledKernel.getSerializer(objectMemory, textureMemory);
     readBlocksSetup(serializer);
-    
+
     handlesMemory.setAddress(0);
     for(Kernel kernel : kernelList){
       long ref = handlesMemory.readRef();
       serializer.readFromHeap(kernel, true, ref);
     }
-    
+
     if(Configuration.getPrintMem()){
       BufferPrinter printer = new BufferPrinter();
       printer.print(objectMemory, 0, 256);
@@ -459,7 +459,7 @@ public class CUDAContext implements Context {
     readBlocksStopwatch.stop();
     stats.setDeserializationTime(readBlocksStopwatch.elapsedTimeMillis());
   }
-  
+
   private int b2i(boolean value){
     if(value){
       return 1;
@@ -467,18 +467,18 @@ public class CUDAContext implements Context {
       return 0;
     }
   }
-  
+
   private static native void initializeDriver();
   private native long allocateNativeContext();
   private native void freeNativeContext(long nativeContext);
-  
-  private native void nativeBuildState(long nativeContext, int deviceIndex, byte[] cubinFile, 
+
+  private native void nativeBuildState(long nativeContext, int deviceIndex, byte[] cubinFile,
       int cubinLength, int threadCountX, int threadCountY, int threadCountZ,
-      int blockCountX, int blockCountY, int numThreads, 
-      Memory objectMem, Memory handlesMem, Memory exceptionsMem, Memory classMem, 
+      int blockCountX, int blockCountY, int numThreads,
+      Memory objectMem, Memory handlesMem, Memory exceptionsMem, Memory classMem,
       int usingExceptions, int cacheConfig);
-  
-  private native void cudaRun(long nativeContext, Memory objectMem, 
+
+  private native void cudaRun(long nativeContext, Memory objectMem,
       int usingKernelTemplates, StatsRow stats);
 
 }

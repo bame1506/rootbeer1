@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -18,7 +18,7 @@ public class BigDecimalRunOnGpu implements Kernel {
   public BigDecimalRunOnGpu(int num){
     m_bigDecimal = new BigDecimal(num);
   }
-  
+
   public void gpuMethod() {
     m_result = m_bigDecimal.intValue();
   }
@@ -32,6 +32,6 @@ public class BigDecimalRunOnGpu implements Kernel {
     }
     return true;
   }
-  
-  
+
+
 }

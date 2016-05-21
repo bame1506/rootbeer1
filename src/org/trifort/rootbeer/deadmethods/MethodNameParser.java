@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MethodNameParser {
-  
+
   public List<String> parse(List<Block> blocks){
     List<String> ret = new ArrayList<String>();
     for(Block block : blocks){

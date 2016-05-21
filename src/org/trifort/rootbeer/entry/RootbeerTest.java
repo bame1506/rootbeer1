@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -20,15 +20,15 @@ import soot.G;
 import soot.Modifier;
 
 public class RootbeerTest {
-  
+
   private String destJAR;
-  
+
   public RootbeerTest(){
     destJAR = "output.jar";
   }
-  
+
   public void runTests(String test_case, boolean run_hard_tests) {
-    RootbeerCompiler compiler = new RootbeerCompiler();  
+    RootbeerCompiler compiler = new RootbeerCompiler();
     CurrJarName jar_name = new CurrJarName();
     String rootbeer_jar = jar_name.get();
     try {
@@ -37,20 +37,20 @@ public class RootbeerTest {
       } else {
         compiler.compile(rootbeer_jar, destJAR, test_case);
       }
-      
+
       test_case = compiler.getProvider();
-      
+
       //clear out the memory used by soot and compiler
       compiler = null;
       G.reset();
       ForceGC.gc();
-      
+
       runTestCases(test_case, run_hard_tests);
-      
+
     } catch(Exception ex){
       ex.printStackTrace();
       System.exit(-1);
-    } 
+    }
   }
 
   public void repeatTests() {
@@ -59,14 +59,14 @@ public class RootbeerTest {
     } catch(Exception ex){
       ex.printStackTrace();
       System.exit(-1);
-    } 
+    }
   }
-  
-  private void runTestCases(String test_case, boolean run_hard_tests) throws Exception {   
+
+  private void runTestCases(String test_case, boolean run_hard_tests) throws Exception {
     JarClassLoader loader_factory = new JarClassLoader(destJAR);
     ClassLoader cls_loader = loader_factory.getLoader();
     Thread.currentThread().setContextClassLoader(cls_loader);
-    
+
     Class agent_class = cls_loader.loadClass("org.trifort.rootbeer.test.RootbeerTestAgent");
     Object agent_obj = agent_class.newInstance();
     Method[] methods = agent_class.getMethods();
@@ -78,8 +78,8 @@ public class RootbeerTest {
       test_method.invoke(agent_obj, cls_loader, test_case);
     }
   }
-  
-  
+
+
   private Method findMethodByName(String name, Method[] methods){
     for(Method method : methods){
       if(method.getName().equals(name)){

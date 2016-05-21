@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -14,15 +14,15 @@ public class BaseConversionRunOnGpu implements Kernel {
   private int m_Index;
   private GpuList m_Ret;
   private int m_Count;
-  
+
   public BaseConversionRunOnGpu(int index, int count) {
     m_Index = index;
     m_Count = count;
     m_Ret = new GpuList();
   }
-  
+
   @Override
-  public void gpuMethod() {  
+  public void gpuMethod() {
     int count = m_Count;
     int start_index = m_Index;
     int n = 9600;
@@ -31,18 +31,18 @@ public class BaseConversionRunOnGpu implements Kernel {
     for(int i = 0; i < count; ++i){
       int index = start_index + i;
       while(index > 0){
-        int mod = index % n;      
+        int mod = index % n;
         ret_list.add(mod);
         index /= n;
       }
-      if(index != 0){    
+      if(index != 0){
         ret_list.add(index);
       }
-      while(ret_list.size() < len){   
+      while(ret_list.size() < len){
         ret_list.add(0);
       }
     }
-    m_Ret.add(ret_list);      
+    m_Ret.add(ret_list);
   }
 
   public GpuList getRet(){

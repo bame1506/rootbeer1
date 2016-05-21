@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -62,14 +62,14 @@ public class OpenCLScene {
   private List<SootMethod> m_methods;
   private ClassConstantNumbers m_constantNumbers;
   private FieldCodeGeneration m_fieldCodeGeneration;
-  
+
   static {
     m_curentIdent = 0;
   }
 
   public OpenCLScene(){
   }
-  
+
   public void init(){
     m_classes = new LinkedHashMap<String, OpenCLClass>();
     m_arrayTypes = new LinkedHashSet<OpenCLArrayType>();
@@ -78,13 +78,13 @@ public class OpenCLScene {
     m_methods = new ArrayList<SootMethod>();
     m_constantNumbers = new ClassConstantNumbers();
     m_fieldCodeGeneration = new FieldCodeGeneration();
-    loadTypes(); 
+    loadTypes();
   }
 
   public static OpenCLScene v(){
     return m_instance;
   }
-  
+
   public static void setInstance(OpenCLScene scene){
     m_instance = scene;
   }
@@ -93,7 +93,7 @@ public class OpenCLScene {
     m_instance = null;
     m_curentIdent++;
   }
-  
+
   public String getIdent(){
     return "" + m_curentIdent;
   }
@@ -109,18 +109,18 @@ public class OpenCLScene {
   public int getClassType(SootClass soot_class){
     return RootbeerClassLoader.v().getClassNumber(soot_class);
   }
-  
+
   public void addMethod(SootMethod soot_method){
     SootClass soot_class = soot_method.getDeclaringClass();
 
     OpenCLClass ocl_class = getOpenCLClass(soot_class);
     ocl_class.addMethod(new OpenCLMethod(soot_method, soot_class));
 
-    //add the method 
+    //add the method
     m_methodHierarchies.addMethod(soot_method);
     m_methods.add(soot_method);
   }
-  
+
   public List<SootMethod> getMethods(){
     return m_methods;
   }
@@ -129,8 +129,8 @@ public class OpenCLScene {
     if(m_arrayTypes.contains(array_type))
       return;
     m_arrayTypes.add(array_type);
-  }  
-  
+  }
+
   public void addInstanceof(Type type){
     OpenCLInstanceof to_add = new OpenCLInstanceof(type);
     if(m_instanceOfs.contains(to_add) == false){
@@ -138,7 +138,7 @@ public class OpenCLScene {
     }
   }
 
-  public OpenCLClass getOpenCLClass(SootClass soot_class){    
+  public OpenCLClass getOpenCLClass(SootClass soot_class){
     String class_name = soot_class.getName();
     if(m_classes.containsKey(class_name)){
       return m_classes.get(class_name);
@@ -183,7 +183,7 @@ public class OpenCLScene {
   public boolean getUsingGarbageCollector(){
     return m_usesGarbageCollector;
   }
-  
+
   private void writeTypesToFile(List<NumberedType> types){
     try {
       PrintWriter writer = new PrintWriter(RootbeerPaths.v().getTypeFile());
@@ -196,15 +196,15 @@ public class OpenCLScene {
       ex.printStackTrace();
     }
   }
-  
+
   public int getOutOfMemoryNumber(){
     SootClass soot_class = Scene.v().getSootClass("java.lang.OutOfMemoryError");
-    int ret = RootbeerClassLoader.v().getClassNumber(soot_class); 
+    int ret = RootbeerClassLoader.v().getClassNumber(soot_class);
     return ret;
   }
-  
+
   private void loadTypes(){
-    Set<String> methods = RootbeerClassLoader.v().getDfsInfo().getMethods();  
+    Set<String> methods = RootbeerClassLoader.v().getDfsInfo().getMethods();
     MethodSignatureUtil util = new MethodSignatureUtil();
     for(String method_sig : methods){
       util.parse(method_sig);
@@ -216,7 +216,7 @@ public class OpenCLScene {
       util.parse(extra_method);
       addMethod(util.getSootMethod());
     }
-    
+
     Set<SootField> fields = RootbeerClassLoader.v().getDfsInfo().getFields();
     for(SootField field : fields){
       addField(field);
@@ -228,7 +228,7 @@ public class OpenCLScene {
       field_util.parse(field_sig);
       addField(field_util.getSootField());
     }
-    
+
     Set<ArrayType> array_types = RootbeerClassLoader.v().getDfsInfo().getArrayTypes();
     for(ArrayType array_type : array_types){
       OpenCLArrayType ocl_array_type = new OpenCLArrayType(array_type);
@@ -238,38 +238,38 @@ public class OpenCLScene {
       OpenCLArrayType ocl_array_type = new OpenCLArrayType(array_type);
       addArrayType(ocl_array_type);
     }
-    
+
     Set<Type> instanceofs = RootbeerClassLoader.v().getDfsInfo().getInstanceOfs();
     for(Type type : instanceofs){
       addInstanceof(type);
     }
-    
-    buildCompositeFields();  
+
+    buildCompositeFields();
   }
-  
+
   private String[] makeSourceCode() throws Exception {
     if(Configuration.compilerInstance().isManualCuda()){
       String filename = Configuration.compilerInstance().getManualCudaFilename();
       String cuda_code = readCode(filename);
-          
+
       String[] ret = new String[2];
       ret[0] = cuda_code;
       ret[1] = cuda_code;
       return ret;
     }
-    
+
     m_usesGarbageCollector = false;
-    
+
     List<NumberedType> types = RootbeerClassLoader.v().getDfsInfo().getNumberedTypes();
     writeTypesToFile(types);
-        
+
     StringBuilder unix_code = new StringBuilder();
     StringBuilder windows_code = new StringBuilder();
-    
+
     String method_protos = methodPrototypesString();
     String gc_string = garbageCollectorString();
     String bodies_string = methodBodiesString();
-    
+
     unix_code.append(headerString(true));
     unix_code.append(method_protos);
     unix_code.append(gc_string);
@@ -281,30 +281,30 @@ public class OpenCLScene {
     windows_code.append(gc_string);
     windows_code.append(bodies_string);
     windows_code.append(kernelString(false));
-    
+
     String cuda_unix = setupEntryPoint(unix_code);
     String cuda_windows = setupEntryPoint(windows_code);
-    
+
     //print out code for debugging
     PrintWriter writer = new PrintWriter(new FileWriter(RootbeerPaths.v().getRootbeerHome()+"generated_unix.cu"));
     writer.println(cuda_unix);
     writer.flush();
     writer.close();
-    
+
     //print out code for debugging
     writer = new PrintWriter(new FileWriter(RootbeerPaths.v().getRootbeerHome()+"generated_windows.cu"));
     writer.println(cuda_windows);
     writer.flush();
     writer.close();
-    
+
     NameMangling.v().writeTypesToFile();
-        
+
     String[] ret = new String[2];
     ret[0] = cuda_unix;
     ret[1] = cuda_windows;
     return ret;
   }
-  
+
   private String readCode(String filename){
     ReadFile reader = new ReadFile(filename);
     try {
@@ -321,12 +321,12 @@ public class OpenCLScene {
     String replacement = getRuntimeBasicBlockClassName()+"_gpuMethod"+mangle;
     //class names can have $ in them, make them regex safe
     replacement = replacement.replace("$", "\\$");
-    cuda_code = cuda_code.replaceAll("%%invoke_run%%", replacement);  
-    
+    cuda_code = cuda_code.replaceAll("%%invoke_run%%", replacement);
+
     int string_builder_number = RootbeerClassLoader.v().getClassNumber("java.lang.StringBuilder");
     String sbn_str = "" + string_builder_number;
     cuda_code = cuda_code.replaceAll("%%java_lang_StringBuilder_TypeNumber%%", sbn_str);
-    
+
     int null_pointer_number = RootbeerClassLoader.v().getClassNumber("java.lang.NullPointerException");
     String np_str = "" + null_pointer_number;
     cuda_code = cuda_code.replaceAll("%%java_lang_NullPointerException_TypeNumber%%", np_str);
@@ -334,11 +334,11 @@ public class OpenCLScene {
     int out_of_memory_number = RootbeerClassLoader.v().getClassNumber("java.lang.OutOfMemoryError");
     String out_of_memory_str = "" + out_of_memory_number;
     cuda_code = cuda_code.replaceAll("%%java_lang_OutOfMemoryError_TypeNumber%%", out_of_memory_str);
-    
+
     int size = Configuration.compilerInstance().getSharedMemSize();
     String size_str = ""+size;
     cuda_code = cuda_code.replaceAll("%%shared_mem_size%%", size_str);
-    
+
     boolean exceptions = Configuration.compilerInstance().getExceptions();
     String exceptions_str;
     if(exceptions){
@@ -347,7 +347,7 @@ public class OpenCLScene {
       exceptions_str = ""+0;
     }
     cuda_code = cuda_code.replaceAll("%%using_exceptions%%", exceptions_str);
-    
+
     int string_number = RootbeerClassLoader.v().getClassNumber("java.lang.String");
     String string_str = "" + string_number;
     cuda_code = cuda_code.replaceAll("%%java_lang_String_TypeNumber%%", string_str);
@@ -355,15 +355,15 @@ public class OpenCLScene {
     int integer_number = RootbeerClassLoader.v().getClassNumber("java.lang.Integer");
     String integer_str = "" + integer_number;
     cuda_code = cuda_code.replaceAll("%%java_lang_Integer_TypeNumber%%", integer_str);
-    
+
     int long_number = RootbeerClassLoader.v().getClassNumber("java.lang.Long");
     String long_str = "" + long_number;
     cuda_code = cuda_code.replaceAll("%%java_lang_Long_TypeNumber%%", long_str);
-    
+
     int float_number = RootbeerClassLoader.v().getClassNumber("java.lang.Float");
     String float_str = "" + float_number;
     cuda_code = cuda_code.replaceAll("%%java_lang_Float_TypeNumber%%", float_str);
-    
+
     int double_number = RootbeerClassLoader.v().getClassNumber("java.lang.Double");
     String double_str = "" + double_number;
     cuda_code = cuda_code.replaceAll("%%java_lang_Double_TypeNumber%%", double_str);
@@ -371,10 +371,10 @@ public class OpenCLScene {
     int boolean_number = RootbeerClassLoader.v().getClassNumber("java.lang.Boolean");
     String boolean_str = "" + boolean_number;
     cuda_code = cuda_code.replaceAll("%%java_lang_Boolean_TypeNumber%%", boolean_str);
-    
+
     return cuda_code;
   }
-  
+
   public String[] getOpenCLCode() throws Exception {
     String[] source_code = makeSourceCode();
     return source_code;
@@ -388,9 +388,9 @@ public class OpenCLScene {
   private String headerString(boolean unix) throws IOException {
     String defines = "";
     if(Configuration.compilerInstance().getArrayChecks()){
-      defines += "#define ARRAY_CHECKS\n"; 
+      defines += "#define ARRAY_CHECKS\n";
     }
-    
+
     String specific_path;
     if(unix){
       specific_path = Tweaks.v().getUnixHeaderPath();
@@ -405,16 +405,16 @@ public class OpenCLScene {
       both_header = ResourceReader.getResource(both_path);
     }
     String specific_header = ResourceReader.getResource(specific_path);
-    
+
     String barrier_path = Tweaks.v().getBarrierPath();
     String barrier_code = "";
     if(barrier_path != null){
       barrier_code = ResourceReader.getResource(barrier_path);
     }
-    
+
     return defines + "\n" + specific_header + "\n" + both_header + "\n" + barrier_code;
   }
-  
+
   private String kernelString(boolean unix) throws IOException {
     String kernel_path;
     if(unix){
@@ -430,7 +430,7 @@ public class OpenCLScene {
     }
     return both_kernel_code + "\n" + specific_kernel_code;
   }
-  
+
   private String garbageCollectorString() throws IOException {
     String path = Tweaks.v().getGarbageCollectorPath();
     String ret = ResourceReader.getResource(path);
@@ -438,19 +438,19 @@ public class OpenCLScene {
     ret = ret.replace("$$__global$$", Tweaks.v().getGlobalAddressSpaceQualifier());
     return ret;
   }
-  
+
   private String methodPrototypesString(){
     //using a set so duplicates get filtered out.
     Set<String> protos = new HashSet<String>();
     StringBuilder ret = new StringBuilder();
-    
+
     ArrayCopyGenerate arr_generate = new ArrayCopyGenerate();
     protos.add(arr_generate.getProto());
-    
+
     List<OpenCLMethod> methods = m_methodHierarchies.getMethods();
-    for(OpenCLMethod method : methods){ 
+    for(OpenCLMethod method : methods){
       protos.add(method.getMethodPrototype());
-    }    
+    }
     List<OpenCLPolymorphicMethod> poly_methods = m_methodHierarchies.getPolyMorphicMethods();
     for(OpenCLPolymorphicMethod poly_method : poly_methods){
       protos.add(poly_method.getMethodPrototypes());
@@ -474,18 +474,18 @@ public class OpenCLScene {
     if(m_usesGarbageCollector){
       ret.append("#define USING_GARBAGE_COLLECTOR\n");
     }
-    
+
     //a set is used so duplicates get filtered out
     Set<String> bodies = new HashSet<String>();
-    
+
     ArrayCopyTypeReduction reduction = new ArrayCopyTypeReduction();
     Set<OpenCLArrayType> new_types = reduction.run(m_arrayTypes, m_methodHierarchies);
-    
+
     ArrayCopyGenerate arr_generate = new ArrayCopyGenerate();
     bodies.add(arr_generate.get(new_types));
-    
+
     List<OpenCLMethod> methods = m_methodHierarchies.getMethods();
-    for(OpenCLMethod method : methods){ 
+    for(OpenCLMethod method : methods){
       bodies.add(method.getMethodBody());
     }
     List<OpenCLPolymorphicMethod> poly_methods = m_methodHierarchies.getPolyMorphicMethods();
@@ -508,7 +508,7 @@ public class OpenCLScene {
     }
     return ret.toString();
   }
-  
+
   public OffsetCalculator getOffsetCalculator(SootClass soot_class){
     List<CompositeField> composites = getCompositeFields();
     for(CompositeField composite : composites){
@@ -520,7 +520,7 @@ public class OpenCLScene {
   }
 
   public void addCodeSegment(MethodCodeSegment codeSegment){
-    m_rootSootClass = codeSegment.getRootSootClass();    
+    m_rootSootClass = codeSegment.getRootSootClass();
     m_readOnlyTypes = new ReadOnlyTypes(codeSegment.getRootMethod());
     getOpenCLClass(m_rootSootClass);
   }
@@ -528,7 +528,7 @@ public class OpenCLScene {
   public boolean isArrayLocalWrittenTo(Local local){
     return true;
   }
-  
+
   public ReadOnlyTypes getReadOnlyTypes(){
     return m_readOnlyTypes;
   }
@@ -550,7 +550,7 @@ public class OpenCLScene {
     factory.setup(m_classes);
     m_compositeFields = factory.getCompositeFields();
   }
-  
+
   public ClassConstantNumbers getClassConstantNumbers(){
     return m_constantNumbers;
   }

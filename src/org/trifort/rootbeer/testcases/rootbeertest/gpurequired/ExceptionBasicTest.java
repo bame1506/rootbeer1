@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -26,7 +26,7 @@ public class ExceptionBasicTest implements TestException {
     }
     return jobs;
   }
-  
+
   @Override
   public boolean catchException(Throwable thrwbl) {
     if(thrwbl instanceof ExceptionTestException)

@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -32,7 +32,7 @@ import soot.rbclassload.RootbeerClassLoader;
 import soot.util.Chain;
 
 /**
- * Represents an OpenCL function. 
+ * Represents an OpenCL function.
  * @author pcpratts
  */
 public class OpenCLMethod {
@@ -41,13 +41,13 @@ public class OpenCLMethod {
   private Set<String> m_dontMangleMethods;
   private Set<String> m_dontEmitMethods;
   private Set<String> m_emitUnmangled;
-  
+
   public OpenCLMethod(SootMethod soot_method, SootClass soot_class){
     m_sootMethod = soot_method;
     m_sootClass = soot_class;
     createDontMangleMethods();
   }
-    
+
   public String getReturnString(){
     StringBuilder ret = new StringBuilder();
     if(isConstructor()){
@@ -58,11 +58,11 @@ public class OpenCLMethod {
     }
     return ret.toString();
   }
-  
+
   private String getRestOfArgumentListStringInternal(){
     StringBuilder ret = new StringBuilder();
     List args = m_sootMethod.getParameterTypes();
-        
+
     for(int i = 0; i < args.size(); ++i){
       Type curr_arg = (Type) args.get(i);
       OpenCLType parameter_type = new OpenCLType(curr_arg);
@@ -74,7 +74,7 @@ public class OpenCLMethod {
     ret.append(")");
     return ret.toString();
   }
-  
+
   private String getArgumentListStringInternal(boolean override_ctor){
     StringBuilder ret = new StringBuilder();
     ret.append("(");
@@ -84,7 +84,7 @@ public class OpenCLMethod {
     } else if((isConstructor() == false || override_ctor == true) && m_sootMethod.isStatic() == false){
       ret.append("int thisref, ");
     }
-    
+
     ret.append(getRestOfArgumentListStringInternal());
     return ret.toString();
   }
@@ -116,7 +116,7 @@ public class OpenCLMethod {
     ret.append(getArgumentListString(ctor_body));
     return ret.toString();
   }
-  
+
   public String getMethodPrototype(){
     String ret = getMethodDecl(false)+";\n";
     if(isConstructor()){
@@ -132,13 +132,13 @@ public class OpenCLMethod {
     }
     return false;
   }
-  
+
   private String synchronizedEnter(){
-    String prefix = Options.v().rbcl_remap_prefix();    
+    String prefix = Options.v().rbcl_remap_prefix();
     if(Options.v().rbcl_remap_all() == false){
       prefix = "";
     }
-    
+
     String ret = "";
     ret += "int id;\n";
     ret += "char * mem;\n";
@@ -188,9 +188,9 @@ public class OpenCLMethod {
       ret += "    if(count > 50 || (*((int *) mystery)) == 0){\n";
       ret += "      count = 0;\n";
       ret += "    }\n";
-      ret += "  } else {\n"; 
-    }    
-    
+      ret += "  } else {\n";
+    }
+
     //adding this in makes the WhileTrueTest pass.
     //for some reason the first write to memory doesn't work well inside a sync block.
     if(m_sootMethod.isStatic() == false){
@@ -214,10 +214,10 @@ public class OpenCLMethod {
     }
     return ret;
   }
-  
+
   public String getMethodBody(){
     SootMethod body_method = findBodyMethod();
-    
+
     StringBuilder ret = new StringBuilder();
     if(shouldEmitBody()){
       ret.append(getMethodDecl(false)+"{\n");
@@ -226,7 +226,7 @@ public class OpenCLMethod {
           OpenCLBody ocl_body = new OpenCLBody(body_method, isConstructor());
           ret.append(ocl_body.getLocals());
           if(isSynchronized()){
-            ret.append(synchronizedEnter()); 
+            ret.append(synchronizedEnter());
           }
           try {
             ret.append(ocl_body.getBodyNoLocals());
@@ -242,8 +242,8 @@ public class OpenCLMethod {
               ret.append("    if(count > 50 || (*((int *) mystery)) == 0){\n");
               ret.append("      count = 0;\n");
               ret.append("    }\n");
-              ret.append("  }\n"); 
-              ret.append("}\n"); 
+              ret.append("  }\n");
+              ret.append("}\n");
             } else {
               ret.append("  }\n");
               ret.append("}\n");
@@ -263,7 +263,7 @@ public class OpenCLMethod {
       }
       ret.append("}\n");
       if(isConstructor()){
-        ret.append(getMethodDecl(true)+"{\n"); 
+        ret.append(getMethodDecl(true)+"{\n");
         OpenCLBody ocl_body = new OpenCLBody(body_method.retrieveActiveBody());
         ret.append(ocl_body.getBody());
         ret.append("}\n");
@@ -271,7 +271,7 @@ public class OpenCLMethod {
     }
     return ret.toString();
   }
-  
+
   private SootMethod findBodyMethod() {
     if(m_sootMethod.isConcrete()){
       return m_sootMethod;
@@ -298,7 +298,7 @@ public class OpenCLMethod {
 
     ret.append(getPolymorphicNameInternal(true) +"(");
     ret.append("thisref, ");
-    
+
     List args = arg0.getArgs();
     MethodJimpleValueSwitch quick_value_switch = new MethodJimpleValueSwitch(ret);
     for(int i = 0; i < args.size(); ++i){
@@ -308,7 +308,7 @@ public class OpenCLMethod {
     }
     ret.append("exception");
     ret.append(")");
-    
+
     return ret.toString();
   }
 
@@ -356,7 +356,7 @@ public class OpenCLMethod {
     ret.append(function_name+"(");
     List args = arg0.getArgs();
     List<String> args_list = new ArrayList<String>();
-    
+
     //write the thisref
     if(isConstructor() == false)
       args_list.add(local.getName());
@@ -365,7 +365,7 @@ public class OpenCLMethod {
       ret.append(args_list.get(i));
       ret.append(",\n ");
     }
-    
+
     MethodJimpleValueSwitch quick_value_switch = new MethodJimpleValueSwitch(ret);
     for(int i = 0; i < args.size(); ++i){
       Value arg = (Value) args.get(i);
@@ -374,7 +374,7 @@ public class OpenCLMethod {
     }
     ret.append("exception");
     ret.append(")");
-    
+
     if(isConstructor()){
       ret.append(")");
     }
@@ -388,15 +388,15 @@ public class OpenCLMethod {
       return true;
     return false;
   }
-  
+
   public String getPolymorphicName(){
     return getPolymorphicNameInternal(false);
   }
-  
+
   private String getPolymorphicNameInternal(boolean ctor_body){
     String ret = getBaseMethodName();
     if(ctor_body){
-      ret += "_body";  
+      ret += "_body";
     }
     String signature = getSignature();
     if(m_dontMangleMethods.contains(signature) == false)
@@ -405,9 +405,9 @@ public class OpenCLMethod {
   }
 
   private String getBaseMethodName(){
-    return getBaseMethodName(m_sootClass, m_sootMethod);  
+    return getBaseMethodName(m_sootClass, m_sootMethod);
   }
-  
+
   private String getBaseMethodName(SootClass soot_class, SootMethod soot_method){
     OpenCLClass ocl_class = new OpenCLClass(soot_class);
 
@@ -418,7 +418,7 @@ public class OpenCLMethod {
     String ret = ocl_class.getName()+"_"+method_name;
     return ret;
   }
-  
+
   private boolean shouldEmitBody(){
     String signature = getSignature();
     if(m_emitUnmangled.contains(signature)){
@@ -432,7 +432,7 @@ public class OpenCLMethod {
     }
     return true;
   }
-  
+
   @Override
   public String toString(){
     return getPolymorphicName();
@@ -459,12 +459,12 @@ public class OpenCLMethod {
   public boolean isSynchronized() {
     return m_sootMethod.isSynchronized();
   }
-  
+
   private void createDontMangleMethods() {
     CompilerSetup setup = new CompilerSetup();
     m_dontMangleMethods = setup.getDontMangle();
     m_dontEmitMethods = setup.getDontEmit();
-    m_emitUnmangled = setup.getEmitUnmanged();   
+    m_emitUnmangled = setup.getEmitUnmanged();
   }
 
   public String getSignature() {

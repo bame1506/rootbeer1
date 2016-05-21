@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -13,11 +13,11 @@ public class StringToIntegerRunOnGpu implements Kernel {
 
   private String m_strValue;
   private int m_toInteger;
-  
+
   public StringToIntegerRunOnGpu(String value) {
     m_strValue = value;
   }
-  
+
   public void gpuMethod() {
     m_toInteger = Integer.parseInt(m_strValue);
   }

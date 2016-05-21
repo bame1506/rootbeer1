@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,11 +15,11 @@ public class CovarientRunOnGpu implements Kernel {
   private CovarientBaseClass m_base2;
   private CovarientBaseClass m_base3;
   private CovarientDerivedClass m_derived1;
-  
+
   public void gpuMethod() {
-    m_base1 = new CovarientBaseClass(1);    
+    m_base1 = new CovarientBaseClass(1);
     m_derived1 = new CovarientDerivedClass(2);
-    
+
     m_base2 = m_base1.copy(3);
     m_base3 = m_derived1.copy(4);
   }
@@ -43,5 +43,5 @@ public class CovarientRunOnGpu implements Kernel {
     }
     return true;
   }
-  
+
 }

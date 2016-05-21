@@ -5,7 +5,7 @@ import org.trifort.rootbeer.runtime.Kernel;
 public class ForceArrayNewRunOnGpu implements Kernel {
 
   private String m_stringArray;
-  
+
   @Override
   public void gpuMethod() {
     m_stringArray = getStringArray();
@@ -18,7 +18,7 @@ public class ForceArrayNewRunOnGpu implements Kernel {
   private String getStringArrayCPU(){
     return "testForceArrayNew";
   }
-  
+
   public boolean compare(ForceArrayNewRunOnGpu rhs) {
     m_stringArray = getStringArrayCPU();
     if(m_stringArray.equals(rhs.m_stringArray) == false){

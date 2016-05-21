@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -14,50 +14,50 @@ public class ShiftRunOnGpu implements Kernel {
   private byte m_byteRightSigned;
   private byte m_byteRightUnsigned;
   private byte m_byteLeft;
-  
+
   private short m_shortRightSigned;
   private short m_shortRightUnsigned;
   private short m_shortLeft;
-  
+
   private int m_intRightSigned;
   private int m_intRightUnsigned;
   private int m_intLeft;
-  
+
   private long m_longRightSigned;
   private long m_longRightUnsigned;
   private long m_longLeft;
-  
+
   public ShiftRunOnGpu(){
     m_byteRightSigned = (byte) -127;
     m_byteRightUnsigned = (byte) -127;
     m_byteLeft = (byte) -127;
-    
+
     m_shortRightSigned = -32765;
     m_shortRightUnsigned = -32765;
     m_shortLeft = -32765;
-    
+
     m_intRightSigned = -2147483647;
     m_intRightUnsigned = -2147483647;
     m_intLeft = -2147483647;
-    
+
     m_longRightSigned = -9223372036854775808L;
     m_longRightUnsigned = -9223372036854775808L;
     m_longLeft = -9223372036854775808L;
   }
-  
+
   public void gpuMethod() {
     m_byteRightSigned >>= 4;
     m_byteRightUnsigned >>= 4;
     m_byteLeft <<= 4;
-    
+
     m_shortRightSigned >>= 8;
     m_shortRightUnsigned >>= 8;
     m_shortLeft <<= 8;
-    
+
     m_intRightSigned >>= 16;
     m_intRightUnsigned >>= 16;
     m_intLeft <<= 16;
-    
+
     m_longRightSigned >>= 32;
     m_longRightUnsigned >>= 32;
     m_longLeft <<= 32;
@@ -138,5 +138,5 @@ public class ShiftRunOnGpu implements Kernel {
     }
     return true;
   }
-  
+
 }

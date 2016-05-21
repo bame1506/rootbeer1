@@ -8,14 +8,14 @@ import org.trifort.rootbeer.runtime.Kernel;
 public class ArraysSortRunOnGpu implements Kernel {
 
   private int[] m_array;
-  
+
   public ArraysSortRunOnGpu(){
     m_array = new int[8];
     for(int i = 0; i < m_array.length; ++i){
       m_array[i] = m_array.length - i;
     }
   }
-  
+
 	@Override
 	public void gpuMethod() {
 	  Arrays.sort(m_array);

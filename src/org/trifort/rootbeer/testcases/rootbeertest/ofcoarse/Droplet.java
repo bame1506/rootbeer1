@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -53,7 +53,7 @@ public class Droplet {
     mVolumeSum += volume;
     mSumCount++;
   }
-  
+
   public boolean compareSums(Droplet rhs){
     System.out.println("mXSum: "+mXSum+" rhs.XSum:"+rhs.mXSum);
     System.out.println("mYSum: "+mYSum+" rhs.YSum:"+rhs.mYSum);
@@ -62,7 +62,7 @@ public class Droplet {
     if(mXSum != rhs.mXSum){
       System.out.println("mXSum: ");
       return false;
-    } 
+    }
     if(mYSum != rhs.mYSum){
       System.out.println("mYSum: ");
       return false;

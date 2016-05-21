@@ -1,9 +1,9 @@
 package org.trifort.rootbeer.testcases.rootbeertest.kerneltemplate;
 
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -41,18 +41,18 @@ public class MatrixKernel implements Kernel {
       sum += m_a[i*a_columns+k] + m_b[k*b_columns+j];
     }
     m_c[i*b_columns+j] = sum;
-    //RootbeerGpu.setSharedFloat((row*block_size) + col, m_a[row*block_size]); 
+    //RootbeerGpu.setSharedFloat((row*block_size) + col, m_a[row*block_size]);
   }
 
   public boolean compare(MatrixKernel rhs) {
     int[] lhs_c = m_c;
     int[] rhs_c = rhs.m_c;
-    
+
     if(lhs_c.length != rhs_c.length){
       System.out.println("length");
       return false;
     }
-        
+
     for(int i = 0; i < lhs_c.length; ++i){
       int lhs_value = lhs_c[i];
       int rhs_value = rhs_c[i];

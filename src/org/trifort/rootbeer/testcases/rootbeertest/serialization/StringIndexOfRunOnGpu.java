@@ -7,11 +7,11 @@ public class StringIndexOfRunOnGpu implements Kernel {
   private String m_start;
   private int m_index1;
   private int m_index2;
-  
+
   public StringIndexOfRunOnGpu(){
     m_start = "string_index_of_test_string_index_of_test";
   }
-  
+
   @Override
   public void gpuMethod() {
     m_index1 = m_start.indexOf("index_of");

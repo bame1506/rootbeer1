@@ -7,11 +7,11 @@ public class StringSplitRunOnGpu implements Kernel {
   private String m_start;
   private String[] m_end1;
   private String[] m_end2;
-  
+
   public StringSplitRunOnGpu(String start){
     m_start = start;
   }
-  
+
   @Override
   public void gpuMethod() {
     m_end1 = m_start.split(" ");
@@ -24,7 +24,7 @@ public class StringSplitRunOnGpu implements Kernel {
       System.out.println("lhs: "+m_end1);
       System.out.println("rhs: "+rhs.m_end1);
       return false;
-    }   
+    }
     if(compareArrays(m_end2, rhs.m_end2) == false){
       System.out.println("m_end2");
       System.out.println("lhs: "+m_end2);

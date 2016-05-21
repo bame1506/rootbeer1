@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -19,18 +19,18 @@ public class CudaPath {
 
   private List<String> m_windowsSearchPaths;
   private List<String> m_unixSearchPaths;
-  
+
   public CudaPath(){
     m_windowsSearchPaths = new ArrayList<String>();
     m_unixSearchPaths = new ArrayList<String>();
-    
+
     m_windowsSearchPaths.add("C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\");
     m_windowsSearchPaths.add("C:\\Program Files (x86)\\NVIDIA GPU Computing Toolkit\\CUDA\\");
     m_unixSearchPaths.add("/usr/local/cuda/bin/");
     m_unixSearchPaths.add("/usr/local/cuda-5.5/bin/");
     m_unixSearchPaths.add("/usr/lib/nvidia-cuda-toolkit/bin/");
   }
-          
+
   public String get(){
     if(File.separator.equals("/")){
       return getUnix();
@@ -49,7 +49,7 @@ public class CudaPath {
       }
       return s;
     }
-    
+
     // Search path
     BufferedReader input = null;
     try {
@@ -69,7 +69,7 @@ public class CudaPath {
         // If this fails there is nothing we can do
       }
     }
-    
+
     // Search globally
     input = null;
     try {
@@ -94,7 +94,7 @@ public class CudaPath {
         // If this fails there is nothing we can do
       }
     }
-    
+
     // Search given paths
     for(String path : m_unixSearchPaths){
       File file = new File(path+"nvcc");
@@ -102,7 +102,7 @@ public class CudaPath {
         return path;
       }
     }
-    
+
     // Last resort...
     return "/usr/local/cuda/bin/";
   }
@@ -113,7 +113,7 @@ public class CudaPath {
       if(nvcc != null){
         return nvcc;
       }
-    }    
+    }
     if(System.getenv().containsKey("CUDA_BIN_PATH")){
       return findWindowsNvcc(System.getenv("CUDA_BIN_PATH"));
     }
@@ -149,22 +149,22 @@ public class CudaPath {
     }
     return null;
   }
-  
+
   private class FileSorter implements Comparable<FileSorter> {
 
     private File m_file;
-    
+
     public FileSorter(File file){
       m_file = file;
     }
-    
+
     public int compareTo(FileSorter o) {
       String lhs = m_file.getAbsolutePath();
       String rhs = o.m_file.getAbsolutePath();
-      
+
       return rhs.compareTo(lhs);
     }
-    
+
     public File getFile(){
       return m_file;
     }

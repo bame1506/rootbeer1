@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -34,5 +34,5 @@ public class SynchronizedMethod3Test implements TestSerialization {
     return lhs.compare(rhs);
   }
 
-  
+
 }

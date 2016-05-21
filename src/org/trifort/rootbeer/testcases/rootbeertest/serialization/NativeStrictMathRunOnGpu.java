@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -31,7 +31,7 @@ public class NativeStrictMathRunOnGpu implements Kernel {
   private double sinh;
   private double cosh;
   private double tanh;
-  
+
   public NativeStrictMathRunOnGpu(int i){
     this.i = i;
   }
@@ -57,7 +57,7 @@ public class NativeStrictMathRunOnGpu implements Kernel {
     cosh = java.lang.StrictMath.cosh(i);
     tanh = java.lang.StrictMath.tanh(i);
   }
-  
+
   private boolean NaN(double value){
     if(value < 0)
       return false;
@@ -67,7 +67,7 @@ public class NativeStrictMathRunOnGpu implements Kernel {
       return false;
     return true;
   }
-  
+
   private boolean eq(double lhs, double rhs){
     if(NaN(lhs) && NaN(rhs))
       return true;
@@ -76,11 +76,11 @@ public class NativeStrictMathRunOnGpu implements Kernel {
     if(lhs == Double.POSITIVE_INFINITY && rhs == Double.POSITIVE_INFINITY)
       return true;
     double diff = Math.abs(lhs - rhs);
-    if(diff < 0.0000000000001)   
+    if(diff < 0.0000000000001)
       return true;
     return false;
   }
-  
+
   boolean compare(NativeStrictMathRunOnGpu grhs) {
     if(grhs == null){
       System.out.println("grhs == null");

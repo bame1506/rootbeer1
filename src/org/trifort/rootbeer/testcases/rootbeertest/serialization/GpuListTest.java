@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -21,14 +21,14 @@ public class GpuListTest implements TestSerialization {
     for(int i = 0; i < 500; ++i){
       ret.add(new GpuListRunOnGpu());
     }
-    return ret;    
+    return ret;
   }
 
   @Override
   public boolean compare(Kernel lhs, Kernel rhs) {
     GpuListRunOnGpu glhs = (GpuListRunOnGpu) lhs;
     GpuListRunOnGpu grhs = (GpuListRunOnGpu) rhs;
-    
+
     if(glhs.getList().size() != glhs.getList().size())
       return false;
     for(int i = 0; i < glhs.getList().size(); ++i){
@@ -37,8 +37,8 @@ public class GpuListTest implements TestSerialization {
       if(first.getValue() != second.getValue())
         return false;
     }
-    return true;    
+    return true;
   }
 
-  
+
 }

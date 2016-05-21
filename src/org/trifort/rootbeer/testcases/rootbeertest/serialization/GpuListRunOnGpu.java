@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -12,11 +12,11 @@ import org.trifort.rootbeer.runtime.Kernel;
 public class GpuListRunOnGpu implements Kernel {
 
   private GpuList<Item> m_List;
-  
+
   public GpuListRunOnGpu(){
     m_List = new GpuList<Item>();
   }
-  
+
   @Override
   public void gpuMethod() {
     m_List = new GpuList<Item>();
@@ -24,7 +24,7 @@ public class GpuListRunOnGpu implements Kernel {
       m_List.add(new Item());
     }
   }
-  
+
   public GpuList<Item> getList(){
     return m_List;
   }

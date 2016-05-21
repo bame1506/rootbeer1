@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -19,7 +19,7 @@ public class StaticsTest1RunOnGpu extends StaticsTest1BaseClass implements Kerne
   private static float m_Float;
   private static double m_Double;
   private static boolean m_Bool;
-  
+
   private char m_Char2;
   private short m_Short2;
   private int m_Int2;
@@ -27,11 +27,11 @@ public class StaticsTest1RunOnGpu extends StaticsTest1BaseClass implements Kerne
   private float m_Float2;
   private double m_Double2;
   private boolean m_Bool2;
-  
+
   static {
-    m_Bool = false; 
+    m_Bool = false;
   }
-  
+
   public StaticsTest1RunOnGpu(){
     m_Char = 5;
     m_Short = 10;
@@ -41,7 +41,7 @@ public class StaticsTest1RunOnGpu extends StaticsTest1BaseClass implements Kerne
     m_Double = 30.0;
     m_Bool2 = false;
   }
-  
+
   @Override
   public void gpuMethod() {
     m_Char2 = (char) (m_Char + 1);
@@ -55,7 +55,7 @@ public class StaticsTest1RunOnGpu extends StaticsTest1BaseClass implements Kerne
       m_Bool2 = true;
     }
   }
-  
+
   boolean compare(StaticsTest1RunOnGpu brhs) {
     if(m_Char2 != brhs.m_Char2){
       System.out.println("char");

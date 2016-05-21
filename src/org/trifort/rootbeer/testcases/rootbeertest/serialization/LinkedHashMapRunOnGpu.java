@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,7 +15,7 @@ import org.trifort.rootbeer.runtime.Kernel;
 public class LinkedHashMapRunOnGpu implements Kernel {
 
   private Map<Integer, String> m_map;
-  
+
   public void gpuMethod() {
     m_map = new LinkedHashMap<Integer, String>();
     m_map.put(0, "a");

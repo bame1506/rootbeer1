@@ -4,10 +4,10 @@ import org.trifort.rootbeer.runtime.Kernel;
 import org.trifort.rootbeer.runtime.RootbeerGpu;
 
 public class DoubleToStringKernelTemplateBuilderRunOnGpu  implements Kernel {
-  
+
   private String[] m_toString;
   private double[] m_value;
-  
+
   public DoubleToStringKernelTemplateBuilderRunOnGpu(double value, int kernel_count){
     m_toString = new String[kernel_count];
     for (int i = 0; i < m_toString.length; i++) {
@@ -18,7 +18,7 @@ public class DoubleToStringKernelTemplateBuilderRunOnGpu  implements Kernel {
       m_value[i] = value;
     }
   }
-  
+
   public void gpuMethod() {
     int thread_id = RootbeerGpu.getThreadId();
     double value = m_value[thread_id];
@@ -26,7 +26,7 @@ public class DoubleToStringKernelTemplateBuilderRunOnGpu  implements Kernel {
     builder.append(value * value);
     m_toString[thread_id] = builder.toString();
   }
-  
+
   public boolean compare(DoubleToStringKernelTemplateBuilderRunOnGpu rhs) {
     for (int i = 0; i < m_toString.length; i++) {
       if(rhs.m_toString[i] == null){

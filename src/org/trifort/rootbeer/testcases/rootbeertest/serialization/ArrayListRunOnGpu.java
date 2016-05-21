@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -14,11 +14,11 @@ import org.trifort.rootbeer.runtime.Kernel;
 public class ArrayListRunOnGpu implements Kernel {
 
   private List<ArrayListTestObject> m_arrayList;
-  
+
   public ArrayListRunOnGpu(List<ArrayListTestObject> array_list){
     m_arrayList = array_list;
   }
-  
+
   public void gpuMethod() {
     for(int i = 0; i < 4; ++i){
       ArrayListTestObject new_object = new ArrayListTestObject();
@@ -30,14 +30,14 @@ public class ArrayListRunOnGpu implements Kernel {
   public boolean compare(ArrayListRunOnGpu rhs) {
     List<ArrayListTestObject> lhs_list = m_arrayList;
     List<ArrayListTestObject> rhs_list = rhs.m_arrayList;
-    
+
     if(lhs_list.size() != rhs_list.size()){
       System.out.println("size");
       System.out.println("lhs: "+lhs_list.size());
       System.out.println("rhs: "+rhs_list.size());
       return false;
     }
-    
+
     boolean passed = true;
     for(int i = 0; i < lhs_list.size(); ++i){
       ArrayListTestObject lhs_obj = lhs_list.get(i);

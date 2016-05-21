@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -25,12 +25,12 @@ public class RegularExpressionTest implements TestSerialization {
     RegularExpressionRunOnGpu rhs = (RegularExpressionRunOnGpu) from_heap;
     return lhs.compare(rhs);
   }
-  
+
 }
 */
 import org.trifort.rootbeer.runtime.Kernel;
 import org.trifort.rootbeer.test.TestSerialization;
- 
+
 public class RegularExpressionTest implements TestSerialization {
 
   public List<Kernel> create() {
@@ -40,7 +40,7 @@ public class RegularExpressionTest implements TestSerialization {
     }
     return ret;
   }
-  
+
   public boolean compare(Kernel original, Kernel from_heap) {
     RegularExpressionRunOnGpu lhs = (RegularExpressionRunOnGpu) original;
     RegularExpressionRunOnGpu rhs = (RegularExpressionRunOnGpu) from_heap;

@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -31,15 +31,15 @@ public class OuterClass3RunOnGpu implements Kernel {
     }
     return true;
   }
-  
+
   private class InnerClass {
-    
+
     private int m_Int;
-    
+
     public InnerClass(){
       m_Int = 5;
     }
-    
+
     public int getValue(){
       return m_Int + 10;
     }

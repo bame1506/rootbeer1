@@ -3,7 +3,7 @@ package org.trifort.rootbeer.runtime;
 import java.util.List;
 
 public interface Memory {
-  
+
   public byte readByte();
   public boolean readBoolean();
   public short readShort();
@@ -20,7 +20,7 @@ public interface Memory {
   public void readArray(float[] array);
   public void readArray(double[] array);
   public void readArray(long[] array);
-  
+
   public void writeByte(byte value);
   public void writeBoolean(boolean value);
   public void writeChar(char value);
@@ -37,7 +37,7 @@ public interface Memory {
   public void writeArray(float[] array);
   public void writeArray(double[] array);
   public void writeArray(long[] array);
-  
+
   public void incrementAddress(int offset);
   public long mallocWithSize(int size);
   public void setPointer(long ptr);

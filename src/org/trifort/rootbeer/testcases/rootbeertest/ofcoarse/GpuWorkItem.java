@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -56,7 +56,7 @@ public class GpuWorkItem implements Kernel {
     }
     for(int index = 0; index < l_lst.size(); ++index){
       System.out.println("debug: "+l_lst.get(index).getDouble()+" "+r_lst.get(index).getDouble());
-    }    
+    }
     for(int index = 0; index < next.size(); ++index){
       Droplet lhs = next.get(index);
       Droplet rhs = grhs.next.get(index);
@@ -86,7 +86,7 @@ public class GpuWorkItem implements Kernel {
         System.out.println("lhs.X: "+lhs.getCenter().X);
         System.out.println("lhs.Y: "+lhs.getCenter().Y);
         System.out.println("rhs.X: "+rhs.getCenter().X);
-        System.out.println("rhs.Y: "+rhs.getCenter().Y);        
+        System.out.println("rhs.Y: "+rhs.getCenter().Y);
         return false;
       }
       System.out.println("6");

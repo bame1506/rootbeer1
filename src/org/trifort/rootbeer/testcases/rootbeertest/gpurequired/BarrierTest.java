@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -31,7 +31,7 @@ public class BarrierTest implements TestSerialization{
   public boolean compare(Kernel original, Kernel from_heap) {
     BarrierRunOnGpu lhs = (BarrierRunOnGpu) original;
     BarrierRunOnGpu rhs = (BarrierRunOnGpu) from_heap;
-    
+
     return lhs.compare(rhs);
   }
 

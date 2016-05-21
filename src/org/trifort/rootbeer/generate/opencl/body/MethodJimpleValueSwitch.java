@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -79,7 +79,7 @@ public class MethodJimpleValueSwitch implements JimpleValueSwitch {
     m_classConstantReader = new ClassConstantReader();
     clearLhsRhs();
   }
-  
+
   public boolean newHasBeenCalled(){
     return m_newCalled;
   }
@@ -87,7 +87,7 @@ public class MethodJimpleValueSwitch implements JimpleValueSwitch {
   public void resetNewCalled(){
     m_newCalled = false;
   }
-  
+
   void setLhs(){
     m_lhs = true;
     m_rhs = false;
@@ -112,29 +112,29 @@ public class MethodJimpleValueSwitch implements JimpleValueSwitch {
   private void writeBinOpExpr(BinopExpr arg0){
     String symbol = arg0.getSymbol().trim();
     if(needDoubleMod(arg0, symbol)){
-      m_output.append("org_trifort_modulus(");      
+      m_output.append("org_trifort_modulus(");
       arg0.getOp1().apply(this);
       m_output.append(", ");
       arg0.getOp2().apply(this);
       m_output.append(")");
     } else if(symbol.equals("cmp")){
-      m_output.append("org_trifort_cmp(");      
+      m_output.append("org_trifort_cmp(");
       arg0.getOp1().apply(this);
       m_output.append(", ");
       arg0.getOp2().apply(this);
       m_output.append(")");
-    } else if(symbol.equals("cmpl")){    
-      m_output.append("org_trifort_cmpl((double)");      
+    } else if(symbol.equals("cmpl")){
+      m_output.append("org_trifort_cmpl((double)");
       arg0.getOp1().apply(this);
       m_output.append(", (double)");
       arg0.getOp2().apply(this);
       m_output.append(")");
     } else if(symbol.equals("cmpg")){
-      m_output.append("org_trifort_cmpg((double)");      
+      m_output.append("org_trifort_cmpg((double)");
       arg0.getOp1().apply(this);
       m_output.append(", (double)");
       arg0.getOp2().apply(this);
-      m_output.append(")");    
+      m_output.append(")");
     } else {
       arg0.getOp1().apply(this);
       m_output.append(" "+symbol+" ");
@@ -142,7 +142,7 @@ public class MethodJimpleValueSwitch implements JimpleValueSwitch {
       m_output.append(" ");
     }
   }
-   
+
   private boolean needDoubleMod(BinopExpr arg0, String symbol) {
     if(symbol.equals("%") == false)
       return false;
@@ -285,7 +285,7 @@ public class MethodJimpleValueSwitch implements JimpleValueSwitch {
 
   public void caseStaticInvokeExpr(StaticInvokeExpr arg0) {
     SootMethod soot_method = arg0.getMethod();
-    SootClass soot_class = soot_method.getDeclaringClass();    
+    SootClass soot_class = soot_method.getDeclaringClass();
     OpenCLMethod ocl_method = new OpenCLMethod(soot_method, soot_class);
     m_output.append(ocl_method.getStaticInvokeString(arg0));
     setCheckException();
@@ -319,8 +319,8 @@ public class MethodJimpleValueSwitch implements JimpleValueSwitch {
   public void caseNewMultiArrayExpr(NewMultiArrayExpr arg0) {
     OpenCLScene.v().setUsingGarbageCollector();
     OpenCLArrayType array_type = new OpenCLArrayType((ArrayType) arg0.getType());
-    m_output.append(array_type.invokeNewMultiArrayExpr(arg0));  
-    m_newCalled = true;  
+    m_output.append(array_type.invokeNewMultiArrayExpr(arg0));
+    m_newCalled = true;
   }
 
   public void caseNewExpr(NewExpr arg0) {
@@ -372,7 +372,7 @@ public class MethodJimpleValueSwitch implements JimpleValueSwitch {
   }
 
   private String replaceNumber(String number){
-    if(number.equals("#Infinity"))  
+    if(number.equals("#Infinity"))
       return "INFINITY";
     if(number.equals("#-Infinity"))
       return "-INFINITY";
@@ -380,7 +380,7 @@ public class MethodJimpleValueSwitch implements JimpleValueSwitch {
       return "NAN";
     return number;
   }
-  
+
   public void caseStringConstant(StringConstant arg0) {
     m_output.append(" org_trifort_string_constant((char *) "+arg0.toString()+", exception) ");
   }
@@ -391,7 +391,7 @@ public class MethodJimpleValueSwitch implements JimpleValueSwitch {
     int num = OpenCLScene.v().getClassConstantNumbers().get(type);
     m_output.append("org_trifort_classConstant("+num+")");
   }
- 
+
   public void caseArrayRef(ArrayRef arg0) {
     OpenCLArrayType array = new OpenCLArrayType((ArrayType) arg0.getBase().getType());
     if(isLhs()){
@@ -465,7 +465,7 @@ public class MethodJimpleValueSwitch implements JimpleValueSwitch {
   private void setCheckException() {
     m_checkException = true;
   }
-  
+
   public boolean getCheckException(){
     return m_checkException;
   }

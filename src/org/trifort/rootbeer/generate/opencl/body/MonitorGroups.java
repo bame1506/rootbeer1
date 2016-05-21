@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -24,9 +24,9 @@ import soot.toolkits.graph.ExceptionalBlockGraph;
 import soot.toolkits.graph.Block;
 
 public class MonitorGroups {
- 
+
   public List<MonitorGroupItem> getItems(Body body){
-    //TODO: Look at 
+    //TODO: Look at
     /*
     ExceptionalBlockGraph graph = new ExceptionalBlockGraph(body);
     System.out.println("========================================");
@@ -38,7 +38,7 @@ public class MonitorGroups {
     }
     System.out.println("========================================");
     */
-    
+
     List<MonitorGroupItem> ret = new ArrayList<MonitorGroupItem>();
     Stack<MonitorGroupItem> stack = new Stack<MonitorGroupItem>();
     MonitorGroupItem curr_monitor = new MonitorGroupItem();
@@ -57,7 +57,7 @@ public class MonitorGroups {
         stack.push(item2);
       } else if(curr instanceof ExitMonitorStmt){
         if(isLastExit((ExitMonitorStmt) curr, i, units)){
-          stack.top().addUnit(curr); 
+          stack.top().addUnit(curr);
           stack.pop();
           stack.pop();
           stack.pop();
@@ -65,21 +65,21 @@ public class MonitorGroups {
             curr_monitor = new MonitorGroupItem();
             ret.add(curr_monitor);
             stack.push(curr_monitor);
-          } else {      
+          } else {
             curr_monitor = new MonitorGroupItem();
             stack.top().addGroup(curr_monitor);
             stack.push(curr_monitor);
           }
         } else {
-          stack.top().addUnit(curr); 
+          stack.top().addUnit(curr);
         }
       } else {
-        stack.top().addUnit(curr); 
+        stack.top().addUnit(curr);
       }
     }
     return ret;
   }
-  
+
   private boolean isLastExit(ExitMonitorStmt exit, int index, List<Unit> units){
     Value op = exit.getOp();
     Local op_local = (Local) op;
@@ -97,7 +97,7 @@ public class MonitorGroups {
     }
     return true;
   }
-  
+
   private List<Unit> getUnits(Body body){
     List<Unit> ret = new ArrayList<Unit>();
     Iterator<Unit> iter = body.getUnits().iterator();
@@ -110,13 +110,13 @@ public class MonitorGroups {
 
   private void print(List<MonitorGroupItem> ret) {
     for(MonitorGroupItem item : ret){
-      System.out.println("<group_item>");     
+      System.out.println("<group_item>");
       System.out.println("<prefix>");
-      List<Unit> prefix = item.getPrefixUnits(); 
+      List<Unit> prefix = item.getPrefixUnits();
       for(Unit pre : prefix){
         System.out.println(pre.toString());
-      }           
-      System.out.println("</prefix>");      
+      }
+      System.out.println("</prefix>");
       if(item.getEnterMonitor() != null){
         System.out.println("<enter>");
         System.out.println(item.getEnterMonitor().toString());

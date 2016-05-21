@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -16,7 +16,7 @@ public class FastMatrixTest implements TestKernelTemplate {
 
   private int m_blockSize;
   private int m_gridSize;
-  public FastMatrixTest(){ 
+  public FastMatrixTest(){
     m_blockSize = 64;
     m_gridSize = 64*14;
   }

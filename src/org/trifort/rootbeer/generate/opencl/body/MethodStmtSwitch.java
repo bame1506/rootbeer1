@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -64,13 +64,13 @@ public class MethodStmtSwitch implements StmtSwitch {
     m_variableNumber = 1;
     m_oldValueFromMonitorStack = new Stack<String>();
   }
-  
+
   private String getVarName(){
     String ret = "monitor_var"+m_variableNumber;
     m_variableNumber++;
     return ret;
   }
-  
+
   public void popMonitor(){
     m_oldValueFromMonitorStack.pop();
   }
@@ -135,7 +135,7 @@ public class MethodStmtSwitch implements StmtSwitch {
       if(m_valueSwitch.getCheckException()){
         checkException();
       }
-      m_valueSwitch.clearLhsRhs();   
+      m_valueSwitch.clearLhsRhs();
     }
   }
 
@@ -154,10 +154,10 @@ public class MethodStmtSwitch implements StmtSwitch {
     String count = getVarName();
     String old = getVarName();
     m_oldValueFromMonitorStack.push(old);
-    
+
     OpenCLClass ocl_class = OpenCLScene.v().getOpenCLClass(m_sootMethod.getDeclaringClass());
     OpenCLMethod ocl_method = ocl_class.getMethod(m_sootMethod.getSignature());
-    
+
     m_output.append("int "+id+" = getThreadId();\n");
     m_output.append("char * "+mem+" = org_trifort_gc_deref(");
     arg0.getOp().apply(m_valueSwitch);
@@ -176,7 +176,7 @@ public class MethodStmtSwitch implements StmtSwitch {
     m_output.append("      "+count+" = 0;\n");
     m_output.append("    }\n");
     m_output.append("  } else {\n");
-    
+
     //the first write gets messed up in synch test cases
     m_output.append("  * ( ( int * ) & "+synch+" [ 20 ] ) = 20 ;\n");
   }
@@ -203,16 +203,16 @@ public class MethodStmtSwitch implements StmtSwitch {
   }
 
   public void caseLookupSwitchStmt(LookupSwitchStmt arg0) {
-    
+
     m_output.append("switch(");
     arg0.getKey().apply(m_valueSwitch);
     m_output.append("){\n");
     List<IntConstant> values = arg0.getLookupValues();
     List<Unit> units = arg0.getTargets();
     Unit default_target = arg0.getDefaultTarget();
-    
+
     int label_num;
-    
+
     for(int i = 0; i < values.size(); ++i){
       m_output.append("case ");
       values.get(i).apply(m_valueSwitch);
@@ -221,7 +221,7 @@ public class MethodStmtSwitch implements StmtSwitch {
     }
     label_num = m_parent.labelNum(default_target);
     m_output.append("default: goto label"+Integer.toString(label_num) + ";\n");
-    m_output.append("}\n"); 
+    m_output.append("}\n");
   }
 
   public void caseNopStmt(NopStmt arg0) {
@@ -240,37 +240,37 @@ public class MethodStmtSwitch implements StmtSwitch {
     arg0.getOp().apply(m_valueSwitch);
     m_output.append(";\n");
   }
-  
+
   public void caseReturnVoidStmt(ReturnVoidStmt arg0) {
-    if(m_sootMethod.isSynchronized()){ 
+    if(m_sootMethod.isSynchronized()){
       m_output.append("org_trifort_exitMonitorMem(mem, old);\n");
     }
     m_output.append("return;\n");
   }
 
   public void caseTableSwitchStmt(TableSwitchStmt arg0) {
-    
+
     m_output.append("switch(");
     arg0.getKey().apply(m_valueSwitch);
     m_output.append("){\n");
     List<Value> values = new ArrayList<Value>();
     for(int i = arg0.getLowIndex(); i < arg0.getHighIndex(); ++i){
-      values.add(IntConstant.v(i));  
+      values.add(IntConstant.v(i));
     }
-    
+
     List<Unit> units = arg0.getTargets();
     Unit default_target = arg0.getDefaultTarget();
-    
+
     int label_num;
-    
+
     for(int i = 0; i < values.size(); ++i){
       m_output.append("case ");
       values.get(i).apply(m_valueSwitch);
       label_num = m_parent.labelNum(units.get(i));
       m_output.append(": goto label"+Integer.toString(label_num) + ";\n");
     }
-    m_output.append("}\n"); 
-    
+    m_output.append("}\n");
+
   }
 
   public void caseThrowStmt(ThrowStmt arg0) {
@@ -284,7 +284,7 @@ public class MethodStmtSwitch implements StmtSwitch {
     m_output.append("return");
     if(methodReturnsAValue())
       m_output.append(" 0;\n");
-    else 
+    else
       m_output.append(";\n");
   }
 
@@ -308,7 +308,7 @@ public class MethodStmtSwitch implements StmtSwitch {
   void reset() {
     m_valueSwitch.reset();
   }
-  
+
   boolean hasCaughtExceptionRef(){
     return m_valueSwitch.hasCaughtExceptionRef();
   }
@@ -317,7 +317,7 @@ public class MethodStmtSwitch implements StmtSwitch {
     return m_valueSwitch.getThisRef();
   }
 
-  private void checkException() {    
+  private void checkException() {
     //if exceptions are turned off, do not check them
     if(Configuration.compilerInstance().getExceptions() == false){
       return;
@@ -331,7 +331,7 @@ public class MethodStmtSwitch implements StmtSwitch {
     int oom_num = RootbeerClassLoader.v().getClassNumber(oom_cls);
     int null_num = RootbeerClassLoader.v().getClassNumber(null_cls);
     m_output.append("if(*exception != 0) { \n");
-    if(m_trapItems != null){    
+    if(m_trapItems != null){
       m_output.append("  GC_OBJ_TYPE_TYPE ex_type;\n");
       //if exception is negative, then we didn't allocate memory for it.
       m_output.append("  if(*exception == "+oom_num+" || *exception == "+null_num+"){\n");

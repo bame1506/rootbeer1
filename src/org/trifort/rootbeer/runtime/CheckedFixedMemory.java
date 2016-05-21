@@ -21,7 +21,7 @@ public class CheckedFixedMemory extends FixedMemory {
     }
     super.setAddress(address);
   }
-  
+
   @Override
   protected long currPointer(){
     long ret = super.currPointer();

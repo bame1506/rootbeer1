@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -30,19 +30,19 @@ public class OuterClassRunOnGpu implements Kernel {
     }
     return true;
   }
-  
+
   public class OuterClassRunOnGpu2 implements Kernel {
     private int m_Int;
-    
+
     public OuterClassRunOnGpu2(){
       m_Int = 1;
     }
-    
+
     @Override
     public void gpuMethod() {
       m_Int++;
     }
-    
+
     public boolean compare(OuterClassRunOnGpu.OuterClassRunOnGpu2 brhs) {
       if(m_Int != brhs.m_Int){
         System.out.println("m_Int");

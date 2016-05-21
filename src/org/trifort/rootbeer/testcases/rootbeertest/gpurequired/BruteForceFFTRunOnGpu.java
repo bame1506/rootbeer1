@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,14 +15,14 @@ public class BruteForceFFTRunOnGpu implements Kernel {
   public float[] b;
   private int index;
   private int count;
-  
+
   public BruteForceFFTRunOnGpu(float[] a, float[] b, int index, int count){
     this.a = a;
     this.b = b;
     this.index = index;
     this.count = count;
   }
-  
+
   @Override
   public void gpuMethod() {
     int N = a.length;
@@ -35,7 +35,7 @@ public class BruteForceFFTRunOnGpu implements Kernel {
       a[k] = sum;
     }
   }
-  
+
   boolean compare(BruteForceFFTRunOnGpu brhs) {
     if(a.length != brhs.a.length){
       System.out.println("len failed");
@@ -47,7 +47,7 @@ public class BruteForceFFTRunOnGpu implements Kernel {
       System.out.println("a failed");
       System.out.println("lhs: "+a[index]);
       System.out.println("rhs: "+brhs.a[index]);
-      return false; 
+      return false;
     }
     if(b[index] != brhs.b[index]){
       System.out.println("b failed");

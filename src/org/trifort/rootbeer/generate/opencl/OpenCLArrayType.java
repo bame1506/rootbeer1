@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -24,15 +24,15 @@ import soot.rbclassload.RootbeerClassLoader;
 public class OpenCLArrayType {
 
   private ArrayType m_arrayType;
-  
+
   public OpenCLArrayType(ArrayType type){
     m_arrayType = (ArrayType) type;
   }
-  
+
   public ArrayType getArrayType(){
-    return m_arrayType;  
+    return m_arrayType;
   }
-  
+
   public String getArrayRefGetter(ArrayRef arg0){
     Value index = arg0.getIndex();
     Value base = arg0.getBase();
@@ -41,8 +41,8 @@ public class OpenCLArrayType {
     Local local = (Local) base;
     return getDerefTypeString()+"_get("+local.getName()+", "+index.toString()+", exception)";
   }
-  
-  
+
+
   public String getArrayRefSetter(ArrayRef arg0){
     Value index = arg0.getIndex();
     Value base = arg0.getBase();
@@ -52,19 +52,19 @@ public class OpenCLArrayType {
 
     return getDerefTypeString()+"_set("+local.getName()+", "+index.toString()+", ";
   }
-  
+
   public String getDerefTypeString(){
     OpenCLType type = new OpenCLType(m_arrayType);
     String ret = type.getDerefString();
     return ret;
   }
-  
+
   private String getMultiDeref(int dimensions){
-    Type base_type = m_arrayType.baseType;  
+    Type base_type = m_arrayType.baseType;
     ArrayType array_type = ArrayType.v(base_type,  dimensions);
     OpenCLType type = new OpenCLType(array_type);
     String ret = type.getDerefString();
-    return ret;    
+    return ret;
   }
 
   private List<String> getDecls(){
@@ -73,7 +73,7 @@ public class OpenCLArrayType {
     ret.add(function_qual+" "+getAssignType()+" "+getDerefTypeString()+"_get(int thisref, int parameter0, int * exception)");
     ret.add(function_qual+" void "+getDerefTypeString()+"_set(int thisref, int parameter0, "+getAssignType()+" parameter1, int * exception)");
     ret.add(function_qual+" int "+getDerefTypeString()+"_new(int size, int * exception)");
-    
+
     String multi_dim_decl = "";
     multi_dim_decl += function_qual+" int "+getDerefTypeString()+"_new_multi_array";
     multi_dim_decl += "(";
@@ -82,10 +82,10 @@ public class OpenCLArrayType {
     }
     multi_dim_decl += "int * exception)";
     ret.add(multi_dim_decl);
-    
+
     return ret;
   }
-  
+
   public String getPrototypes(){
     StringBuilder ret = new StringBuilder();
     List<String> decls = getDecls();
@@ -103,7 +103,7 @@ public class OpenCLArrayType {
     ret.append("exception)");
     return ret.toString();
   }
-  
+
   public String invokeNewMultiArrayExpr(NewMultiArrayExpr arg0){
     StringBuilder ret = new StringBuilder();
     ret.append(getDerefTypeString()+"_new_multi_array(");
@@ -123,8 +123,8 @@ public class OpenCLArrayType {
     OpenCLType type = new OpenCLType(array_type.baseType);
     return type.getCudaTypeString();
   }
-  
-  private String initValue(){     
+
+  private String initValue(){
     String ret = "";
     if(isBaseRefType())
       ret = "-1";
@@ -132,13 +132,13 @@ public class OpenCLArrayType {
       ret = "0";
     return ret;
   }
-  
+
   public String getBodies(){
     StringBuilder ret = new StringBuilder();
     List<String> decls = getDecls();
     int element_size = getElementSize();
     int offset_size = Constants.ArrayOffsetSize;
-    
+
     String address_qual = Tweaks.v().getGlobalAddressSpaceQualifier();
     SootClass null_ptr = Scene.v().getSootClass("java.lang.NullPointerException");
     //get
@@ -147,7 +147,7 @@ public class OpenCLArrayType {
     ret.append("int length;\n");
     ret.append(address_qual+" char * thisref_deref;\n");
     ret.append("offset = "+offset_size+"+(parameter0*"+element_size+");\n");
-    
+
     if(Configuration.compilerInstance().getExceptions()){
       ret.append("if(thisref == -1){\n");
       ret.append("  *exception = "+RootbeerClassLoader.v().getClassNumber(null_ptr) +";\n");
@@ -155,7 +155,7 @@ public class OpenCLArrayType {
       ret.append("}\n");
     }
     ret.append("thisref_deref = org_trifort_gc_deref(thisref);\n");
-    if(Configuration.compilerInstance().getArrayChecks() && 
+    if(Configuration.compilerInstance().getArrayChecks() &&
        Configuration.compilerInstance().getExceptions()){
       ret.append("length = org_trifort_getint(thisref_deref, 12);\n");
       ret.append("if(parameter0 < 0 || parameter0 >= length){\n");
@@ -165,7 +165,7 @@ public class OpenCLArrayType {
     }
     ret.append("return *(("+address_qual+" "+getAssignType()+" *) &thisref_deref[offset]);\n");
     ret.append("}\n");
-    
+
     //set
     ret.append(decls.get(1)+"{\n");
     ret.append("int length;\n");
@@ -177,7 +177,7 @@ public class OpenCLArrayType {
       ret.append("  }\n");
     }
     ret.append("thisref_deref = org_trifort_gc_deref(thisref);\n");
-     if(Configuration.compilerInstance().getArrayChecks() && 
+     if(Configuration.compilerInstance().getArrayChecks() &&
        Configuration.compilerInstance().getExceptions()){
       ret.append("length = org_trifort_getint(thisref_deref, 12);\n");
       ret.append("if(parameter0 < 0 || parameter0 >= length){\n");
@@ -190,7 +190,7 @@ public class OpenCLArrayType {
     }
     ret.append("*(("+address_qual+" "+getAssignType()+" *) &thisref_deref["+offset_size+"+(parameter0*"+element_size+")]) = parameter1;\n");
     ret.append("}\n");
-    
+
     //new
     int derived_type = RootbeerClassLoader.v().getClassNumber(m_arrayType.toString());
     ret.append(decls.get(2)+"{\n");
@@ -222,13 +222,13 @@ public class OpenCLArrayType {
     ret.append("  "+getDerefTypeString()+"_set(thisref, i, "+initValue()+", exception);\n");
     ret.append("}\n");
     ret.append("return thisref;\n");
-    ret.append("}\n");   
-    
+    ret.append("}\n");
+
     String multi_decl = decls.get(3);
-    int dim = m_arrayType.numDimensions; 
+    int dim = m_arrayType.numDimensions;
     //new multi-dimensional
     ret.append(multi_decl+"{\n");
-    ret.append("int total_size = (dim0 * 8) + "+offset_size+";\n"); 
+    ret.append("int total_size = (dim0 * 8) + "+offset_size+";\n");
     for(int i = 0; i < dim; ++i){
       ret.append("int index"+i+";\n");
       ret.append("int aref"+i+";\n");
@@ -257,14 +257,14 @@ public class OpenCLArrayType {
     ret.append(multiInitString(dim));
     ret.append("return thisref;\n");
     ret.append("}\n");
-    
+
     return ret.toString();
   }
 
   private String multiInitString(int dim){
     String ret = "";
-    
-    for(int i = 0; i < dim; ++i){      
+
+    for(int i = 0; i < dim; ++i){
       ret += "for(index"+i+" = 0; index"+i+" < dim"+i+"; ++index"+i+"){\n";
       String thisref = "thisref";
       if(i > 0){
@@ -280,12 +280,12 @@ public class OpenCLArrayType {
       }
     }
     for(int i = 0; i < dim; ++i){
-      ret += "}\n"; 
+      ret += "}\n";
     }
     return ret;
   }
-  
-  
+
+
   private boolean isBaseRefType(){
     Type base_type = getBaseType();
 
@@ -294,7 +294,7 @@ public class OpenCLArrayType {
     else
       return false;
   }
-  
+
   private Type getBaseType(){
     Type base_type = null;
     ArrayType array_type = (ArrayType) m_arrayType;

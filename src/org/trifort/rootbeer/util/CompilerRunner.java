@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -36,22 +36,22 @@ public class CompilerRunner {
       ex.printStackTrace();
       throw new RuntimeException(ex);
     }
-  }  
-  
+  }
+
   private class StreamReader implements Runnable {
 
     private InputStream m_InputStream;
     private Thread m_Thread;
     private List<String> m_Lines;
-    
+
     public StreamReader(InputStream is){
       m_InputStream = is;
       m_Lines = new ArrayList<String>();
       m_Thread = new Thread(this);
       m_Thread.setDaemon(true);
       m_Thread.start();
-    }   
-    
+    }
+
     public void join(){
       try {
         m_Thread.join();
@@ -59,7 +59,7 @@ public class CompilerRunner {
         ex.printStackTrace();
       }
     }
-    
+
     public void run() {
       BufferedReader reader = new BufferedReader(new InputStreamReader(m_InputStream));
       while(true){
@@ -69,8 +69,8 @@ public class CompilerRunner {
             break;
           m_Lines.add(line);
         } catch(Exception ex){
-          break; 
-        }        
+          break;
+        }
       }
     }
 
@@ -79,6 +79,6 @@ public class CompilerRunner {
         System.out.println(line);
       }
     }
-    
+
   }
 }

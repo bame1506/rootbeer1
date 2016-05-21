@@ -12,11 +12,11 @@ public class FixedMemory implements Memory {
   protected long m_size;
   protected MemPointer m_staticPointer;
   protected MemPointer m_instancePointer;
-  protected MemPointer m_currentPointer;  
+  protected MemPointer m_currentPointer;
   protected List<List<Long>> m_integerList;
-    
+
   public FixedMemory(long size){
-    m_address = malloc(size);    
+    m_address = malloc(size);
     if(m_address == 0){
       throw new RuntimeException("cannot allocate memory of size: "+size);
     }
@@ -26,11 +26,11 @@ public class FixedMemory implements Memory {
     m_currentPointer = m_instancePointer;
     m_integerList = new ArrayList<List<Long>>();
   }
-  
+
   protected long currPointer(){
     return m_currentPointer.m_pointer;
-  }  
-  
+  }
+
   @Override
   public byte readByte() {
     byte ret = doReadByte(currPointer(), m_address);
@@ -79,7 +79,7 @@ public class FixedMemory implements Memory {
     incrementAddress(8);
     return ret;
   }
-  
+
   @Override
   public long readRef() {
     long ret = readInt();
@@ -117,7 +117,7 @@ public class FixedMemory implements Memory {
     value = value >> 4;
     writeInt((int) value);
   }
-  
+
   @Override
   public void writeFloat(float value) {
     doWriteFloat(currPointer(), value, m_address);
@@ -135,77 +135,77 @@ public class FixedMemory implements Memory {
     doWriteLong(currPointer(), value, m_address);
     incrementAddress(8);
   }
-  
+
   @Override
   public void readArray(byte[] array){
-    doReadByteArray(array, m_address+currPointer(), 0, array.length);  
+    doReadByteArray(array, m_address+currPointer(), 0, array.length);
   }
-  
+
   @Override
   public void readArray(boolean[] array){
-    doReadBooleanArray(array, m_address+currPointer(), 0, array.length);  
+    doReadBooleanArray(array, m_address+currPointer(), 0, array.length);
   }
-    
+
   @Override
   public void readArray(short[] array){
-    doReadShortArray(array, m_address+currPointer(), 0, array.length);  
+    doReadShortArray(array, m_address+currPointer(), 0, array.length);
   }
-      
+
   @Override
   public void readArray(int[] array){
-    doReadIntArray(array, m_address+currPointer(), 0, array.length);  
+    doReadIntArray(array, m_address+currPointer(), 0, array.length);
   }
-    
+
   @Override
   public void readArray(float[] array){
-    doReadFloatArray(array, m_address+currPointer(), 0, array.length);  
+    doReadFloatArray(array, m_address+currPointer(), 0, array.length);
   }
-  
+
   @Override
   public void readArray(double[] array){
-    doReadDoubleArray(array, m_address+currPointer(), 0, array.length);  
+    doReadDoubleArray(array, m_address+currPointer(), 0, array.length);
   }
-    
+
   @Override
   public void readArray(long[] array){
-    doReadLongArray(array, m_address+currPointer(), 0, array.length);  
+    doReadLongArray(array, m_address+currPointer(), 0, array.length);
   }
-    
+
   @Override
   public void writeArray(byte[] array){
     doWriteByteArray(array, m_address+currPointer(), 0, array.length);
   }
-    
+
   @Override
   public void writeArray(boolean[] array){
     doWriteBooleanArray(array, m_address+currPointer(), 0, array.length);
   }
-    
+
   @Override
   public void writeArray(short[] array){
     doWriteShortArray(array, m_address+currPointer(), 0, array.length);
   }
-    
+
   @Override
   public void writeArray(int[] array){
     doWriteIntArray(array, m_address+currPointer(), 0, array.length);
   }
-    
+
   @Override
   public void writeArray(float[] array){
     doWriteFloatArray(array, m_address+currPointer(), 0, array.length);
   }
-  
+
   @Override
   public void writeArray(double[] array){
     doWriteDoubleArray(array, m_address+currPointer(), 0, array.length);
   }
-    
+
   @Override
   public void writeArray(long[] array){
     doWriteLongArray(array, m_address+currPointer(), 0, array.length);
   }
-    
+
   @Override
   public char readChar(){
     int value = readInt();
@@ -217,7 +217,7 @@ public class FixedMemory implements Memory {
   public void writeChar(char value){
     writeInt(value);
   }
-  
+
   public native void doReadByteArray(byte[] array, long addr, int start, int len);
   public native void doReadBooleanArray(boolean[] array, long addr, int start, int len);
   public native void doReadShortArray(short[] array, long addr, int start, int len);
@@ -225,7 +225,7 @@ public class FixedMemory implements Memory {
   public native void doReadFloatArray(float[] array, long addr, int start, int len);
   public native void doReadDoubleArray(double[] array, long addr, int start, int len);
   public native void doReadLongArray(long[] array, long addr, int start, int len);
-  
+
   public native void doWriteByteArray(byte[] array, long addr, int start, int len);
   public native void doWriteBooleanArray(boolean[] array, long addr, int start, int len);
   public native void doWriteShortArray(short[] array, long addr, int start, int len);
@@ -233,8 +233,8 @@ public class FixedMemory implements Memory {
   public native void doWriteFloatArray(float[] array, long addr, int start, int len);
   public native void doWriteDoubleArray(double[] array, long addr, int start, int len);
   public native void doWriteLongArray(long[] array, long addr, int start, int len);
-  
-  
+
+
   public native byte doReadByte(long ptr, long cpu_base);
   public native boolean doReadBoolean(long ptr, long cpu_base);
   public native short doReadShort(long ptr, long cpu_base);
@@ -249,7 +249,7 @@ public class FixedMemory implements Memory {
   public native void doWriteFloat(long ptr, float value, long cpu_base);
   public native void doWriteDouble(long ptr, double value, long cpu_base);
   public native void doWriteLong(long ptr, long value, long cpu_base);
-  
+
   private native long malloc(long size);
   private native void free(long address);
 
@@ -267,12 +267,12 @@ public class FixedMemory implements Memory {
   public void setHeapEndPtr(long value) {
     m_currentPointer.m_heapEnd = value;
   }
-  
+
   @Override
   public long getSize() {
     return m_size;
   }
-  
+
   @Override
   public long getAddress() {
     return m_address;
@@ -282,7 +282,7 @@ public class FixedMemory implements Memory {
   public long getPointer(){
     return m_currentPointer.m_pointer;
   }
-  
+
   @Override
   public void setAddress(long address) {
     m_currentPointer.setAddress(address);
@@ -292,12 +292,12 @@ public class FixedMemory implements Memory {
   public void incrementAddress(int offset) {
     m_currentPointer.incrementAddress(offset);
   }
-    
+
   @Override
   public long mallocWithSize(int size){
     return m_currentPointer.mallocWithSize(size);
   }
-  
+
   @Override
   public void setPointer(long ptr){
     setAddress(ptr);
@@ -325,12 +325,12 @@ public class FixedMemory implements Memory {
 
   @Override
   public void finishCopy(long size) {
-    
+
   }
 
   @Override
   public void finishRead() {
-    
+
   }
 
   @Override
@@ -349,7 +349,7 @@ public class FixedMemory implements Memory {
   public void useStaticPointer() {
     m_currentPointer = m_staticPointer;
   }
-  
+
   @Override
   public void align(){
     m_currentPointer.align();
@@ -359,7 +359,7 @@ public class FixedMemory implements Memory {
   public void close() {
     free(m_address);
   }
-  
+
   public void startIntegerList(){
     m_integerList.add(new ArrayList<Long>());
     pushAddress();
@@ -378,7 +378,7 @@ public class FixedMemory implements Memory {
     }
     m_integerList.remove(m_integerList.size()-1);
   }
-  
+
   public void finishReading(){
     long ptr = m_currentPointer.m_pointer;
 
@@ -388,20 +388,20 @@ public class FixedMemory implements Memory {
     }
     setPointer(ptr);
   }
-  
+
   @Override
-  public void align16(){ 
+  public void align16(){
     m_instancePointer.align16();
     m_staticPointer.align16();
   }
-  
+
   private class MemPointer {
-   
-    private PointerStack m_stack; 
+
+    private PointerStack m_stack;
     private long m_pointer;
     private long m_heapEnd;
     private String name;
-    
+
     public MemPointer(String name){
       this.name = name;
       m_stack = new PointerStack();
@@ -414,7 +414,7 @@ public class FixedMemory implements Memory {
     public void popAddress() {
       m_pointer = m_stack.pop();
     }
-    
+
     public void pushAddress() {
       m_stack.push(m_pointer);
     }
@@ -424,25 +424,25 @@ public class FixedMemory implements Memory {
       if(mod != 0){
         size += (Constants.MallocAlignBytes - mod);
       }
-        
+
       long mod2 = m_heapEnd % Constants.MallocAlignBytes;
       if(mod2 != 0){
         m_heapEnd += (Constants.MallocAlignBytes - mod2);
       }
-      
+
       long ret = m_heapEnd;
-      m_heapEnd += size;              
-      
+      m_heapEnd += size;
+
       if(ret + size > m_size){
         throw new OutOfMemoryError("currentHeapEnd: "+ret+" allocationSize: "+size+" memorySize: "+m_size);
       }
-      
+
       m_pointer = ret;
-      
+
       return ret;
     }
 
-    private void clearHeapEndPtr() {      
+    private void clearHeapEndPtr() {
       m_heapEnd = 0;
       m_pointer = 0;
     }
@@ -453,11 +453,11 @@ public class FixedMemory implements Memory {
         m_heapEnd = address;
     }
 
-    private void incrementAddress(int offset) { 
+    private void incrementAddress(int offset) {
       m_pointer += offset;
       if(m_pointer > m_heapEnd){
         m_heapEnd = m_pointer;
-      } 
+      }
     }
 
     private void align() {
@@ -469,7 +469,7 @@ public class FixedMemory implements Memory {
         m_heapEnd = m_pointer;
       }
     }
-    
+
     public void align16() {
       long mod = m_heapEnd % Constants.MallocAlignBytes;
       if(mod != 0){

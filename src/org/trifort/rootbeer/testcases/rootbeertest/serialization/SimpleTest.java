@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -31,13 +31,13 @@ public class SimpleTest implements TestSerialization {
   public boolean compare(Kernel rlhs, Kernel rrhs) {
     SimpleTestRunOnGpu lhs = (SimpleTestRunOnGpu) rlhs;
     SimpleTestRunOnGpu rhs = (SimpleTestRunOnGpu) rrhs;
-    
+
     if(lhs.getValue() == rhs.getValue())
       return true;
-    
+
     System.out.println("known good: "+lhs.getValue());
     System.out.println("gpu value: "+rhs.getValue());
     return false;
   }
-  
+
 }

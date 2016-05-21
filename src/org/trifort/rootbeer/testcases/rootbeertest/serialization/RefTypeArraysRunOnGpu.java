@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -38,7 +38,7 @@ public class RefTypeArraysRunOnGpu implements Kernel {
     RefType1 el = element1[0];
     el.modify();
     element1[0] = el;
-    
+
     element3[0][0][0].modify();
     element2[0][0].modify();
     element.modify();

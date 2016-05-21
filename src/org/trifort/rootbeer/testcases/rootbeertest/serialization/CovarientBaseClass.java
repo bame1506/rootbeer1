@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -11,17 +11,17 @@ public class CovarientBaseClass {
 
   protected int m_value;
   protected int m_baseValue;
-  
+
   public CovarientBaseClass(int value){
     m_baseValue = 5;
     m_value = value;
   }
-  
+
   public CovarientBaseClass copy(int value){
     return new CovarientBaseClass(value);
   }
-  
-  @Override 
+
+  @Override
   public boolean equals(Object other){
     if(other instanceof CovarientBaseClass == false){
       return false;

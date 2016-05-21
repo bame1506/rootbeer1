@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BlockParser {
-  
+
   public static final int TYPE_FREE = 0;
   public static final int TYPE_DEFINE = 1;
   public static final int TYPE_DECLARE = 2;
@@ -70,5 +70,5 @@ public class BlockParser {
     }
     return ret;
   }
-  
+
 }

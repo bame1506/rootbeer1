@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,14 +15,14 @@ public class BitwiseRunOnGpu implements Kernel {
   private int m_intXor;
   private int m_intOr;
   private int m_intInv;
-  
+
   public BitwiseRunOnGpu(){
     m_intAnd = 0xff;
     m_intXor = 0xff;
     m_intOr = 0xff;
     m_intInv = 0xff;
   }
-  
+
   public void gpuMethod() {
     m_intAnd &= 0xaa;
     m_intXor ^= 0xaa;

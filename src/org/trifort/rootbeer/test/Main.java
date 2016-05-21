@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -28,15 +28,15 @@ import org.trifort.rootbeer.testcases.rootbeertest.serialization.*;
 public class Main implements TestSerializationFactory {
 
   private boolean m_hardTests;
-  
+
   public Main(){
     m_hardTests = false;
   }
-  
+
   public void makeHarder(){
     m_hardTests = true;
   }
-  
+
   public List<TestSerialization> getProviders() {
     List<TestSerialization> ret = new ArrayList<TestSerialization>();
     ret.add(new NewOnGpu());
@@ -60,9 +60,9 @@ public class Main implements TestSerializationFactory {
     ret.add(new SameClassUsedTwiceTest1());
     ret.add(new SameClassUsedTwiceTest2());
     ret.add(new RefTypeArrays());
-    ret.add(new StrictMathTest()); 
+    ret.add(new StrictMathTest());
     ret.add(new AtomicLongTest());
-    ret.add(new NativeStrictMathTest());  
+    ret.add(new NativeStrictMathTest());
     ret.add(new SuperClass());
     ret.add(new StringTest());
     ret.add(new String2Test());
@@ -135,11 +135,11 @@ public class Main implements TestSerializationFactory {
     ret.add(new GpuVectorMapTest());
     ret.add(new StringBuilderTest4());
     ret.add(new AtomicGlobalsTest());
-            
+
     if(org.trifort.rootbeer.entry.Main.largeMemTests()){
       ret.add(new LargeMemTest());
     }
-    
+
     return ret;
   }
 }

@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -31,13 +31,13 @@ public class OpenCLPolymorphicMethod {
 
   private final SootMethod m_sootMethod;
   private MethodSignatureUtil m_util;
-  
+
   private Set<String> m_extraMethods;
 
   public OpenCLPolymorphicMethod(SootMethod soot_method){
     m_sootMethod = soot_method;
     m_util = new MethodSignatureUtil();
-    
+
     m_extraMethods = new HashSet<String>();
     m_extraMethods.add("<java.lang.Object: int hashCode()>");
   }
@@ -59,7 +59,7 @@ public class OpenCLPolymorphicMethod {
       return new ArrayList<String>();
     }
     List<SootMethod> virtual_methods = getVirtualMethods();
-    
+
     List<String> ret = new ArrayList<String>();
     for(SootMethod virtual_method : virtual_methods){
       SootClass soot_class = virtual_method.getDeclaringClass();
@@ -89,7 +89,7 @@ public class OpenCLPolymorphicMethod {
     }
     return ret;
   }
-  
+
   private List<SootMethod> getVirtualMethods(){
     ClassHierarchy class_hierarchy = RootbeerClassLoader.v().getClassHierarchy();
     List<String> virtual_methods = class_hierarchy.getVirtualMethods(m_sootMethod.getSignature());
@@ -106,14 +106,14 @@ public class OpenCLPolymorphicMethod {
     }
     return ret;
   }
-  
+
   public String getMethodBody(String decl){
     StringBuilder ret = new StringBuilder();
     String address_qual = Tweaks.v().getGlobalAddressSpaceQualifier();
     //write function signature
     ret.append(decl);
     ret.append("{\n");
-    
+
     List<SootMethod> virtual_methods = getVirtualMethods();
     if(m_sootMethod.isStatic()){
       if(m_sootMethod.getReturnType() instanceof VoidType == false){
@@ -162,7 +162,7 @@ public class OpenCLPolymorphicMethod {
         for(SootMethod method : used_methods){
           SootClass sclass = method.getDeclaringClass();
           String invoke_string = getInvokeString(sclass);
-        
+
           ret.append("else if(derived_type == "+RootbeerClassLoader.v().getClassNumber(sclass)+"){\n");
           if(m_sootMethod.getReturnType() instanceof VoidType == false){
             ret.append("return ");
@@ -185,7 +185,7 @@ public class OpenCLPolymorphicMethod {
   private String getInvokeString(SootClass start_class){
     if(m_sootMethod.getName().equals("<init>"))
       return "";
-        
+
     SootClass soot_class = start_class;
     OpenCLMethod ocl_method = new OpenCLMethod(m_sootMethod, soot_class);
     String ret = ocl_method.getPolymorphicName() + "(";
@@ -223,13 +223,13 @@ public class OpenCLPolymorphicMethod {
     public int compare(SootMethod lhs, SootMethod rhs) {
       SootClass lhs_class = lhs.getDeclaringClass();
       SootClass rhs_class = rhs.getDeclaringClass();
-      
+
       Integer lhs_number = RootbeerClassLoader.v().getClassNumber(lhs_class);
       Integer rhs_number = RootbeerClassLoader.v().getClassNumber(rhs_class);
       return lhs_number.compareTo(rhs_number);
     }
   }
-  
+
   private boolean shouldOutput(){
     if(m_extraMethods.contains(m_sootMethod.getSignature())){
       return true;

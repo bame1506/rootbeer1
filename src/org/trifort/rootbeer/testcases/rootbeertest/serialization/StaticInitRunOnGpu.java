@@ -5,7 +5,7 @@ import org.trifort.rootbeer.runtime.Kernel;
 public class StaticInitRunOnGpu implements Kernel {
 
   private int m_value;
-  
+
   @Override
   public void gpuMethod() {
     StaticInitClass object = new StaticInitClass();

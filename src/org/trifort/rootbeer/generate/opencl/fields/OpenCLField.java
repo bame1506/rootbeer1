@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -44,22 +44,22 @@ public class OpenCLField {
   public OpenCLField(SootField soot_field, SootClass soot_class) {
     m_sootField = soot_field;
     m_sootClass = soot_class;
-    m_cloned = false;    
+    m_cloned = false;
   }
-  
+
   public void setClone(OpenCLField source){
     m_cloned = true;
     m_cloneSource = source;
   }
-  
+
   public boolean isCloned(){
     return m_cloned;
-  }  
-  
+  }
+
   public OpenCLField getCloneSource(){
     return m_cloneSource;
   }
-  
+
   public String getName(){
     return m_sootField.getName();
   }
@@ -75,7 +75,7 @@ public class OpenCLField {
     OpenCLClass ocl_class = OpenCLScene.v().getOpenCLClass(real_field.getDeclaringClass());
     return ocl_class.getName()+"_"+getName();
   }
-  
+
   public OpenCLType getClassType(){
     Type soot_type = m_sootClass.getType();
     return new OpenCLType(soot_type);
@@ -113,12 +113,12 @@ public class OpenCLField {
     }
     return ret.toString();
   }
-  
+
   public int getSize(){
     return getType().getSize();
   }
 
-  private void calculateOffsets(CompositeField composite){    
+  private void calculateOffsets(CompositeField composite){
     OffsetCalculator calc = new OffsetCalculator(composite);
     m_offsets = new TreeMap<Integer, List<SootClass>>();
     for(SootClass sclass : composite.getClasses()){
@@ -133,7 +133,7 @@ public class OpenCLField {
       classes.add(sclass);
     }
   }
-  
+
   private int getOnlyOffset(){
     Iterator<Integer> iter = m_offsets.keySet().iterator();
     while(iter.hasNext()){
@@ -142,25 +142,25 @@ public class OpenCLField {
     }
     return -1;
   }
-  
+
   private String getGetterSetterBodiesInstance(CompositeField composite, boolean writable,
     FieldTypeSwitch type_switch){
-    
+
     StringBuilder ret = new StringBuilder();
     List<String> decls = getDecls();
     String address_qual = Tweaks.v().getGlobalAddressSpaceQualifier();
-    
+
     String cast_string = getCastString();
-    
+
     calculateOffsets(composite);
-    
-    String prefix = Options.v().rbcl_remap_prefix();    
+
+    String prefix = Options.v().rbcl_remap_prefix();
     if(Options.v().rbcl_remap_all() == false){
       prefix = "";
     }
     SootClass null_cls = Scene.v().getSootClass(prefix+"java.lang.NullPointerException");
     int null_num = RootbeerClassLoader.v().getClassNumber(null_cls);
-    
+
     //instance getter
     ret.append(decls.get(0)+"{\n");
     int field_offset = getOnlyOffset();
@@ -168,7 +168,7 @@ public class OpenCLField {
     //ret.append("  thisref &= 0x0fffffffffffffffL;\n");
     //ret.append("  thisref += "+field_offset+";\n");
     //ret.append("  return org_trifort_cache_get_"+type+"(thisref);\n");
-    //ret.append("} else {\n");   
+    //ret.append("} else {\n");
     if(composite.getClasses().size() != 1){
       ret.append("GC_OBJ_TYPE_TYPE derived_type;\n");
       ret.append("int offset;\n");
@@ -204,50 +204,50 @@ public class OpenCLField {
       ret.append("  return;\n");
       ret.append("}\n");
     }
-    ret.append("thisref_deref = org_trifort_gc_deref(thisref);\n");    
+    ret.append("thisref_deref = org_trifort_gc_deref(thisref);\n");
     if(composite.getClasses().size() == 1){
       ret.append("*(("+address_qual+" "+cast_string+" *) &thisref_deref["+Integer.toString(field_offset)+"]) = parameter0;\n");
     } else {
       ret.append("derived_type = org_trifort_gc_get_type(thisref_deref);\n");
-      ret.append("offset = "+type_switch.typeSwitchName(m_offsets)+"(derived_type);\n");     
+      ret.append("offset = "+type_switch.typeSwitchName(m_offsets)+"(derived_type);\n");
       ret.append("*(("+address_qual+" "+cast_string+" *) &thisref_deref[offset]) = parameter0;\n");
     }
     ret.append("}\n");
-    
+
     return ret.toString();
   }
-  
+
   private String getGetterSetterBodiesStatic() {
     StringBuilder ret = new StringBuilder();
     List<String> decls = getDecls();
     String address_qual = Tweaks.v().getGlobalAddressSpaceQualifier();
     StaticOffsets static_offsets = new StaticOffsets();
     int offset = static_offsets.getIndex(this);
-    
+
     String cast_string = getCastString();
-    
+
     ret.append(decls.get(0)+"{\n");
     ret.append(address_qual+" char * thisref_deref = org_trifort_gc_deref(0);\n");
     ret.append("return *(("+address_qual+" "+cast_string+" *) &thisref_deref["+offset+"]);\n");
     ret.append("}\n");
-    
-    ret.append(decls.get(1)+"{\n");    
+
+    ret.append(decls.get(1)+"{\n");
     ret.append(address_qual+" char * thisref_deref = org_trifort_gc_deref(0);\n");
     ret.append("*(("+address_qual+" "+cast_string+" *) &thisref_deref["+offset+"]) = parameter0;\n");
     ret.append("}\n");
     return ret.toString();
   }
-  
+
   public String getGetterSetterBodies(CompositeField composite, boolean writable,
     FieldTypeSwitch type_switch){
-    
+
     if(m_sootField.isStatic()){
       return getGetterSetterBodiesStatic();
     } else {
       return getGetterSetterBodiesInstance(composite, writable, type_switch);
-    }    
+    }
   }
-  
+
   private String checkAlignmentString(int field_offset){
     String ret = "";
     ret += "int addr = thisref_deref + "+field_offset+";\n";
@@ -256,7 +256,7 @@ public class OpenCLField {
     ret += "}\n";
     return ret;
   }
-  
+
   public String getStaticGetterInvoke(){
     return "static_getter_"+getFullName()+"(exception)";
   }
@@ -278,7 +278,7 @@ public class OpenCLField {
     Local local = (Local) base;
     return "instance_setter_"+getFullName()+"("+local.getName()+", ";
   }
-  
+
   public String getInstanceSetterInvokeWithoutThisref(){
     return "instance_setter_"+getFullName()+"(";
   }

@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -68,7 +68,7 @@ public class BytecodeLanguage {
     SootField field = new SootField(local.getName(), local.getType(), Modifier.PUBLIC);
     m_currClass.addField(field);
   }
-  
+
   public void addFieldToClass(Local local, String name){
     SootField field = new SootField(name, local.getType(), Modifier.PUBLIC);
     m_currClass.addField(field);
@@ -86,7 +86,7 @@ public class BytecodeLanguage {
   public void startMethod(String method_name, Type return_type, Type... arg_types){
     doStartMethod(method_name, return_type, Modifier.PUBLIC, arg_types);
   }
-  
+
   private void doStartMethod(String method_name, Type return_type, int modifiers, Type... arg_types){
     m_assembler = new UnitAssembler();
 
@@ -97,10 +97,10 @@ public class BytecodeLanguage {
     m_currBody = m_jimple.newBody(m_currMethod);
     m_currMethod.setActiveBody(m_currBody);
     m_currClass.addMethod(m_currMethod);
-    
+
     RootbeerClassLoader.v().addGeneratedMethod(m_currMethod.getSignature());
   }
-  
+
   public void startStaticMethod(String method_name, Type return_type, Type... arg_types){
     doStartMethod(method_name, return_type, Modifier.PUBLIC | Modifier.STATIC, arg_types);
   }
@@ -184,16 +184,16 @@ public class BytecodeLanguage {
     String class_name = getTypeString(class_instance);
     pushMethod(class_name, method_name, return_type, arg_types);
   }
-  
+
   public void pushMethod(SootClass soot_class, String method_name, Type return_type, Type... arg_types){
     String class_name = soot_class.getName();
-    pushMethod(class_name, method_name, return_type, arg_types);    
+    pushMethod(class_name, method_name, return_type, arg_types);
   }
 
   public void pushMethod(String class_name, String method_name, Type return_type, Type... arg_types){
     SootClass soot_class = Scene.v().getSootClass(class_name);
     SootClass org_class = soot_class;
-    
+
     TypeToString converter = new TypeToString();
     MethodSignatureUtil util = new MethodSignatureUtil();
     util.setClassName(class_name);
@@ -236,18 +236,18 @@ public class BytecodeLanguage {
     Unit u = m_jimple.newInvokeStmt(invoke_expr);
     m_assembler.add(u);
   }
-  
+
   public void invokeStaticMethodNoRet(Value... args){
     SootMethod method = m_methodStack.pop();
     List<Value> args_list = convertValueArrayToList(args);
     Value invoke_expr;
-    
+
     invoke_expr = m_jimple.newStaticInvokeExpr(method.makeRef(), args_list);
-    
+
     Unit u = m_jimple.newInvokeStmt(invoke_expr);
     m_assembler.add(u);
   }
-  
+
   public void invokeSpecialNoRet(Local base, Value... args){
     SootMethod method = m_methodStack.pop();
     List<Value> args_list = convertValueArrayToList(args);
@@ -297,7 +297,7 @@ public class BytecodeLanguage {
     } else if(op.equals("!=")){
       condition = m_jimple.newNeExpr(lhs, rhs);
     } else if(op.equals(">=")){
-      condition = m_jimple.newGeExpr(lhs, rhs);    
+      condition = m_jimple.newGeExpr(lhs, rhs);
     } else {
       throw new UnsupportedOperationException();
     }
@@ -366,7 +366,7 @@ public class BytecodeLanguage {
     Unit u = m_jimple.newAssignStmt(input, rhs);
     m_assembler.add(u);
   }
-  
+
   public void refInstanceFieldFromInput(Local base, String field_name, Local input){
     Type base_type = base.getType();
     SootClass base_class = Scene.v().getSootClass(base_type.toString());
@@ -484,7 +484,7 @@ public class BytecodeLanguage {
     m_assembler.add(u);
     return lhs;
   }
-  
+
   public void assignArray(Local base, Value i, Local value){
     Value lhs = m_jimple.newArrayRef(base, i);
     Unit u = m_jimple.newAssignStmt(lhs, value);
@@ -513,7 +513,7 @@ public class BytecodeLanguage {
     Unit u = m_jimple.newNopStmt();
     m_assembler.add(u);
   }
-  
+
   void assignElementToArray(Local base, Value rhs, Value i) {
     Value lhs = m_jimple.newArrayRef(base, i);
     Unit u = m_jimple.newAssignStmt(lhs, rhs);
@@ -534,7 +534,7 @@ public class BytecodeLanguage {
     pushMethod(out, "println", VoidType.v(), IntType.v());
     invokeMethodNoRet(out, number);
   }
-  
+
   void printlnLong(Value number) {
     Type system = RefType.v("java.lang.System");
     Local out = refStaticField(system, "out");
@@ -591,7 +591,7 @@ public class BytecodeLanguage {
         return "D";
       }
     }
-    
+
     throw new RuntimeException("please report bug in BytecodeLanguage.convertToConstant");
   }
 

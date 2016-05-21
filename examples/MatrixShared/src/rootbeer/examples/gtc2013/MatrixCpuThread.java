@@ -9,10 +9,10 @@ public class MatrixCpuThread implements Runnable {
   private int m_blockSize;
   private int m_gridSize;
   private int m_numCores;
-  private Thread m_thread;  
+  private Thread m_thread;
   private boolean m_transpose;
 
-  public MatrixCpuThread(float[] a, float[] b, float[] c, int index, int block_size, 
+  public MatrixCpuThread(float[] a, float[] b, float[] c, int index, int block_size,
     int grid_size, int num_cores, boolean transpose){
 
     m_a = a;
@@ -33,7 +33,7 @@ public class MatrixCpuThread implements Runnable {
   public void run(){
     int num_each = m_blockSize / m_numCores;
     int start_row = m_index * num_each;
-    int stop_row = (m_index + 1) * num_each;    
+    int stop_row = (m_index + 1) * num_each;
     if(m_index == m_numCores - 1){
       stop_row = m_blockSize;
     }
@@ -56,7 +56,7 @@ public class MatrixCpuThread implements Runnable {
           sum += a_value * b_value;
         }
         m_c[dest_index] = sum;
-      } 
+      }
     }
   }
 

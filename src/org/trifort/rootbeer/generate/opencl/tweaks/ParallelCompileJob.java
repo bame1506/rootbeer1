@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -26,22 +26,22 @@ public class ParallelCompileJob {
   private String m_gencodeOptions;
   private boolean m_m32;
   private CompileResult m_result;
-  
-  public ParallelCompileJob(File generated, CudaPath cuda_path, 
+
+  public ParallelCompileJob(File generated, CudaPath cuda_path,
     String gencode_options, boolean m32){
-    
+
     m_generated = generated;
     m_cudaPath = cuda_path;
     m_gencodeOptions = gencode_options;
     m_m32 = m32;
   }
-  
+
   public void compile(){
     List<byte[]> file_contents;
     try {
       String model_string = m_m32 ? "-m32" : "-m64";
       String file_string = m_m32 ? "_32" : "_64";
-      File code_file = new File(RootbeerPaths.v().getRootbeerHome() + 
+      File code_file = new File(RootbeerPaths.v().getRootbeerHome() +
         "code_file" + file_string + ".ptx");
       String command;
       if (File.separator.equals("/")) {
@@ -73,7 +73,7 @@ public class ParallelCompileJob {
     }
     m_result = new CompileResult(m_m32, file_contents, new ArrayList<String>());
   }
-  
+
   private List<byte[]> readFile(File file) throws Exception {
     InputStream is = new FileInputStream(file);
     List<byte[]> ret = new ArrayList<byte[]>();
@@ -90,7 +90,7 @@ public class ParallelCompileJob {
     }
     return ret;
   }
-  
+
   public CompileResult getResult(){
     return m_result;
   }

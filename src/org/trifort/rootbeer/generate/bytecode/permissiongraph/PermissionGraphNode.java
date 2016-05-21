@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -15,7 +15,7 @@ public class PermissionGraphNode {
 
   private SootClass m_class;
   private List<SootClass> m_children;
-  
+
   public PermissionGraphNode(SootClass soot_class){
     m_class = soot_class;
     m_children = new ArrayList<SootClass>();
@@ -24,15 +24,15 @@ public class PermissionGraphNode {
   public void addChild(SootClass soot_class) {
     m_children.add(soot_class);
   }
-  
+
   public List<SootClass> getChildren(){
     return m_children;
   }
-  
+
   public SootClass getSootClass(){
     return m_class;
   }
-  
+
   @Override
   public String toString(){
     String ret = "";

@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -37,7 +37,7 @@ public class OpenCLType {
     ret = ret.replaceAll("\\[\\]", "__array");
     return ret;
   }
-  
+
   public String getCudaTypeString(){
     String ret = getRefString();
     if(ret.equals("byte")){
@@ -57,7 +57,7 @@ public class OpenCLType {
     }
     return false;
   }
-  
+
   public int getSize(){
     if(m_sootType instanceof RefType){
       return 4;

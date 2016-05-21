@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright 2012 Phil Pratt-Szeliga and other contributors
  * http://chirrup.org/
- * 
+ *
  * See the file LICENSE for copying permission.
  */
 
@@ -21,19 +21,19 @@ public class StrictMathTest implements TestSerialization {
     for(int i = 0; i < 20; ++i){
       ret.add(new StrictMathRunOnGpu());
     }
-    return ret;    
+    return ret;
   }
 
   @Override
   public boolean compare(Kernel lhs, Kernel rhs) {
     StrictMathRunOnGpu glhs = (StrictMathRunOnGpu) lhs;
     StrictMathRunOnGpu grhs = (StrictMathRunOnGpu) rhs;
-    
+
     if(glhs.compare(grhs) == false){
       return false;
     }
-    return true;    
+    return true;
   }
 
-  
+
 }
