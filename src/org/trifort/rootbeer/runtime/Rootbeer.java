@@ -67,30 +67,38 @@ public class Rootbeer {
     }
   }
 
-  public ThreadConfig getThreadConfig(List<Kernel> kernels, GpuDevice device){
-    BlockShaper block_shaper = new BlockShaper();
-    block_shaper.run(kernels.size(), device.getMultiProcessorCount());
+    /**
+     * automatically determines a good kernel configuration based on device
+     * properties for a given number of threads wanted
+     * @param[in] kernels Only kernels.size will be evaluated
+     **/
+    public ThreadConfig getThreadConfig( List<Kernel> kernels, GpuDevice device )
+    {
+        BlockShaper block_shaper = new BlockShaper();
+        block_shaper.run( kernels.size(), device.getMultiProcessorCount() );
 
-    return new ThreadConfig( block_shaper.blockShape(), /* threadCountX */
-                             1, /* threadCountY */
-                             1, /* threadCountZ */
-                             block_shaper.gridShape(), /* blockCountX */
-                             1, /* blockCountY */
-                             kernels.size() /* numThreads */
-                           );
-  }
-
-  public void run(List<Kernel> work) {
-    Context context = createDefaultContext();
-    ThreadConfig thread_config = getThreadConfig(work, context.getDevice());
-    try {
-      context.setThreadConfig(thread_config);
-      context.setKernel(work.get(0));
-      context.setUsingHandles(true);
-      context.buildState();
-      context.run(work);
-    } finally {
-      context.close();
+        return new ThreadConfig(
+            block_shaper.blockShape(), /* threadCountX */
+            1,                         /* threadCountY */
+            1,                         /* threadCountZ */
+            block_shaper.gridShape(),  /* blockCountX  */
+            1,                         /* blockCountY  */
+            kernels.size()             /* numThreads   */
+        );
     }
-  }
+
+    public void run(List<Kernel> work)
+    {
+        Context context = createDefaultContext();
+        ThreadConfig thread_config = getThreadConfig(work, context.getDevice());
+        try {
+            context.setThreadConfig(thread_config);
+            context.setKernel(work.get(0));
+            context.setUsingHandles(true);
+            context.buildState(); // this sets the GPU to use
+            context.run(work);
+        } finally {
+            context.close();
+        }
+    }
 }
