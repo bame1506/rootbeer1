@@ -317,7 +317,11 @@ public class GPUSortKernel implements Kernel {
 3. Compile your program normally with javac.
 4. Pack all the classes used into a single jar using [pack](https://github.com/pcpratts/pack/)
 5. Compile with Rootbeer to enable the GPU
-   `java -Xmx8g -jar Rootbeer.jar App.jar App-GPU.jar`
+
+       java -Xmx8g -jar Rootbeer.jar App-GPU-compiled.jar App-GPU.jar
+       zipmerge App.jar Rootbeer.jar App-GPU-compiled.jar
+
+6. `java -jar App.jar`f
 
 ### Building Rootbeer from Source
 
@@ -326,11 +330,12 @@ public class GPUSortKernel implements Kernel {
 3. `ant jar`
 4. If JNI source-code was changed, then it is necessary to recompile the normally pre-compiled binaries:
 
-       ./csrc/compile_linux_x86
-       ./csrc/compile_linux_x64
-       ./csrc/compile_win_x86
-       ./csrc/compile_win_x64
-       ./csrc/compile_mac
+       cd csrc
+       ./compile_linux_x86
+       ./compile_linux_x64
+       ./compile_win_x86
+       ./compile_win_x64
+       ./compile_mac
 
 5. `./pack-rootbeer` (linux) or `./pack-rootbeer.bat` (windows)
 6. Use the `Rootbeer.jar` (not `dist/Rootbeer1.jar`)
