@@ -19,21 +19,21 @@ public class CUDAContext implements Context {
   final private GpuDevice gpuDevice;
   final private boolean is32bit;
 
-  private long nativeContext;
-  private long memorySize;
-  private byte[] cubinFile;
-  private Memory objectMemory;
-  private Memory handlesMemory;
-  private Memory textureMemory;
-  private Memory exceptionsMemory;
-  private Memory classMemory;
-  private boolean usingUncheckedMemory;
-  private long requiredMemorySize;
-  private CacheConfig cacheConfig;
-  private ThreadConfig threadConfig;
-  private Kernel kernelTemplate;
-  private CompiledKernel compiledKernel;
-  private boolean usingHandles;
+  private long           nativeContext       ;
+  private long           memorySize          ;  /**< in bytes */
+  private byte[]         cubinFile           ;
+  private Memory         objectMemory        ;
+  private Memory         handlesMemory       ;
+  private Memory         textureMemory       ;
+  private Memory         exceptionsMemory    ;
+  private Memory         classMemory         ;
+  private boolean        usingUncheckedMemory;
+  private long           requiredMemorySize  ;
+  private CacheConfig    cacheConfig         ;
+  private ThreadConfig   threadConfig        ;
+  private Kernel         kernelTemplate      ;
+  private CompiledKernel compiledKernel      ;
+  private boolean        usingHandles        ;
 
   final private StatsRow stats;
   final private Stopwatch writeBlocksStopwatch;
@@ -46,38 +46,40 @@ public class CUDAContext implements Context {
   final private EventHandler<GpuEvent> handler;
   final private RingBuffer<GpuEvent> ringBuffer;
 
+  /* ??? who calls this */
   static {
-    initializeDriver();
+      initializeDriver();
   }
 
-  public CUDAContext(GpuDevice device){
-    exec = Executors.newCachedThreadPool(new ThreadFactory() {
-      public Thread newThread(Runnable r) {
-        Thread t = new Thread(r);
-        t.setDaemon(true);
-        return t;
-      }
-    });
-    disruptor = new Disruptor<GpuEvent>(GpuEvent.EVENT_FACTORY, 64, exec);
-    handler = new GpuEventHandler();
-    disruptor.handleEventsWith(handler);
-    ringBuffer = disruptor.start();
-    gpuDevice = device;
-    memorySize = -1;
+  public CUDAContext( GpuDevice device )
+  {
+      exec = Executors.newCachedThreadPool(new ThreadFactory() {
+        public Thread newThread(Runnable r) {
+          Thread t = new Thread(r);
+          t.setDaemon(true);
+          return t;
+        }
+      });
+      disruptor  = new Disruptor<GpuEvent>(GpuEvent.EVENT_FACTORY, 64, exec);
+      handler    = new GpuEventHandler();
+      disruptor.handleEventsWith(handler);
+      ringBuffer = disruptor.start();
+      gpuDevice  = device;
+      memorySize = -1;    /* automatically determine size */
 
-    String arch = System.getProperty("os.arch");
-    is32bit = arch.equals("x86") || arch.equals("i386");
+      String arch = System.getProperty("os.arch");
+      is32bit     = arch.equals("x86") || arch.equals("i386");
 
-    usingUncheckedMemory = true;
-    usingHandles = false;
-    nativeContext = allocateNativeContext();
-    cacheConfig = CacheConfig.PREFER_NONE;
+      usingUncheckedMemory = true;
+      usingHandles         = false;
+      nativeContext        = allocateNativeContext();
+      cacheConfig          = CacheConfig.PREFER_NONE;
 
-    stats = new StatsRow();
-    writeBlocksStopwatch = new Stopwatch();
-    runStopwatch = new Stopwatch();
-    runOnGpuStopwatch = new Stopwatch();
-    readBlocksStopwatch = new Stopwatch();
+      stats                = new StatsRow();
+      writeBlocksStopwatch = new Stopwatch();
+      runStopwatch         = new Stopwatch();
+      runOnGpuStopwatch    = new Stopwatch();
+      readBlocksStopwatch  = new Stopwatch();
   }
 
   @Override
@@ -109,8 +111,8 @@ public class CUDAContext implements Context {
   }
 
   @Override
-  public void setMemorySize(long memorySize) {
-    this.memorySize = memorySize;
+  public void setMemorySize( long memorySize ) {
+      this.memorySize = memorySize;
   }
 
   @Override
@@ -207,7 +209,7 @@ public class CUDAContext implements Context {
           findMemorySize(cubinFile.length);
       }
       if(usingUncheckedMemory){
-        objectMemory = new FixedMemory(memorySize);
+          objectMemory = new FixedMemory(memorySize);
       }   else {
           objectMemory = new CheckedFixedMemory(memorySize);
       }
@@ -228,15 +230,23 @@ public class CUDAContext implements Context {
     }
   }
 
-  private byte[] readCubinFile(String filename, int length) {
-    try {
-      byte[] buffer = ResourceReader.getResourceArray(filename, length);
-      return buffer;
-    } catch(Exception ex){
-	  ex.printStackTrace();
-      throw new RuntimeException(ex);
+    /**
+     * @todo why not call getRessourceArray directly? This function does not
+     *       add any value.
+     */
+    private byte[] readCubinFile( String filename, int length )
+    {
+        try
+        {
+            byte[] buffer = ResourceReader.getResourceArray(filename, length);
+            return buffer;
+        }
+        catch(Exception ex)
+        {
+	       ex.printStackTrace();
+           throw new RuntimeException(ex);
+        }
     }
-  }
 
     /**
      * Automatically finds a good memory size needed for allocation from
@@ -283,6 +293,11 @@ public class CUDAContext implements Context {
       future.take();
   }
 
+  /**
+   * @todo Is this and run without a list actually being used?
+   * Normally Rootbeer.java:run will be used and that only works with a
+   * list of kernels
+   */
   @Override
   public GpuFuture runAsync()
   {

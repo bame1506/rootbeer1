@@ -6,25 +6,33 @@ import java.util.List;
 import org.omg.CORBA._IDLTypeStub;
 import org.trifort.rootbeer.generate.bytecode.Constants;
 
-public class FixedMemory implements Memory {
+/**
+ * This class is only a wrapper for FixedMemory.c
+ * It seems to be some kind of managed memory buffer / stream ???
+ */
+public class FixedMemory implements Memory
+{
+  protected long             m_address        ;
+  protected long             m_size           ;
+  protected MemPointer       m_staticPointer  ;
+  protected MemPointer       m_instancePointer;
+  protected MemPointer       m_currentPointer ;
+  protected List<List<Long>> m_integerList    ;
 
-  protected long m_address;
-  protected long m_size;
-  protected MemPointer m_staticPointer;
-  protected MemPointer m_instancePointer;
-  protected MemPointer m_currentPointer;
-  protected List<List<Long>> m_integerList;
-
-  public FixedMemory(long size){
-    m_address = malloc(size);
-    if(m_address == 0){
-      throw new RuntimeException("cannot allocate memory of size: "+size);
-    }
-    m_size = size;
-    m_instancePointer = new MemPointer("instance_mem");
-    m_staticPointer = new MemPointer("static_mem");
-    m_currentPointer = m_instancePointer;
-    m_integerList = new ArrayList<List<Long>>();
+  /**
+   * @param[in] size memory size to allocate in bytes
+   */
+  public FixedMemory( long size )
+  {
+      m_address = malloc(size);
+      if( m_address == 0 ) {
+          throw new RuntimeException("cannot allocate memory of size: "+size);
+      }
+      m_size = size;
+      m_instancePointer = new MemPointer("instance_mem");
+      m_staticPointer   = new MemPointer("static_mem");
+      m_currentPointer  = m_instancePointer;
+      m_integerList     = new ArrayList<List<Long>>();
   }
 
   protected long currPointer(){
@@ -218,37 +226,37 @@ public class FixedMemory implements Memory {
     writeInt(value);
   }
 
-  public native void doReadByteArray(byte[] array, long addr, int start, int len);
-  public native void doReadBooleanArray(boolean[] array, long addr, int start, int len);
-  public native void doReadShortArray(short[] array, long addr, int start, int len);
-  public native void doReadIntArray(int[] array, long addr, int start, int len);
-  public native void doReadFloatArray(float[] array, long addr, int start, int len);
-  public native void doReadDoubleArray(double[] array, long addr, int start, int len);
-  public native void doReadLongArray(long[] array, long addr, int start, int len);
+  public native void doReadByteArray    (byte[]    array, long addr, int start, int len);
+  public native void doReadBooleanArray (boolean[] array, long addr, int start, int len);
+  public native void doReadShortArray   (short[]   array, long addr, int start, int len);
+  public native void doReadIntArray     (int[]     array, long addr, int start, int len);
+  public native void doReadFloatArray   (float[]   array, long addr, int start, int len);
+  public native void doReadDoubleArray  (double[]  array, long addr, int start, int len);
+  public native void doReadLongArray    (long[]    array, long addr, int start, int len);
 
-  public native void doWriteByteArray(byte[] array, long addr, int start, int len);
+  public native void doWriteByteArray   (byte[]    array, long addr, int start, int len);
   public native void doWriteBooleanArray(boolean[] array, long addr, int start, int len);
-  public native void doWriteShortArray(short[] array, long addr, int start, int len);
-  public native void doWriteIntArray(int[] array, long addr, int start, int len);
-  public native void doWriteFloatArray(float[] array, long addr, int start, int len);
-  public native void doWriteDoubleArray(double[] array, long addr, int start, int len);
-  public native void doWriteLongArray(long[] array, long addr, int start, int len);
+  public native void doWriteShortArray  (short[]   array, long addr, int start, int len);
+  public native void doWriteIntArray    (int[]     array, long addr, int start, int len);
+  public native void doWriteFloatArray  (float[]   array, long addr, int start, int len);
+  public native void doWriteDoubleArray (double[]  array, long addr, int start, int len);
+  public native void doWriteLongArray   (long[]    array, long addr, int start, int len);
 
 
-  public native byte doReadByte(long ptr, long cpu_base);
-  public native boolean doReadBoolean(long ptr, long cpu_base);
-  public native short doReadShort(long ptr, long cpu_base);
-  public native int doReadInt(long ptr, long cpu_base);
-  public native float doReadFloat(long ptr, long cpu_base);
-  public native double doReadDouble(long ptr, long cpu_base);
-  public native long doReadLong(long ptr, long cpu_base);
-  public native void doWriteByte(long ptr, byte value, long cpu_base);
-  public native void doWriteBoolean(long ptr, boolean value, long cpu_base);
-  public native void doWriteShort(long ptr, short value, long cpu_base);
-  public native void doWriteInt(long ptr, int value, long cpu_base);
-  public native void doWriteFloat(long ptr, float value, long cpu_base);
-  public native void doWriteDouble(long ptr, double value, long cpu_base);
-  public native void doWriteLong(long ptr, long value, long cpu_base);
+  public native byte    doReadByte      (long ptr, long cpu_base);
+  public native boolean doReadBoolean   (long ptr, long cpu_base);
+  public native short   doReadShort     (long ptr, long cpu_base);
+  public native int     doReadInt       (long ptr, long cpu_base);
+  public native float   doReadFloat     (long ptr, long cpu_base);
+  public native double  doReadDouble    (long ptr, long cpu_base);
+  public native long    doReadLong      (long ptr, long cpu_base);
+  public native void    doWriteByte     (long ptr, byte    value, long cpu_base);
+  public native void    doWriteBoolean  (long ptr, boolean value, long cpu_base);
+  public native void    doWriteShort    (long ptr, short   value, long cpu_base);
+  public native void    doWriteInt      (long ptr, int     value, long cpu_base);
+  public native void    doWriteFloat    (long ptr, float   value, long cpu_base);
+  public native void    doWriteDouble   (long ptr, double  value, long cpu_base);
+  public native void    doWriteLong     (long ptr, long    value, long cpu_base);
 
   private native long malloc(long size);
   private native void free(long address);

@@ -75,27 +75,31 @@ public class GpuDevice {
   private int m_maxGridDimY;
   private int m_maxGridDimZ;
 
-  public GpuDevice(int device_type) {
-    m_deviceType = device_type;
-  }
-
-  public Context createContext(){
-    if(m_deviceType == DEVICE_TYPE_CUDA){
-      return new CUDAContext(this);
-    } else {
-      throw new UnsupportedOperationException();
+    public GpuDevice(int device_type) {
+      m_deviceType = device_type;
     }
-  }
 
-  public Context createContext(int memorySize){
-    if(m_deviceType == DEVICE_TYPE_CUDA){
-      CUDAContext ret = new CUDAContext(this);
-      ret.setMemorySize(memorySize);
-      return ret;
-    } else {
-      throw new UnsupportedOperationException();
+    public Context createContext()
+    {
+        if ( m_deviceType == DEVICE_TYPE_CUDA ) {
+            return new CUDAContext(this);
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
-  }
+
+    public Context createContext( int memorySize )
+    {
+        if ( m_deviceType == DEVICE_TYPE_CUDA )
+        {
+            CUDAContext ret = new CUDAContext(this);
+            ret.setMemorySize(memorySize);
+            return ret;
+        }
+        else {
+            throw new UnsupportedOperationException();
+        }
+    }
 
   public int getDeviceType(){
     return m_deviceType;
