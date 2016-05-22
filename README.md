@@ -327,8 +327,7 @@ public class GPUSortKernel implements Kernel {
 
 1. Clone the github repo to `rootbeer1/`
 2. `cd rootbeer1/`
-3. `ant jar`
-4. If JNI source-code was changed, then it is necessary to recompile the normally pre-compiled binaries:
+3. If JNI source-code was changed, then it is necessary to recompile the normally pre-compiled binaries:
 
        cd csrc
        ./compile_linux_x86
@@ -337,6 +336,7 @@ public class GPUSortKernel implements Kernel {
        ./compile_win_x64
        ./compile_mac
 
+4. `ant jar`
 5. `./pack-rootbeer` (linux) or `./pack-rootbeer.bat` (windows)
 6. Use the `Rootbeer.jar` (not `dist/Rootbeer1.jar`)
 
