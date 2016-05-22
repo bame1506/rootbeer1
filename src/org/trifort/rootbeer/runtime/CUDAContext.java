@@ -238,31 +238,38 @@ public class CUDAContext implements Context {
     }
   }
 
-  private void findMemorySize(int cubinFileLength){
-    long freeMemSizeGPU = gpuDevice.getFreeGlobalMemoryBytes();
-    long freeMemSizeCPU = Runtime.getRuntime().freeMemory();
-    long freeMemSize = Math.min(freeMemSizeGPU, freeMemSizeCPU);
+    /**
+     * Automatically finds a good memory size needed for allocation from
+     * several parameters. Also checks if the free memory is enough to hold it.
+     *
+     * @param[in] cubinFileLength file size in bytes
+     */
+    private void findMemorySize( int cubinFileLength )
+    {
+        final long freeMemSizeGPU = gpuDevice.getFreeGlobalMemoryBytes();
+        final long freeMemSizeCPU = Runtime.getRuntime().freeMemory();
 
-    freeMemSize -= cubinFileLength;
-    freeMemSize -= exceptionsMemory.getSize();
-    freeMemSize -= classMemory.getSize();
-    freeMemSize -= 2048;
+        final long neededMemory = cubinFileLength
+                                + exceptionsMemory.getSize()
+                                + classMemory.getSize()
+                                + 2048; /* ??? safetybufferof course, but a reasoning, why it is needed and why it isn't set higher, is needed here. */
 
-    if(freeMemSize <= 0){
-      StringBuilder error = new StringBuilder();
-      error.append("OutOfMemory while allocating Java CPU and GPU memory.\n");
-      error.append("  Try increasing the max Java Heap Size using -Xmx and the initial Java Heap Size using -Xms.\n");
-      error.append("  Try reducing the number of threads you are using.\n");
-      error.append("  Try using kernel templates.\n");
-      error.append("  Debugging Output:\n");
-      error.append("    GPU_SIZE: "+freeMemSizeGPU+"\n");
-      error.append("    CPU_SIZE: "+freeMemSizeCPU+"\n");
-      error.append("    EXCEPTIONS_SIZE: "+exceptionsMemory.getSize()+"\n");
-      error.append("    CLASS_MEMORY_SIZE: "+classMemory.getSize());
-      throw new RuntimeException(error.toString());
+        if ( neededMemory > Math.min( freeMemSizeGPU, freeMemSizeCPU ) )
+        {
+            StringBuilder error = new StringBuilder();
+            error.append("OutOfMemory while allocating Java CPU and GPU memory.\n");
+            error.append("  Try increasing the max Java Heap Size using -Xmx and the initial Java Heap Size using -Xms.\n");
+            error.append("  Try reducing the number of threads you are using.\n");
+            error.append("  Try using kernel templates.\n");
+            error.append("  Debugging Output:\n");
+            error.append("    GPU_SIZE: "+freeMemSizeGPU+"\n");
+            error.append("    CPU_SIZE: "+freeMemSizeCPU+"\n");
+            error.append("    EXCEPTIONS_SIZE: "+exceptionsMemory.getSize()+"\n");
+            error.append("    CLASS_MEMORY_SIZE: "+classMemory.getSize());
+            throw new RuntimeException(error.toString());
+        }
+        memorySize = neededMemory;
     }
-    memorySize = freeMemSize;
-  }
 
   @Override
   public long getRequiredMemory() {
