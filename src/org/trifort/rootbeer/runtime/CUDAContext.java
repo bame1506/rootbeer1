@@ -40,9 +40,6 @@ public class CUDAContext implements Context
 
     /* Performance metrics / debug variables */
     final private StatsRow               m_stats               ;
-    final private Stopwatch              m_writeBlocksStopwatch; /**<- host->device memcpy timer */
-    final private Stopwatch              m_runStopwatch        ; /**<- kernel launch timer */
-    final private Stopwatch              m_runOnGpuStopwatch   ; /**<- kernel launch timer */
     final private Stopwatch              m_readBlocksStopwatch ; /**<- device->host memcpy timer */
 
     final private ExecutorService        m_exec                ;
@@ -59,7 +56,7 @@ public class CUDAContext implements Context
         initializeDriver();
     }
 
-    public CUDAContext( GpuDevice device )
+    public CUDAContext( final GpuDevice device )
     {
         /* exec is an anonymous class which extends ThreadFactory by the
          * method newThread */
@@ -89,9 +86,6 @@ public class CUDAContext implements Context
         m_cacheConfig          = CacheConfig.PREFER_NONE;
 
         m_stats                = new StatsRow();
-        m_writeBlocksStopwatch = new Stopwatch();
-        m_runStopwatch         = new Stopwatch();
-        m_runOnGpuStopwatch    = new Stopwatch();
         m_readBlocksStopwatch  = new Stopwatch();
     }
 
@@ -119,7 +113,7 @@ public class CUDAContext implements Context
     @Override public void useCheckedMemory()                           { m_usingUncheckedMemory = false;        }
 
     @Override
-    public void setKernel( Kernel kernelTemplate )
+    public void setKernel( final Kernel kernelTemplate )
     {
         m_kernelTemplate = kernelTemplate;
         m_compiledKernel = (CompiledKernel) kernelTemplate;
@@ -127,15 +121,24 @@ public class CUDAContext implements Context
 
     /* Just a method which emulates default arguments */
     @Override
-    public void setThreadConfig(int threadCountX, int blockCountX, int numThreads)
+    public void setThreadConfig
+    (
+        final int threadCountX,
+        final int blockCountX ,
+        final int numThreads
+    )
     {
         setThreadConfig( threadCountX, 1, 1, blockCountX, 1, numThreads );
     }
     /* Just a method which emulates default arguments */
     @Override
-    public void setThreadConfig(
-        int threadCountX, int threadCountY,
-        int blockCountX , int blockCountY, int numThreads
+    public void setThreadConfig
+    (
+        final int threadCountX,
+        final int threadCountY,
+        final int blockCountX ,
+        final int blockCountY ,
+        final int numThreads
     )
     {
         setThreadConfig( threadCountX, threadCountY, 1, blockCountX, blockCountY, numThreads );
@@ -144,8 +147,12 @@ public class CUDAContext implements Context
     @Override
     public void setThreadConfig
     (
-        int threadCountX, int threadCountY, int threadCountZ,
-        int blockCountX , int blockCountY , int numThreads
+        final int threadCountX,
+        final int threadCountY,
+        final int threadCountZ,
+        final int blockCountX ,
+        final int blockCountY ,
+        final int numThreads
     )
     {
         m_threadConfig = new ThreadConfig(
@@ -428,6 +435,8 @@ public class CUDAContext implements Context
         /* function body could be replaced with this:
          *     handlesMemory.setAddress(0);
          *     writeBlocksTemplate( List<Kernel>( compiledKernel ) );
+         *   => this is not easily possible, because writeBlocksList takes
+         *      a list of Kernel not CompiledKernel
          */
         final Stopwatch watch = new Stopwatch();
         watch.start();
@@ -512,16 +521,18 @@ public class CUDAContext implements Context
 
         if ( Configuration.runtimeInstance().getExceptions() )
         {
+            /* for each thread in the kernel get its corresponding exception
+             * and evaluate i.e. throw it, if necessary */
             for( long i = 0; i < m_threadConfig.getNumThreads(); ++i )
             {
                 final long ref = m_exceptionsMemory.readRef();
                 if ( ref != 0 )
                 {
-                    final long ref_num = ref >> 4;
+                    final long ref_num = ref >> 4; /* = ref / 16 (?) */
                     if ( ref_num == m_compiledKernel.getNullPointerNumber() ) {
-                        throw new NullPointerException("NPE while running on GPU");
+                        throw new NullPointerException("Null pointer exception while running on GPU");
                     } else if ( ref_num == m_compiledKernel.getOutOfMemoryNumber() ) {
-                        throw new OutOfMemoryError("OOM error while running on GPU");
+                        throw new OutOfMemoryError("Out of memory error while running on GPU");
                     }
 
                     m_objectMemory.setAddress(ref);

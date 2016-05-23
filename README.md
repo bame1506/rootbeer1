@@ -323,6 +323,8 @@ public class GPUSortKernel implements Kernel {
 
 6. `java -jar App.jar`f
 
+All together: `( cd csrc && ./compile_linux_x64 ) && ant jar && ./pack-rootbeer`
+
 ### Building Rootbeer from Source
 
 1. Clone the github repo to `rootbeer1/`

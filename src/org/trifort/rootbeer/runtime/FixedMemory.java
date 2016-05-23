@@ -397,11 +397,12 @@ public class FixedMemory implements Memory
     setPointer(ptr);
   }
 
-  @Override
-  public void align16(){
-    m_instancePointer.align16();
-    m_staticPointer.align16();
-  }
+    @Override
+    public void align16()
+    {
+        m_instancePointer.align16();
+        m_staticPointer.align16();
+    }
 
     private class MemPointer
     {
@@ -446,13 +447,19 @@ public class FixedMemory implements Memory
                 m_heapEnd += (Constants.MallocAlignBytes - mod2);
             }
 
+            String debugMsg =
+                "[FixedMemory.java]\n" +
+                "    currentHeapEnd / bytes currently in use: " + m_heapEnd + " B\n" +
+                "    Bytes requested to allocate            : " + size      + " B\n" +
+                "    total size available in FixedMemory    : " + m_size    + " B\n" ;
+            System.out.print( debugMsg );
+
+            assert( size      % Constants.MallocAlignBytes == 0 );
+            assert( m_heapEnd % Constants.MallocAlignBytes == 0 );
+
             if ( m_heapEnd + size > m_size )
             {
-                throw new OutOfMemoryError(
-                    "[FixedMemory.java]\n" +
-                    "    currentHeapEnd / bytes currently in use: " + m_heapEnd + " B\n" +
-                    "    Bytes requested to allocate            : " + size      + " B\n" +
-                    "    total size available in FixedMemory    : " + m_size    + " B\n" +
+                throw new OutOfMemoryError( debugMsg +
                     "(This happens if createContext(size) was called with "     +
                     "an insufficient size, or CUDAContext.java:findMemorySize " +
                     "failed to determine the correct size automatically)"       );
@@ -464,39 +471,48 @@ public class FixedMemory implements Memory
             return m_pointer;
         }
 
-        private void clearHeapEndPtr() {
-          m_heapEnd = 0;
-          m_pointer = 0;
+        private void clearHeapEndPtr()
+        {
+            m_heapEnd = 0;
+            m_pointer = 0;
         }
 
-        private void setAddress(long address) {
-          m_pointer = address;
-          if(address > m_heapEnd)
-            m_heapEnd = address;
+        /**
+         * Sets current position of heap and increases heap size if necessary
+         */
+        private void setAddress( long address )
+        {
+            m_pointer = address;
+            if ( address > m_heapEnd )
+                m_heapEnd = address;
         }
 
-        private void incrementAddress(int offset) {
-          m_pointer += offset;
-          if(m_pointer > m_heapEnd){
-            m_heapEnd = m_pointer;
-          }
+        private void incrementAddress( int offset )
+        {
+            setAddress( m_pointer + offset );
         }
 
-        private void align() {
-          long mod = m_pointer % 8;
-          if(mod != 0){
-            m_pointer += (8 - mod);
-          }
-          if(m_pointer > m_heapEnd){
-            m_heapEnd = m_pointer;
-          }
+        /**
+         * Aligns current address in heap to 8 bytes.
+         * @todo Why align to 8 and 16 byte version, not only one ?
+         */
+        private void align()
+        {
+            if ( m_pointer % 8 != 0 ) {
+                setAddress( m_pointer + ( 8 - m_pointer % 8 ) );
+            }
         }
-
-        public void align16() {
-          long mod = m_heapEnd % Constants.MallocAlignBytes;
-          if(mod != 0){
-            m_heapEnd += (Constants.MallocAlignBytes - mod);
-          }
+        /**
+         * @todo Why does align16 align the heapEnd while in contrast align
+         *       aligns the current position ? Wanted? If so, then it's
+         *       confusing to call them both 'align'
+         */
+        public void align16()
+        {
+            final long mod = m_heapEnd % Constants.MallocAlignBytes;
+            if ( mod != 0 ) {
+                m_heapEnd += (Constants.MallocAlignBytes - mod);
+            }
         }
     }
 }
