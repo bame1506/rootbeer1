@@ -188,7 +188,8 @@ public class CUDAContext implements Context {
 
       cubinFile = readCubinFile(filename, size);
 
-      if(usingUncheckedMemory){
+      if ( usingUncheckedMemory )
+      {
           classMemory        = new FixedMemory(1024);
           exceptionsMemory   = new FixedMemory(getExceptionsMemSize(threadConfig));
           textureMemory      = new FixedMemory(8);
@@ -197,7 +198,9 @@ public class CUDAContext implements Context {
           } else {
               handlesMemory  = new FixedMemory(4);
           }
-      } else {
+      }
+      else
+      {
           exceptionsMemory   = new CheckedFixedMemory(getExceptionsMemSize(threadConfig));
           classMemory        = new CheckedFixedMemory(1024);
           textureMemory      = new CheckedFixedMemory(8);
@@ -271,19 +274,26 @@ public class CUDAContext implements Context {
             exceptionsMemory.getSize() / 4 * Constants.MallocAlignBytes +
             classMemory.getSize() * Constants.MallocAlignBytes;
 
-        if ( neededMemory > Math.min( freeMemSizeGPU, freeMemSizeCPU ) )
-        {
-            StringBuilder error = new StringBuilder();
-            error.append("OutOfMemory while allocating Java CPU and GPU memory.\n");
-            error.append("  Try increasing the max Java Heap Size using -Xmx and the initial Java Heap Size using -Xms.\n");
-            error.append("  Try reducing the number of threads you are using.\n");
-            error.append("  Try using kernel templates.\n");
-            error.append("  Debugging Output:\n");
-            error.append("    GPU_SIZE: "+freeMemSizeGPU+"\n");
-            error.append("    CPU_SIZE: "+freeMemSizeCPU+"\n");
-            error.append("    EXCEPTIONS_SIZE: "+exceptionsMemory.getSize()+"\n");
-            error.append("    CLASS_MEMORY_SIZE: "+classMemory.getSize());
-            throw new RuntimeException(error.toString());
+        final String debugOutput =
+            "  Debugging Output:\n"                                              +
+            "    GPU size         : " + freeMemSizeGPU                  + " B\n" +
+            "    CPU_SIZE         : " + freeMemSizeCPU                  + " B\n" +
+            "    Exceptions size  : " + exceptionsMemory.getSize()      + " B\n" +
+            "    class memory size: " + classMemory.getSize()           + " B\n" +
+            "    cubin size       : " + cubinFileLength                 + " B\n" +
+            "    cubin32 size     : " + compiledKernel.getCubin32Size() + " B\n" +
+            "    cubin64 size     : " + compiledKernel.getCubin64Size() + " B\n" +
+        //    "    kernel.doGetSize : " + serial.doGetSize(compiledKernel) + " B\n" +
+            "    alignment        : " + Constants.MallocAlignBytes      + " B\n" ;
+        System.out.print( debugOutput );
+        if ( neededMemory > Math.min( freeMemSizeGPU, freeMemSizeCPU ) ) {
+            final String error =
+                "OutOfMemory while allocating Java CPU and GPU memory.\n"     +
+                "  Try increasing the max Java Heap Size using -Xmx and the " +
+                "  initial Java Heap Size using -Xms.\n"                      +
+                "  Try reducing the number of threads you are using.\n"       +
+                "  Try using kernel templates.\n"                             ;
+            throw new RuntimeException( error + debugOutput );
         }
         memorySize = neededMemory;
     }
@@ -420,7 +430,7 @@ public class CUDAContext implements Context {
         Serializer serializer = compiledKernel.getSerializer(objectMemory, textureMemory);
         serializer.writeStaticsToHeap();
 
-        long handle = serializer.writeToHeap(compiledKernel);
+        long handle = serializer.writeToHeap( compiledKernel );
         handlesMemory.writeRef(handle);
         objectMemory.align16();
 

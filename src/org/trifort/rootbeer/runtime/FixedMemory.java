@@ -449,11 +449,13 @@ public class FixedMemory implements Memory
             if ( m_heapEnd + size > m_size )
             {
                 throw new OutOfMemoryError(
-                    "[FixedMemory.java] currentHeapEnd: " + m_heapEnd +
-                    " allocationSize: " + size + " memorySize: " + m_size +
-                    " (This happens if createContext(size) was called with " +
+                    "[FixedMemory.java]\n" +
+                    "    currentHeapEnd / bytes currently in use: " + m_heapEnd + " B\n" +
+                    "    Bytes requested to allocate            : " + size      + " B\n" +
+                    "    total size available in FixedMemory    : " + m_size    + " B\n" +
+                    "(This happens if createContext(size) was called with "     +
                     "an insufficient size, or CUDAContext.java:findMemorySize " +
-                    "failed to determine the correct size automatically)" );
+                    "failed to determine the correct size automatically)"       );
             }
 
             m_pointer  = m_heapEnd;
