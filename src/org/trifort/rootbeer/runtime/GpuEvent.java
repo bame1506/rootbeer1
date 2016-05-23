@@ -13,40 +13,22 @@ import com.lmax.disruptor.EventFactory;
  */
 public class GpuEvent
 {
-    private GpuEventCommand value;
-    private List<Kernel>    work;
-    private final GpuFuture future; /**<- object to signal if concurrent thread has finished */
+    private GpuEventCommand m_value;
+    private List<Kernel>    m_work;
+    private final GpuFuture m_future; /**<- object to signal if concurrent thread has finished */
 
-    public GpuEvent(){
-        future = new GpuFuture();
-    }
-
-    public GpuEventCommand getValue() {
-        return value;
-    }
-
-    public GpuFuture getFuture(){
-        return future;
-    }
-
-    public void setValue(GpuEventCommand value) {
-        this.value = value;
-    }
-
-    public void setKernelList(List<Kernel> work) {
-        this.work = work;
-    }
-
-    public List<Kernel> getKernelList(){
-        return work;
-    }
+    public GpuEvent() { m_future = new GpuFuture(); }
+    /* Access methods boilerplate code */
+    public GpuEventCommand getValue()                         { return m_value ; }
+    public GpuFuture       getFuture()                        { return m_future; }
+    public List<Kernel>    getKernelList()                    { return m_work  ; }
+    public void            setValue( GpuEventCommand value )  { m_value = value; }
+    public void            setKernelList( List<Kernel> work ) { m_work  = work;  }
 
     /* @todo: I don't even understand what this is? It looks like a mixture of
      * a member variable and a method ... */
     public final static EventFactory<GpuEvent> EVENT_FACTORY = new EventFactory<GpuEvent>()
     {
-        public GpuEvent newInstance() {
-            return new GpuEvent();
-        }
+        public GpuEvent newInstance() { return new GpuEvent(); }
     };
 }
