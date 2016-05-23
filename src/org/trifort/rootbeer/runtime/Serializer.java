@@ -12,39 +12,42 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-public abstract class Serializer {
+public abstract class Serializer
+{
+    public Memory mMem;
+    public Memory mTextureMem;
 
-  public Memory mMem;
-  public Memory mTextureMem;
+    private static final Map<Object, Long>  mWriteToGpuCache;
+    private static final Map<Long, Object>  mReverseWriteToGpuCache;
+    private static final Map<Long, Object>  mReadFromGpuCache;
+    private static       Map<Long, Integer> m_classRefToTypeNumber;
 
-  private static final Map<Object, Long> mWriteToGpuCache;
-  private static final Map<Long, Object> mReverseWriteToGpuCache;
-  private static final Map<Long, Object> mReadFromGpuCache;
-  private static Map<Long, Integer> m_classRefToTypeNumber;
+    /* static initializer for static members */
+    static {
+        mWriteToGpuCache        = new IdentityHashMap<Object, Long>();
+        mReverseWriteToGpuCache = new HashMap<Long, Object>();
+        mReadFromGpuCache       = new HashMap<Long, Object>();
+        m_classRefToTypeNumber  = new HashMap<Long, Integer>();
+    }
 
-  static {
-    mWriteToGpuCache = new IdentityHashMap<Object, Long>();
-    mReverseWriteToGpuCache = new HashMap<Long, Object>();
-    mReadFromGpuCache = new HashMap<Long, Object>();
-    m_classRefToTypeNumber = new HashMap<Long, Integer>();
-  }
+    public Serializer( Memory mem, Memory texture_mem )
+    {
+        mMem = mem;
+        mTextureMem = texture_mem;
+        mReadFromGpuCache.clear();
+        mWriteToGpuCache.clear();
+        mReverseWriteToGpuCache.clear();
+        m_classRefToTypeNumber.clear();
+    }
 
-  public Serializer(Memory mem, Memory texture_mem){
-    mMem = mem;
-    mTextureMem = texture_mem;
-    mReadFromGpuCache.clear();
-    mWriteToGpuCache.clear();
-    mReverseWriteToGpuCache.clear();
-    m_classRefToTypeNumber.clear();
-  }
+    public void writeStaticsToHeap() {
+        doWriteStaticsToHeap();
+    }
 
-  public void writeStaticsToHeap(){
-    doWriteStaticsToHeap();
-  }
-
-  public long writeToHeap(Object o){
-    return writeToHeap(o, true);
-  }
+    /* default argument: write_data = true */
+    public long writeToHeap( Object o ) {
+        return writeToHeap(o, true);
+    }
 
   private static class WriteCacheResult {
     public long m_Ref;
@@ -101,27 +104,28 @@ public abstract class Serializer {
     }
   }
 
-  public long writeToHeap(Object o, boolean write_data){
-    if(o == null)
-      return -1;
-    int size = doGetSize(o);
-    boolean read_only = false;
-    WriteCacheResult result;
-    result = checkWriteCache(o, size, read_only, mMem);
+    public long writeToHeap( Object o, boolean write_data )
+    {
+        if ( o == null )
+            return -1;
+        final int size = doGetSize(o);
+        boolean read_only = false;
+        WriteCacheResult result;
+        result = checkWriteCache(o, size, read_only, mMem);
 
-    if(result.m_NeedToWrite == false){
-      return result.m_Ref;
+        if(result.m_NeedToWrite == false){
+            return result.m_Ref;
+        }
+        //if(o == null){
+        //  System.out.println("writeToHeap: null at addr: "+result.m_Ref);
+        //} else {
+        //  System.out.println("writeToHeap: "+o.toString()+" at addr: "+result.m_Ref);
+        //}
+        doWriteToHeap(o, write_data, result.m_Ref, read_only);
+        //BufferPrinter printer = new BufferPrinter();
+        //printer.print(mMem, result.m_Ref, 128);
+        return result.m_Ref;
     }
-    //if(o == null){
-    //  System.out.println("writeToHeap: null at addr: "+result.m_Ref);
-    //} else {
-    //  System.out.println("writeToHeap: "+o.toString()+" at addr: "+result.m_Ref);
-    //}
-    doWriteToHeap(o, write_data, result.m_Ref, read_only);
-    //BufferPrinter printer = new BufferPrinter();
-    //printer.print(mMem, result.m_Ref, 128);
-    return result.m_Ref;
-  }
 
   protected Object checkCache(long address, Object item){
     synchronized(mReadFromGpuCache){

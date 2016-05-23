@@ -403,86 +403,98 @@ public class FixedMemory implements Memory
     m_staticPointer.align16();
   }
 
-  private class MemPointer {
+    private class MemPointer
+    {
+        private PointerStack m_stack;
+        private long m_pointer;
+        private long m_heapEnd;
+        private String name;
 
-    private PointerStack m_stack;
-    private long m_pointer;
-    private long m_heapEnd;
-    private String name;
+        public MemPointer(String name){
+            this.name = name;
+            m_stack = new PointerStack();
+        }
 
-    public MemPointer(String name){
-      this.name = name;
-      m_stack = new PointerStack();
+        public String getName() {
+            return name;
+        }
+
+        public void popAddress() {
+            m_pointer = m_stack.pop();
+        }
+
+        public void pushAddress() {
+            m_stack.push(m_pointer);
+        }
+
+        /**
+         * Allocates aligned memory in managed memory
+         * @return the start address of the new allocation. This also is the
+         *         aligned end of heap i.e. roughly the used memory in bytes
+         *         before the allocation
+         */
+        public long mallocWithSize( int size )
+        {
+            /* pad to align 'size' */
+            final int mod = size % Constants.MallocAlignBytes;
+            if ( mod != 0 ) {
+                size += (Constants.MallocAlignBytes - mod);
+            }
+            /* pad to align 'm_heapEnd' for beginning of new data */
+            final long mod2 = m_heapEnd % Constants.MallocAlignBytes;
+            if( mod2 != 0 ) {
+                m_heapEnd += (Constants.MallocAlignBytes - mod2);
+            }
+
+            if ( m_heapEnd + size > m_size )
+            {
+                throw new OutOfMemoryError(
+                    "[FixedMemory.java] currentHeapEnd: " + m_heapEnd +
+                    " allocationSize: " + size + " memorySize: " + m_size +
+                    " (This happens if createContext(size) was called with " +
+                    "an insufficient size, or CUDAContext.java:findMemorySize " +
+                    "failed to determine the correct size automatically)" );
+            }
+
+            m_pointer  = m_heapEnd;
+            m_heapEnd += size;
+
+            return m_pointer;
+        }
+
+        private void clearHeapEndPtr() {
+          m_heapEnd = 0;
+          m_pointer = 0;
+        }
+
+        private void setAddress(long address) {
+          m_pointer = address;
+          if(address > m_heapEnd)
+            m_heapEnd = address;
+        }
+
+        private void incrementAddress(int offset) {
+          m_pointer += offset;
+          if(m_pointer > m_heapEnd){
+            m_heapEnd = m_pointer;
+          }
+        }
+
+        private void align() {
+          long mod = m_pointer % 8;
+          if(mod != 0){
+            m_pointer += (8 - mod);
+          }
+          if(m_pointer > m_heapEnd){
+            m_heapEnd = m_pointer;
+          }
+        }
+
+        public void align16() {
+          long mod = m_heapEnd % Constants.MallocAlignBytes;
+          if(mod != 0){
+            m_heapEnd += (Constants.MallocAlignBytes - mod);
+          }
+        }
     }
-
-    public String getName() {
-      return name;
-    }
-
-    public void popAddress() {
-      m_pointer = m_stack.pop();
-    }
-
-    public void pushAddress() {
-      m_stack.push(m_pointer);
-    }
-
-    public long mallocWithSize(int size){
-      int mod = size % Constants.MallocAlignBytes;
-      if(mod != 0){
-        size += (Constants.MallocAlignBytes - mod);
-      }
-
-      long mod2 = m_heapEnd % Constants.MallocAlignBytes;
-      if(mod2 != 0){
-        m_heapEnd += (Constants.MallocAlignBytes - mod2);
-      }
-
-      long ret = m_heapEnd;
-      m_heapEnd += size;
-
-      if(ret + size > m_size){
-        throw new OutOfMemoryError("currentHeapEnd: "+ret+" allocationSize: "+size+" memorySize: "+m_size);
-      }
-
-      m_pointer = ret;
-
-      return ret;
-    }
-
-    private void clearHeapEndPtr() {
-      m_heapEnd = 0;
-      m_pointer = 0;
-    }
-
-    private void setAddress(long address) {
-      m_pointer = address;
-      if(address > m_heapEnd)
-        m_heapEnd = address;
-    }
-
-    private void incrementAddress(int offset) {
-      m_pointer += offset;
-      if(m_pointer > m_heapEnd){
-        m_heapEnd = m_pointer;
-      }
-    }
-
-    private void align() {
-      long mod = m_pointer % 8;
-      if(mod != 0){
-        m_pointer += (8 - mod);
-      }
-      if(m_pointer > m_heapEnd){
-        m_heapEnd = m_pointer;
-      }
-    }
-
-    public void align16() {
-      long mod = m_heapEnd % Constants.MallocAlignBytes;
-      if(mod != 0){
-        m_heapEnd += (Constants.MallocAlignBytes - mod);
-      }
-    }
-  }
 }

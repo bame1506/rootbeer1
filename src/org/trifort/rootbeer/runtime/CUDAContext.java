@@ -14,6 +14,8 @@ import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 
+import org.trifort.rootbeer.generate.bytecode.Constants;
+
 public class CUDAContext implements Context {
 
   final private GpuDevice gpuDevice;
@@ -205,7 +207,7 @@ public class CUDAContext implements Context {
               handlesMemory  = new CheckedFixedMemory(4);
           }
       }
-      if(memorySize == -1){
+      if ( memorySize == -1 ) {
           findMemorySize(cubinFile.length);
       }
       if(usingUncheckedMemory){
@@ -222,13 +224,14 @@ public class CUDAContext implements Context {
       gpuEvent.getFuture().take();
   }
 
-  private long getExceptionsMemSize(ThreadConfig thread_config) {
-    if(Configuration.runtimeInstance().getExceptions()){
-      return 4L*thread_config.getNumThreads();
-    } else {
-      return 4;
+    private long getExceptionsMemSize( ThreadConfig thread_config )
+    {
+        if ( Configuration.runtimeInstance().getExceptions() ) {
+            return 4L*thread_config.getNumThreads();
+        } else {
+            return 4;
+        }
     }
-  }
 
     /**
      * @todo why not call getRessourceArray directly? This function does not
@@ -259,10 +262,14 @@ public class CUDAContext implements Context {
         final long freeMemSizeGPU = gpuDevice.getFreeGlobalMemoryBytes();
         final long freeMemSizeCPU = Runtime.getRuntime().freeMemory();
 
-        final long neededMemory = cubinFileLength
-                                + exceptionsMemory.getSize()
-                                + classMemory.getSize()
-                                + 2048; /* ??? safetybufferof course, but a reasoning, why it is needed and why it isn't set higher, is needed here. */
+        /* in the worst case classMemory is only bytes which all would get
+         * aligned to 16-byte boundarys (Constants.MallocAlignBytes) resulting
+         * in 16-fold memory needed. Exception size are assumed to be 4 bytes
+         * and also assumed to be aligned (are they???) */
+        final long neededMemory =
+            cubinFileLength + Constants.MallocAlignBytes +
+            exceptionsMemory.getSize() / 4 * Constants.MallocAlignBytes +
+            classMemory.getSize() * Constants.MallocAlignBytes;
 
         if ( neededMemory > Math.min( freeMemSizeGPU, freeMemSizeCPU ) )
         {
@@ -437,7 +444,7 @@ public class CUDAContext implements Context {
      * i.e. a total of roughly 1 MB to send, may be negligible compared to
      * the device-to-host copy latency.
      */
-    private void writeBlocksList(List<Kernel> work)
+    private void writeBlocksList( List<Kernel> work )
     {
         writeBlocksStopwatch.start();
         objectMemory.clearHeapEndPtr();
@@ -549,17 +556,36 @@ public class CUDAContext implements Context {
     }
   }
 
-  private static native void initializeDriver();
-  private native long allocateNativeContext();
-  private native void freeNativeContext(long nativeContext);
+    private static native void initializeDriver();
+    private native long allocateNativeContext();
+    private native void freeNativeContext(long nativeContext);
 
-  private native void nativeBuildState(long nativeContext, int deviceIndex, byte[] cubinFile,
-      int cubinLength, int threadCountX, int threadCountY, int threadCountZ,
-      int blockCountX, int blockCountY, int numThreads,
-      Memory objectMem, Memory handlesMem, Memory exceptionsMem, Memory classMem,
-      int usingExceptions, int cacheConfig);
+    private native void nativeBuildState
+    (
+        long   nativeContext  ,
+        int    deviceIndex    ,
+        byte[] cubinFile      ,
+        int    cubinLength    ,
+        int    threadCountX   ,
+        int    threadCountY   ,
+        int    threadCountZ   ,
+        int    blockCountX    ,
+        int    blockCountY    ,
+        int    numThreads     ,
+        Memory objectMem      ,
+        Memory handlesMem     ,
+        Memory exceptionsMem  ,
+        Memory classMem       ,
+        int    usingExceptions,
+        int    cacheConfig
+    );
 
-  private native void cudaRun(long nativeContext, Memory objectMem,
-      int usingKernelTemplates, StatsRow stats);
+    private native void cudaRun
+    (
+        long     nativeContext,
+        Memory   objectMem,
+        int      usingKernelTemplates,
+        StatsRow stats
+    );
 
 }
