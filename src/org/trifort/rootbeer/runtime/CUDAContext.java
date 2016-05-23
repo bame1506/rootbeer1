@@ -352,67 +352,69 @@ public class CUDAContext implements Context {
     return stats;
   }
 
-  /**
-   * Implements onEvent with NATIVE_BUILD_STATE NATIVE_RUN and NATIVE_RUN_LIST
-   * Those are all wrappers to JNI functions, for documentation
-   * @see CudaContext.c
-   *    Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
-   *    Java_org_trifort_rootbeer_runtime_CUDAContext_nativeBuildState
-   **/
-  private class GpuEventHandler implements EventHandler<GpuEvent>
-  {
-      @Override
-      public void onEvent
-      (
-          final GpuEvent gpuEvent,
-          final long     sequence,
-          final boolean  endOfBatch
-      )
-      {
-          try {
-              switch ( gpuEvent.getValue() )
-              {
-                  case NATIVE_BUILD_STATE:
-                  {
-                      boolean usingExceptions = Configuration.runtimeInstance().getExceptions();
-                      nativeBuildState( nativeContext, gpuDevice.getDeviceId(), cubinFile,
-                          cubinFile.length,
-                          threadConfig.getThreadCountX(),
-                          threadConfig.getThreadCountY(),
-                          threadConfig.getThreadCountZ(),
-                          threadConfig.getBlockCountX (),
-                          threadConfig.getBlockCountY (),
-                          threadConfig.getNumThreads  (),
-                          objectMemory, handlesMemory, exceptionsMemory, classMemory,
-                          b2i(usingExceptions), cacheConfig.ordinal() );
-                      break;
-                  }
-                  case NATIVE_RUN:
-                  {
-                      /* send Kernel members to GPU (serializing) */
-                      writeBlocksTemplate();
-                      runGpu();
-                      /* get possibly changed Kernel members back from GPU */
-                      readBlocksTemplate();
-                      break;
-                  }
-                  case NATIVE_RUN_LIST:
-                  {
-                      writeBlocksList( gpuEvent.getKernelList() );
-                      runGpu();
-                      readBlocksList(  gpuEvent.getKernelList() );
-                      break;
-                  }
-              }
-              gpuEvent.getFuture().signal();
-          }
-          catch(Exception ex)
-          {
-              gpuEvent.getFuture().setException(ex);
-              gpuEvent.getFuture().signal();
-          }
-      }
-  }
+    /**
+     * Implements onEvent with NATIVE_BUILD_STATE NATIVE_RUN and NATIVE_RUN_LIST
+     * Those are all wrappers to JNI functions, for documentation
+     * @see CudaContext.c
+     *    Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
+     *    Java_org_trifort_rootbeer_runtime_CUDAContext_nativeBuildState
+     **/
+    private class GpuEventHandler implements EventHandler<GpuEvent>
+    {
+        @Override
+        public void onEvent
+        (
+            final GpuEvent gpuEvent,
+            final long     sequence,
+            final boolean  endOfBatch
+        )
+        {
+            try {
+                switch ( gpuEvent.getValue() )
+                {
+                    case NATIVE_BUILD_STATE:
+                    {
+                        boolean usingExceptions = Configuration.runtimeInstance().getExceptions();
+                        nativeBuildState( nativeContext, gpuDevice.getDeviceId(), cubinFile,
+                            cubinFile.length,
+                            threadConfig.getThreadCountX(),
+                            threadConfig.getThreadCountY(),
+                            threadConfig.getThreadCountZ(),
+                            threadConfig.getBlockCountX (),
+                            threadConfig.getBlockCountY (),
+                            threadConfig.getNumThreads  (),
+                            objectMemory, handlesMemory, exceptionsMemory, classMemory,
+                            usingExceptions ? 1 : 0, cacheConfig.ordinal() );
+                        gpuEvent.getFuture().signal();
+                        break;
+                    }
+                    case NATIVE_RUN:
+                    {
+                        /* send Kernel members to GPU (serializing) */
+                        writeBlocksTemplate();
+                        runGpu();
+                        /* get possibly changed Kernel members back from GPU */
+                        readBlocksTemplate();
+                        gpuEvent.getFuture().signal();
+                        break;
+                    }
+                    case NATIVE_RUN_LIST:
+                    {
+                        writeBlocksList( gpuEvent.getKernelList() );
+                        runGpu();
+                        readBlocksList(  gpuEvent.getKernelList() );
+                        gpuEvent.getFuture().signal();
+                        break;
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                gpuEvent.getFuture().setException(ex);
+                gpuEvent.getFuture().signal();
+            }
+        }
+    }
 
     /* @see writeBlocksList(List<Kernel> work) */
     private void writeBlocksTemplate()
