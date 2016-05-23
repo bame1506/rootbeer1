@@ -406,6 +406,14 @@ public class CUDAContext implements Context {
                         gpuEvent.getFuture().signal();
                         break;
                     }
+                    default:
+                    {
+                        throw new RuntimeException(
+                            "[CUDAContext.java] Unknown GPU event command code : " +
+                            gpuEvent.getValue()
+                        );
+                        break;
+                    }
                 }
             }
             catch ( Exception ex )
