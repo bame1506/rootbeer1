@@ -10,6 +10,11 @@ import org.trifort.rootbeer.runtime.util.Stopwatch;
 import org.trifort.rootbeer.runtimegpu.GpuException;
 import org.trifort.rootbeer.util.ResourceReader;
 
+/**
+ * https://github.com/LMAX-Exchange/disruptor/wiki/Introduction
+ * Library for passing event-messages to another thread which implements an
+ * EventHandler (?) @see GpuEventHandler.
+ */
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
@@ -58,6 +63,7 @@ public class CUDAContext implements Context
 
     public CUDAContext( final GpuDevice device )
     {
+        /*** start up parallel event handling system ***/
         /* exec is an anonymous class which extends ThreadFactory by the
          * method newThread */
         m_exec = Executors.newCachedThreadPool( new ThreadFactory() {
@@ -74,6 +80,9 @@ public class CUDAContext implements Context
         m_handler              = new GpuEventHandler();
         m_disruptor.handleEventsWith( m_handler );
         m_ringBuffer           = m_disruptor.start();
+        /* the started event handler will exist as long as the object to this
+         * class */
+
         m_gpuDevice            = device;
         m_memorySize           = -1;    /* automatically determine size */
 
@@ -283,7 +292,8 @@ public class CUDAContext implements Context
         final long neededMemory =
             m_cubinFile.length + Constants.MallocAlignBytes +
             m_exceptionsMemory.getSize() / 4 * Constants.MallocAlignBytes +
-            m_classMemory.getSize() * Constants.MallocAlignBytes;
+            m_classMemory.getSize() * Constants.MallocAlignBytes +
+            m_handlesMemory.getSize();
 
         final String debugOutput =
             "  Debugging Output:\n"                                              +

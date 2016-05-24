@@ -448,11 +448,11 @@ public class FixedMemory implements Memory
             }
 
             String debugMsg =
-                "[FixedMemory.java]\n" +
+                "[FixedMemory.java : mallocWithSize]\n" +
                 "    currentHeapEnd / bytes currently in use: " + m_heapEnd + " B\n" +
                 "    Bytes requested to allocate            : " + size      + " B\n" +
                 "    total size available in FixedMemory    : " + m_size    + " B\n" ;
-            System.out.print( debugMsg );
+            //System.out.print( debugMsg );
 
             assert( size      % Constants.MallocAlignBytes == 0 );
             assert( m_heapEnd % Constants.MallocAlignBytes == 0 );

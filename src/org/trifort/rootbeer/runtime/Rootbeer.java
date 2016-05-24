@@ -10,7 +10,7 @@ public class Rootbeer
     private IRuntime m_cudaRuntime;
     private List<GpuDevice> m_cards;
 
-    /* static constructor which extracts the CUDA shared libraries */
+    /* static constructor which extracts and loads the CUDA shared libraries */
     static {
         CUDALoader loader = new CUDALoader();
         loader.load();
@@ -18,6 +18,11 @@ public class Rootbeer
 
     public Rootbeer(){}
 
+    /**
+     * On first call this function creates a CUDARuntime.java instance
+     * and returns all found GPUs
+     * @see CUDARuntime.getGpuDevices
+     */
     public List<GpuDevice> getDevices()
     {
         if ( m_cards != null ) {
@@ -25,14 +30,18 @@ public class Rootbeer
         }
 
         m_cards = new ArrayList<GpuDevice>();
-        try {
-          Class c = Class.forName("org.trifort.rootbeer.runtime.CUDARuntime");
-          Constructor<IRuntime> ctor = c.getConstructor();
-          m_cudaRuntime = ctor.newInstance();
-          m_cards.addAll(m_cudaRuntime.getGpuDevices());
-        } catch(Exception ex){
-          ex.printStackTrace();
-          //ignore
+        try
+        {
+            /* @todo: Why not just use: m_cudaRuntime = new CUDARuntime() ? */
+            final Class c = Class.forName( "org.trifort.rootbeer.runtime.CUDARuntime" );
+            Constructor<IRuntime> ctor = c.getConstructor();
+            m_cudaRuntime = ctor.newInstance();
+            m_cards.addAll( m_cudaRuntime.getGpuDevices()) ;
+        }
+        catch ( Exception ex )
+        {
+            ex.printStackTrace();
+            //ignore
         }
 
         //if(m_cards.isEmpty()){
@@ -49,23 +58,30 @@ public class Rootbeer
         return m_cards;
     }
 
-    public Context createDefaultContext(){
-      List<GpuDevice> devices = getDevices();
-      GpuDevice best = null;
-      for(GpuDevice device : devices){
-        if(best == null){
-          best = device;
-        } else {
-          if(device.getMultiProcessorCount() > best.getMultiProcessorCount()){
-            best = device;
-          }
+    /**
+     * Chooses best (number of CUDA cores) GPU from list.
+     *
+     * When using Multi-GPU user can copy-paste parts of this method.
+     * @todo calculate peak flops instead of naive CUDA core count.
+     */
+    public Context createDefaultContext()
+    {
+        final List<GpuDevice> devices = getDevices();
+        if ( devices.size() <= 0 ) {
+            throw new java.lang.RuntimeException( "No CUDA-available devices found!" );
         }
-      }
-      if(best == null){
-        return null;
-      } else {
-        return best.createContext();
-      }
+        GpuDevice best = devices.get(0);
+        for ( GpuDevice device : devices.subList( 1, devices.size() ) )
+        {
+            if ( device.getPeakFlops() > best.getPeakFlops() ) {
+                best = device;
+            }
+        }
+        if ( best == null ) {
+            return null;
+        } else {
+            return best.createContext();
+        }
     }
 
     /**
@@ -73,9 +89,9 @@ public class Rootbeer
      * properties for a given number of threads wanted
      * @param[in] kernels Only kernels.size will be evaluated
      **/
-    public ThreadConfig getThreadConfig( List<Kernel> kernels, GpuDevice device )
+    public ThreadConfig getThreadConfig( final List<Kernel> kernels, final GpuDevice device )
     {
-        BlockShaper block_shaper = new BlockShaper();
+        final BlockShaper block_shaper = new BlockShaper();
         block_shaper.run( kernels.size(), device.getMultiProcessorCount() );
 
         return new ThreadConfig(
@@ -88,16 +104,16 @@ public class Rootbeer
         );
     }
 
-    public void run(List<Kernel> work)
+    public void run( final List<Kernel> work )
     {
         Context context = createDefaultContext();
-        ThreadConfig thread_config = getThreadConfig(work, context.getDevice());
+        ThreadConfig thread_config = getThreadConfig( work, context.getDevice() );
         try {
             context.setThreadConfig(thread_config);
-            context.setKernel(work.get(0));
-            context.setUsingHandles(true);
-            context.buildState(); // this sets the GPU to use
-            context.run(work);
+            context.setKernel( work.get(0) );
+            context.setUsingHandles( true );
+            context.buildState();   // this sets the GPU to use and all other parameters
+            context.run( work );
         } finally {
             context.close();
         }

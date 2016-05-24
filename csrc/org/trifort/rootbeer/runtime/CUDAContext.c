@@ -2,53 +2,55 @@
 #include "Stopwatch.h"
 #include <cuda.h>
 
-struct ContextState {
-  CUdevice device;
-  CUcontext context;
-  CUmodule module;
-  CUfunction function;
+struct ContextState
+{
+    CUdevice   device;
+    CUcontext  context;
+    CUmodule   module;
+    CUfunction function;
 
-  CUdeviceptr gpu_info_space;
-  CUdeviceptr gpu_object_mem;
-  CUdeviceptr gpu_handles_mem;
-  CUdeviceptr gpu_exceptions_mem;
-  CUdeviceptr gpu_class_mem;
-  CUdeviceptr gpu_heap_end;
+    CUdeviceptr gpu_info_space;
+    CUdeviceptr gpu_object_mem;
+    CUdeviceptr gpu_handles_mem;
+    CUdeviceptr gpu_exceptions_mem;
+    CUdeviceptr gpu_class_mem;
+    CUdeviceptr gpu_heap_end;
 
-  void * cpu_object_mem;
-  void * cpu_handles_mem;
-  void * cpu_exceptions_mem;
-  void * cpu_class_mem;
+    void * cpu_object_mem;
+    void * cpu_handles_mem;
+    void * cpu_exceptions_mem;
+    void * cpu_class_mem;
 
-  jlong cpu_object_mem_size;
-  jlong cpu_handles_mem_size;
-  jlong cpu_exceptions_mem_size;
-  jlong cpu_class_mem_size;
+    jlong cpu_object_mem_size;
+    jlong cpu_handles_mem_size;
+    jlong cpu_exceptions_mem_size;
+    jlong cpu_class_mem_size;
 
-  jint * info_space;
-  jint block_count_x;
-  jint block_count_y;
-  jint using_kernel_templates_offset;
-  jint using_exceptions;
-  jint context_built;
+    jint * info_space;
+    jint block_count_x;
+    jint block_count_y;
+    jint using_kernel_templates_offset;
+    jint using_exceptions;
+    jint context_built;
 
-  struct stopwatch execMemcopyToDevice;
-  struct stopwatch execGpuRun;
-  struct stopwatch execMemcopyFromDevice;
+    struct stopwatch execMemcopyToDevice;
+    struct stopwatch execGpuRun;
+    struct stopwatch execMemcopyFromDevice;
 };
 
-jclass cuda_memory_class;
-jmethodID get_address_method;
-jmethodID get_size_method;
+/* interfaced java classes and methods which we want to access / call */
+jclass    cuda_memory_class  ;
+jmethodID get_address_method ;
+jmethodID get_size_method    ;
 jmethodID get_heap_end_method;
 jmethodID set_heap_end_method;
-jclass stats_row_class;
-jmethodID set_driver_times;
+jclass    stats_row_class    ;
+jmethodID set_driver_times   ;
 
-#define CHECK_STATUS(env,msg,status,device) \
-if (CUDA_SUCCESS != status) {\
-  throw_cuda_errror_exception(env, msg, status, device);\
-  return;\
+#define CHECK_STATUS(env,msg,status,device)                 \
+if (CUDA_SUCCESS != status) {                               \
+    throw_cuda_error_exception(env, msg, status, device);   \
+    return;                                                 \
 }
 
 /**
@@ -56,48 +58,59 @@ if (CUDA_SUCCESS != status) {\
 * allocd - number of bytes tried to allocate
 * id - variable the memory assignment was for
 */
-void throw_cuda_errror_exception(JNIEnv *env, const char *message, int error,
-  CUdevice device) {
+void throw_cuda_error_exception
+(
+    JNIEnv     * env    ,
+    const char * message,
+    int          error  ,
+    CUdevice     device
+)
+{
+    char     msg[1024];
+    jclass   exp;
+    jfieldID fid;
+    int      a = 0;
+    int      b = 0;
+    char     name[1024];
 
-  char msg[1024];
-  jclass exp;
-  jfieldID fid;
-  int a = 0;
-  int b = 0;
-  char name[1024];
+    exp = (*env)->FindClass(env,"org/trifort/rootbeer/runtime/CudaErrorException");
 
-  exp = (*env)->FindClass(env,"org/trifort/rootbeer/runtime/CudaErrorException");
+    // we truncate the message to 900 characters to stop any buffer overflow
+    switch ( error )
+    {
+        case CUDA_ERROR_OUT_OF_MEMORY:
+        {
+            sprintf(msg, "CUDA_ERROR_OUT_OF_MEMORY: %.900s",message);
+            break;
+        }
+        case CUDA_ERROR_NO_BINARY_FOR_GPU:
+        {
+            cuDeviceGetName(name,1024,device);
+            cuDeviceComputeCapability(&a, &b, device);
+            sprintf(msg, "No binary for gpu. %s Selected %s (%d.%d). 2.0 compatibility required.", message, name, a, b);
+            break;
+        }
+        default:
+            sprintf(msg, "ERROR STATUS:%i : %.900s", error, message);
+    }
 
-  // we truncate the message to 900 characters to stop any buffer overflow
-  switch(error){
-    case CUDA_ERROR_OUT_OF_MEMORY:
-      sprintf(msg, "CUDA_ERROR_OUT_OF_MEMORY: %.900s",message);
-      break;
-    case CUDA_ERROR_NO_BINARY_FOR_GPU:
-      cuDeviceGetName(name,1024,device);
-      cuDeviceComputeCapability(&a, &b, device);
-      sprintf(msg, "No binary for gpu. %s Selected %s (%d.%d). 2.0 compatibility required.", message, name, a, b);
-      break;
-    default:
-      sprintf(msg, "ERROR STATUS:%i : %.900s", error, message);
-  }
-
-  fid = (*env)->GetFieldID(env,exp, "cudaError_enum", "I");
-  (*env)->SetLongField(env,exp,fid, (jint)error);
-  (*env)->ThrowNew(env,exp,msg);
-  return;
+    fid = (*env)->GetFieldID(env,exp, "cudaError_enum", "I");
+    (*env)->SetLongField(env,exp,fid, (jint)error);
+    (*env)->ThrowNew(env,exp,msg);
+    return;
 }
 
-JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_initializeDriver
-  (JNIEnv *env, jobject this_ref)
+JNIEXPORT void JNICALL
+Java_org_trifort_rootbeer_runtime_CUDAContext_initializeDriver
+( JNIEnv *env, jobject this_ref )
 {
-  cuda_memory_class = (*env)->FindClass(env, "org/trifort/rootbeer/runtime/FixedMemory");
-  get_address_method = (*env)->GetMethodID(env, cuda_memory_class, "getAddress", "()J");
-  get_size_method = (*env)->GetMethodID(env, cuda_memory_class, "getSize", "()J");
-  get_heap_end_method = (*env)->GetMethodID(env, cuda_memory_class, "getHeapEndPtr", "()J");
-  set_heap_end_method = (*env)->GetMethodID(env, cuda_memory_class, "setHeapEndPtr", "(J)V");
-  stats_row_class = (*env)->FindClass(env, "org/trifort/rootbeer/runtime/StatsRow");
-  set_driver_times = (*env)->GetMethodID(env, stats_row_class, "setDriverTimes", "(JJJ)V");
+    cuda_memory_class   = (*env)->FindClass  ( env, "org/trifort/rootbeer/runtime/FixedMemory"   );
+    get_address_method  = (*env)->GetMethodID( env, cuda_memory_class, "getAddress"   , "()J"    );
+    get_size_method     = (*env)->GetMethodID( env, cuda_memory_class, "getSize"      , "()J"    );
+    get_heap_end_method = (*env)->GetMethodID( env, cuda_memory_class, "getHeapEndPtr", "()J"    );
+    set_heap_end_method = (*env)->GetMethodID( env, cuda_memory_class, "setHeapEndPtr", "(J)V"   );
+    stats_row_class     = (*env)->FindClass  ( env, "org/trifort/rootbeer/runtime/StatsRow"      );
+    set_driver_times    = (*env)->GetMethodID( env, stats_row_class, "setDriverTimes" , "(JJJ)V" );
 }
 
 JNIEXPORT jlong JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_allocateNativeContext
@@ -108,23 +121,25 @@ JNIEXPORT jlong JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_allocateNa
   return (jlong) ret;
 }
 
-JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_freeNativeContext
-  (JNIEnv *env, jobject this_ref, jlong reference)
+JNIEXPORT void JNICALL
+Java_org_trifort_rootbeer_runtime_CUDAContext_freeNativeContext
+( JNIEnv *env, jobject this_ref, jlong reference )
 {
-  struct ContextState * stateObject = (struct ContextState *) reference;
+    struct ContextState * stateObject = (struct ContextState *) reference;
 
-  if(stateObject->context_built){
-    free(stateObject->info_space);
-    cuMemFree(stateObject->gpu_info_space);
-    cuMemFree(stateObject->gpu_object_mem);
-    cuMemFree(stateObject->gpu_handles_mem);
-    cuMemFree(stateObject->gpu_exceptions_mem);
-    cuMemFree(stateObject->gpu_class_mem);
-    cuMemFree(stateObject->gpu_heap_end);
-    cuCtxDestroy(stateObject->context);
-  }
+    if ( stateObject->context_built )
+    {
+        free        ( stateObject->info_space         );
+        cuMemFree   ( stateObject->gpu_info_space     );
+        cuMemFree   ( stateObject->gpu_object_mem     );
+        cuMemFree   ( stateObject->gpu_handles_mem    );
+        cuMemFree   ( stateObject->gpu_exceptions_mem );
+        cuMemFree   ( stateObject->gpu_class_mem      );
+        cuMemFree   ( stateObject->gpu_heap_end       );
+        cuCtxDestroy( stateObject->context            );
+    }
 
-  free(stateObject);
+    free( stateObject );
 }
 
 
@@ -191,20 +206,22 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_nativeBuild
       "_Z5entryPiS_ii");
     CHECK_STATUS(env, "Error in cuModuleGetFunction", status, stateObject->device)
 
-    if(cache_config != 0){
-      switch(cache_config){
-        case 1:
-          cache_config_enum = CU_FUNC_CACHE_PREFER_SHARED;
-          break;
-        case 2:
-          cache_config_enum = CU_FUNC_CACHE_PREFER_L1;
-          break;
-        case 3:
-          cache_config_enum = CU_FUNC_CACHE_PREFER_EQUAL;
-          break;
-      }
-      status = cuFuncSetCacheConfig(stateObject->function, cache_config_enum);
-      CHECK_STATUS(env, "Error in cuFuncSetCacheConfig", status, stateObject->device)
+    if ( cache_config != 0 )
+    {
+        switch ( cache_config )
+        {
+            case 1:
+                cache_config_enum = CU_FUNC_CACHE_PREFER_SHARED;
+                break;
+            case 2:
+                cache_config_enum = CU_FUNC_CACHE_PREFER_L1;
+                break;
+            case 3:
+                cache_config_enum = CU_FUNC_CACHE_PREFER_EQUAL;
+                break;
+        }
+        status = cuFuncSetCacheConfig( stateObject->function, cache_config_enum );
+        CHECK_STATUS( env, "Error in cuFuncSetCacheConfig", status, stateObject->device )
     }
 
     stateObject->cpu_object_mem     = (void *) (*env)->CallLongMethod( env, object_mem    , get_address_method );
