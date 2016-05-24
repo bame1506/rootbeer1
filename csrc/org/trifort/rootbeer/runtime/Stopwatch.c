@@ -24,14 +24,20 @@ void stopwatchStop(struct stopwatch * watch){
 #endif
 }
 
-long long stopwatchTimeMS(struct stopwatch * watch){
-  #if (defined linux || defined __APPLE_CC__)
-    return watch->time;
-  #else
-    long long freq;
-    long long d;
-    QueryPerformanceFrequency((LARGE_INTEGER*)&freq);
-    d = watch->stopTime - watch->startTime;
-    return (d * 1000UL) / freq;
-  #endif
+/**
+ * Calculates measured time between start and stop event in milliseconds
+ *
+ * This is used to set the member variables in StatsRow.java
+ */
+long long stopwatchTimeMS ( struct stopwatch * watch )
+{
+    #if (defined linux || defined __APPLE_CC__)
+        return watch->time;
+    #else
+        long long freq;
+        long long d;
+        QueryPerformanceFrequency((LARGE_INTEGER*)&freq);
+        d = watch->stopTime - watch->startTime;
+        return (d * 1000UL) / freq;
+    #endif
 }

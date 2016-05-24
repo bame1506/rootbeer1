@@ -200,7 +200,7 @@ public class CUDAContext implements Context
 
         if ( m_usingUncheckedMemory )
         {
-            m_classMemory        = new FixedMemory(1024);
+            m_classMemory        = new FixedMemory(1024); /* why 1024 ??? */
             m_exceptionsMemory   = new FixedMemory(getExceptionsMemSize(m_threadConfig));
             m_textureMemory      = new FixedMemory(8);
             if ( m_usingHandles ) {

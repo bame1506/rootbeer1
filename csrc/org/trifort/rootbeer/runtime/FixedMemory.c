@@ -3,8 +3,20 @@
 #include <stdlib.h>     // calloc, free
 #include <assert.h>
 
+/* These functions here are used by FixedMemory.java as part of the
+ * serialization process. I guess this isn't possible in Java, because
+ * Java is basically memory layout agnostic ? */
+
+/* JNIEnv and jobject is not in the signature in FixedMemory.java.
+ * These are automatically added by the JNI.
+ * Basically imagine FixedMemory.java being an exotic header and this
+ * being the definition of those declared functions */
+
 #define __FIXED_MEMORY_WRAPPER( NAME, JTYPE, TYPE )                     \
                                                                         \
+/**                                                                     \
+ *                                                                      \
+ */                                                                     \
 JNIEXPORT JTYPE JNICALL                                                 \
 Java_org_trifort_rootbeer_runtime_FixedMemory_doRead##NAME              \
 (                                                                       \
