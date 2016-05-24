@@ -2,6 +2,7 @@ package org.trifort.rootbeer.runtime;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import org.omg.CORBA._IDLTypeStub;
 import org.trifort.rootbeer.generate.bytecode.Constants;
@@ -210,7 +211,7 @@ public class FixedMemory implements Memory
      */
     private class MemPointer
     {
-        private PointerStack m_stack;
+        private Stack<Long> m_stack;
         /**
          * as per java language spec initialized to 0
          * @see http://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.5
@@ -229,7 +230,7 @@ public class FixedMemory implements Memory
 
         public MemPointer(String name){
             this.name = name;
-            m_stack = new PointerStack();
+            m_stack = new Stack<Long>();
         }
         public String getName  () { return name; }
         public void popAddress () { m_pointer = m_stack.pop(); }
@@ -278,8 +279,18 @@ public class FixedMemory implements Memory
             return m_pointer;
         }
 
+        /**
+         * Only called by writeBlocksList and writeBlocksTemplate
+         */
         private void clearHeapEndPtr()
         {
+            /**
+             * shouldn't this also clear m_stack ???
+             * Note that no error may happen if the caller behaves correctly,
+             * meaning he doesn't call pop more often than push!
+             * Then even if he calls pop less than push no bug may happen,
+             * but it would be a memory leak.
+             */
             m_heapEnd = 0;
             m_pointer = 0;
         }
