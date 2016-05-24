@@ -87,7 +87,7 @@ void throw_cuda_error_exception
         {
             cuDeviceGetName(name,1024,device);
             cuDeviceComputeCapability(&a, &b, device);
-            sprintf(msg, "No binary for gpu. %s Selected %s (%d.%d). 2.0 compatibility required.", message, name, a, b);
+            sprintf(msg, "No binary for gpu. %.900s Selected %s (%d.%d). 2.0 compatibility required.", message, name, a, b);
             break;
         }
         default:
