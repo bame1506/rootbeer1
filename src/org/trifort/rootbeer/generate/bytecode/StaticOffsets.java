@@ -31,7 +31,9 @@ public class StaticOffsets
 {
     /* if m_offsetToFieldMap was only the inverse map to m_fieldToOffsetMap
      * e.g. for performance reasons, then why does one have OpenCLField
-     * while the other uses SortableField ?? */
+     * while the other uses SortableField ??
+     *   => OpenCLField is basically the extracted SortableField
+     */
     private final Map<Integer    , SortableField     > m_offsetToFieldMap;
     private final Map<OpenCLField, Integer           > m_fieldToOffsetMap;
     private final Map<SootClass  , Integer           > m_classToOffsetMap;
@@ -98,43 +100,40 @@ public class StaticOffsets
         array = sortable_fields.toArray(array);
         Arrays.sort( array );
 
+        /* add all found sorted fields in the map and count the total memory
+         * size they take */
         int index = 0;
         for ( final SortableField field : array )
         {
             m_offsetToFieldMap.put( index, field );
             m_fieldToOffsetMap.put( field.m_field, index );
-            index += field.m_field.getSize();
+            index += field.m_field.getSize(); /* bytes */
         }
-        /* Align to 4 (why? I don't think these are bytes, so why the need to
-         * align?) Actually ... this isn't alignment... What is this oO?
-         * Note also that +=0 does do nothing, so no need for if ... */
-        int leftover = index % 4;
-        if ( leftover != 0 ) {
-            index += leftover;
-        }
+
+        /* Align to 4 bytes (why suddenly 4 and not 16 like in Constants ... ? */
+        if ( index % 4 != 0 ) index += 4 - index % 4;
         m_lockStart = index;
-        Set<Type> types = RootbeerClassLoader.v().getDfsInfo().getDfsTypes();
-        for(Type type : types){
-          if(type instanceof RefType == false){
-            continue;
-          }
-          RefType ref_type = (RefType) type;
-          String curr = ref_type.getClassName();
-          SootClass soot_class = Scene.v().getSootClass(curr);
-          m_classToOffsetMap.put(soot_class, index);
-          index += 4;
+
+        final Set<Type> types = RootbeerClassLoader.v().getDfsInfo().getDfsTypes();
+        for ( Type type : types )
+        {
+            if ( type instanceof RefType == false ) {
+                continue;
+            }
+            final SootClass soot_class = Scene.v().getSootClass(
+                ( (RefType) type ).getClassName()
+            );
+            m_classToOffsetMap.put( soot_class, index );
+            index += 4; /* size of a reference (not size of soot_class) */
         }
         m_endIndex = index;
-        int mod = m_endIndex % 16;
-        m_zerosSize = 0;
-        if(mod != 0){
-          m_endIndex += (16 - mod);
-          m_zerosSize += (16 - mod);
+
+        m_zerosSize = 0; /**< size of padding added after those references above */
+        if ( m_endIndex % 16 != 0 )
+        {
+            m_zerosSize = 16 - m_endIndex % 16;
+            m_endIndex += m_zerosSize;
         }
-        //give room for junk space. some reason 32 bytes of space are needed for
-        //the synchronized tests to pass.
-        m_endIndex  += 32;
-        m_zerosSize += 32;
     }
 
     public int getZerosSize(){ return m_zerosSize; }

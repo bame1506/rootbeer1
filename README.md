@@ -1,3 +1,7 @@
+#About this Fork
+
+This fork adds several small bugfixes, quite some code comments, code reduction and also changes the code style of sighted files to something more similar to e.g. [imresh](https://github.com/ComputationalRadiationPhysics/imresh) i.e. braces on new line, 4 spaces instead of 2 indentation and alignment of similar and especially of boiler-plate code.
+
 #Rootbeer
 
 The Rootbeer GPU Compiler lets you use GPUs from within Java. It allows you to use almost anything from Java on the GPU:
@@ -571,7 +575,14 @@ examples.
 GPU Consulting available for Rootbeer and CUDA. Please email pcpratts@trifort.org  
 
 
-### Author
+### Known Bugs
+
+ - `fatal error: bits/c++config.h: No such file or directory` when running `./Rootbeer.jar -runeasytests`
+   Install cross-compiling libraries:
+   `sudo apt-get install gcc-4.9-multilib g++-4.9-multilib`
+
+### Authors
 
 Phil Pratt-Szeliga  
 http://trifort.org/
+Maximilian Knespel
