@@ -26,47 +26,42 @@ import soot.SootClass;
 import soot.Type;
 import soot.rbclassload.RootbeerClassLoader;
 
-public class StaticOffsets {
 
-  private Map<Integer, SortableField> m_offsetToFieldMap;
-  private Map<OpenCLField, Integer> m_fieldToOffsetMap;
-  private Map<SootClass, Integer> m_classToOffsetMap;
-  private Map<SootClass, List<OpenCLField>> m_staticFields;
-  private int m_endIndex;
-  private int m_lockStart;
-  private int m_zerosSize;
+public class StaticOffsets
+{
+    private final Map<Integer    , SortableField     > m_offsetToFieldMap;
+    private final Map<OpenCLField, Integer           > m_fieldToOffsetMap;
+    private final Map<SootClass  , Integer           > m_classToOffsetMap;
+    private final Map<SootClass  , List<OpenCLField> > m_staticFields    ;
+    private int                                        m_endIndex        ;
+    private int                                        m_lockStart       ;
+    private int                                        m_zerosSize       ;
 
-  public StaticOffsets(){
-    m_offsetToFieldMap = new HashMap<Integer, SortableField>();
-    m_fieldToOffsetMap = new HashMap<OpenCLField, Integer>();
-    m_classToOffsetMap = new HashMap<SootClass, Integer>();
-    m_staticFields = new HashMap<SootClass, List<OpenCLField>>();
-    buildMaps();
-  }
-
-  public OpenCLField getField(int index){
-    return m_offsetToFieldMap.get(index).m_field;
-  }
-
-  public int getIndex(OpenCLField field){
-    return m_fieldToOffsetMap.get(field);
-  }
-
-  public int getIndex(SootClass soot_class){
-    return m_classToOffsetMap.get(soot_class);
-  }
-
-  public int getEndIndex(){
-    return m_endIndex;
-  }
-
-  public List<OpenCLField> getStaticFields(SootClass soot_class){
-    List<OpenCLField> ret = m_staticFields.get(soot_class);
-    if(ret == null){
-      ret = new ArrayList<OpenCLField>();
+    public StaticOffsets()
+    {
+        m_offsetToFieldMap = new HashMap<Integer    , SortableField     >();
+        m_fieldToOffsetMap = new HashMap<OpenCLField, Integer           >();
+        m_classToOffsetMap = new HashMap<SootClass  , Integer           >();
+        m_staticFields     = new HashMap<SootClass  , List<OpenCLField> >();
+        m_endIndex         = 0;
+        m_lockStart        = 0;
+        m_zerosSize        = 0;
+        buildMaps();
     }
-    return ret;
-  }
+
+    public OpenCLField getField(int index           ){ return m_offsetToFieldMap.get(index).m_field; }
+    public int         getIndex(OpenCLField field   ){ return m_fieldToOffsetMap.get(field)        ; }
+    public int         getIndex(SootClass soot_class){ return m_classToOffsetMap.get(soot_class)   ; }
+    public int         getEndIndex()                 { return m_endIndex                           ; }
+
+    public List<OpenCLField> getStaticFields( final SootClass soot_class )
+    {
+        List<OpenCLField> ret = m_staticFields.get( soot_class );
+        if ( ret == null ) {
+            ret = new ArrayList<OpenCLField>();
+        }
+        return ret;
+    }
 
   private void buildMaps() {
     List<CompositeField> composites = OpenCLScene.v().getCompositeFields();

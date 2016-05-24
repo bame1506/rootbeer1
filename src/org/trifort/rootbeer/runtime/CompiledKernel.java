@@ -19,6 +19,6 @@ public interface CompiledKernel
     public String     getCubin64();
     public int        getCubin64Size();
     public boolean    getCubin64Error();
-    public Serializer getSerializer(Memory memory, Memory texture_memory);
+    public Serializer getSerializer(Memory memory, Memory texture_memory); /* defined by Soot in VisitorGen.java? */
     public boolean    isUsingGarbageCollector();
 }

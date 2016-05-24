@@ -485,6 +485,11 @@ public class CUDAContext implements Context
     {
         final Stopwatch watch = new Stopwatch();
         watch.start();
+
+        /* no branching on m_usingHandles ? */
+        /* setAddress(0) doesn't change the heapEnd, meaning the resulting
+         * heapEnd will be the maximum of the last and the one after writing
+         * everything in this method */
         m_objectMemory.clearHeapEndPtr();
         m_handlesMemory.setAddress(0);
 
@@ -492,10 +497,7 @@ public class CUDAContext implements Context
         serializer.writeStaticsToHeap();
 
         for ( Kernel kernel : work )
-        {
-            final long handle = serializer.writeToHeap( kernel );
-            m_handlesMemory.writeRef( handle );
-        }
+            m_handlesMemory.writeRef( serializer.writeToHeap( kernel ) );
         m_objectMemory.align16();
 
         if ( Configuration.getPrintMem() )

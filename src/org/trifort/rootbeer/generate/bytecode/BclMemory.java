@@ -7,10 +7,20 @@
 
 package org.trifort.rootbeer.generate.bytecode;
 
+/**
+ * Imports needed:
+ *   Local, Type, Value, LongType, IntType, VoidType, ByteType,
+ *   BooleanType, ShortType, CharType, FloatType, DoubleType
+ */
 import soot.*;
 import soot.jimple.IntConstant;
 import soot.jimple.LongConstant;
 
+/**
+ * Seems to be just a wrapper to have access to Memory class from
+ * analysed byte code. Also perfect case where Preprocessor could
+ * reduce the code to 20%
+ */
 public class BclMemory {
   private final BytecodeLanguage mBcl;
   private final Local mMem;
@@ -24,221 +34,134 @@ public class BclMemory {
     writeByte(IntConstant.v(value));
   }
 
-  public void writeByte(Value value){
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "writeByte", VoidType.v(), ByteType.v());
-    mBcl.invokeMethodNoRet(mMem, value);
-  }
-
-  public void writeBoolean(Value value){
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "writeBoolean", VoidType.v(), BooleanType.v());
-    mBcl.invokeMethodNoRet(mMem, value);
-  }
-
-  void writeShort(Value value) {
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "writeShort", VoidType.v(), ShortType.v());
-    mBcl.invokeMethodNoRet(mMem, value);
-  }
-
-  private void writeChar(Value value) {
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "writeChar", VoidType.v(), CharType.v());
-    mBcl.invokeMethodNoRet(mMem, value);
-  }
-
-  void writeInt(Value value) {
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "writeInt", VoidType.v(), IntType.v());
-    mBcl.invokeMethodNoRet(mMem, value);
-  }
-
-  void writeInt(int size) {
-    writeInt(IntConstant.v(size));
-  }
-
-  void writeFloat(Value value){
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "writeFloat", VoidType.v(), FloatType.v());
-    mBcl.invokeMethodNoRet(mMem, value);
-  }
-
-  void writeDouble(Value value){
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "writeDouble", VoidType.v(), DoubleType.v());
-    mBcl.invokeMethodNoRet(mMem, value);
-  }
-
-  void writeLong(Value value){
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "writeLong", VoidType.v(), LongType.v());
-    mBcl.invokeMethodNoRet(mMem, value);
-  }
-
-  void writeVar(Local curr) {
-    Type type = curr.getType();
-    if(type instanceof ByteType){
-      writeByte(curr);
-    } else if(type instanceof BooleanType){
-      writeBoolean(curr);
-    } else if(type instanceof ShortType){
-      writeShort(curr);
-    } else if(type instanceof CharType){
-      writeChar(curr);
-    } else if(type instanceof IntType){
-      writeInt(curr);
-    } else if(type instanceof FloatType){
-      writeFloat(curr);
-    } else if(type instanceof DoubleType){
-      writeDouble(curr);
-    } else if(type instanceof LongType){
-      writeLong(curr);
+    /**
+     * Same as @see callVoidMethod2, but takes takes no arguments
+     */
+    private void voidCall0( final String methodName )
+    {
+        mBcl.pushMethod( mBcl.getTypeString(mMem), methodName, VoidType.v() );
+        mBcl.invokeMethodNoRet( mMem );
     }
-  }
 
-  void pushAddress() {
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "pushAddress", VoidType.v());
-    mBcl.invokeMethodNoRet(mMem);
-  }
-
-  void incrementAddress(int size) {
-    incrementAddress(IntConstant.v(size));
-  }
-
-  void incrementAddress(Value value) {
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "incrementAddress", VoidType.v(), IntType.v());
-    mBcl.invokeMethodNoRet(mMem, value);
-  }
-
-  Local getPointer() {
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "getPointer", LongType.v());
-    return mBcl.invokeMethodRet(mMem);
-  }
-
-  void popAddress() {
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "popAddress", VoidType.v());
-    mBcl.invokeMethodNoRet(mMem);
-  }
-
-  void setAddress(Value address) {
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "setAddress", VoidType.v(), LongType.v());
-    mBcl.invokeMethodNoRet(mMem, address);
-  }
-
-  public void useInstancePointer(){
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "useInstancePointer", VoidType.v());
-    mBcl.invokeMethodNoRet(mMem);
-  }
-
-  public void useStaticPointer(){
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "useStaticPointer", VoidType.v());
-    mBcl.invokeMethodNoRet(mMem);
-  }
-
-  Local readByte() {
-    mBcl.pushMethod(mMem, "readByte", ByteType.v());
-    return mBcl.invokeMethodRet(mMem);
-  }
-
-  Local readBoolean() {
-    mBcl.pushMethod(mMem, "readBoolean", BooleanType.v());
-    return mBcl.invokeMethodRet(mMem);
-  }
-
-  Local readShort(){
-    mBcl.pushMethod(mMem, "readShort", ShortType.v());
-    return mBcl.invokeMethodRet(mMem);
-  }
-
-  Local readChar(){
-    mBcl.pushMethod(mMem, "readChar", CharType.v());
-    return mBcl.invokeMethodRet(mMem);
-  }
-
-  Local readInt() {
-    mBcl.pushMethod(mMem, "readInt", IntType.v());
-    return mBcl.invokeMethodRet(mMem);
-  }
-
-  public Local readRef() {
-    mBcl.pushMethod(mMem, "readRef", LongType.v());
-    return mBcl.invokeMethodRet(mMem);
-  }
-
-  public void writeRef(Value ref) {
-    mBcl.pushMethod(mMem, "writeRef", VoidType.v(), LongType.v());
-    mBcl.invokeMethodNoRet(mMem, ref);
-  }
-
-  Local readFloat(){
-    mBcl.pushMethod(mMem, "readFloat", FloatType.v());
-    return mBcl.invokeMethodRet(mMem);
-  }
-
-  Local readDouble(){
-    mBcl.pushMethod(mMem, "readDouble", DoubleType.v());
-    return mBcl.invokeMethodRet(mMem);
-  }
-
-  Local readLong(){
-    mBcl.pushMethod(mMem, "readLong", LongType.v());
-    return mBcl.invokeMethodRet(mMem);
-  }
-
-  Local readVar(Type type) {
-    if(type instanceof ByteType){
-      return readByte();
-    } else if(type instanceof BooleanType){
-      return readBoolean();
-    } else if(type instanceof ShortType){
-      return readShort();
-    } else if(type instanceof CharType){
-      return readChar();
-    } else if(type instanceof IntType){
-      return readInt();
-    } else if(type instanceof FloatType){
-      return readFloat();
-    } else if(type instanceof DoubleType){
-      return readDouble();
-    } else if(type instanceof LongType){
-      return readLong();
+    /**
+     * Calls the method with name methodName in Memory.java with argument value
+     * @param type e.g. ByteType. The value it hols is ignored
+     */
+    private void voidCall1
+    (
+        final String methodName,
+        Type         type,
+        Value        value
+    )
+    {
+        mBcl.pushMethod(
+            mBcl.getTypeString(mMem), methodName, VoidType.v(), type
+        );
+        mBcl.invokeMethodNoRet( mMem, value );
     }
-    throw new RuntimeException("How do we handle this case?");
-  }
 
-  void startIntegerList() {
-    mBcl.pushMethod(mMem, "startIntegerList", VoidType.v());
-    mBcl.invokeMethodNoRet(mMem);
-  }
+    /* why do they all have different scope specifiers ? (no specifier
+     * means package-private */
+            void pushAddress       (){ voidCall0( "pushAddress"        ); }
+            void popAddress        (){ voidCall0( "popAddress"         ); }
+    public  void useInstancePointer(){ voidCall0( "useInstancePointer" ); }
+    public  void useStaticPointer  (){ voidCall0( "useStaticPointer"   ); }
+            void startIntegerList  (){ voidCall0( "startIntegerList"   ); }
+            void endIntegerList    (){ voidCall0( "endIntegerList"     ); }
+            void finishReading     (){ voidCall0( "finishReading"      ); }
+    public  void align             (){ voidCall0( "align"              ); }
+    public  void writeByte       (Value v){ voidCall1( "writeByte   ",    ByteType.v(), v ); }
+    public  void writeBoolean    (Value v){ voidCall1( "writeBoolean", BooleanType.v(), v ); }
+            void writeShort      (Value v){ voidCall1( "writeShort  ",   ShortType.v(), v ); }
+    private void writeChar       (Value v){ voidCall1( "writeChar   ",    CharType.v(), v ); }
+            void writeInt        (Value v){ voidCall1( "writeInt    ",     IntType.v(), v ); }
+            void writeFloat      (Value v){ voidCall1( "writeFloat  ",   FloatType.v(), v ); }
+            void writeDouble     (Value v){ voidCall1( "writeDouble ",  DoubleType.v(), v ); }
+            void writeLong       (Value v){ voidCall1( "writeLong   ",    LongType.v(), v ); }
+            void incrementAddress(Value v){ voidCall1( "incrementAddress", IntType.v(), v ); }
+            void setAddress      (Value v){ voidCall1( "setAddress"  ,    LongType.v(), v ); }
+     public void writeRef        (Value v){ voidCall1( "writeRef"    ,    LongType.v(), v ); }
 
-  void addIntegerToList(Local array_elements) {
-    mBcl.pushMethod(mMem, "addIntegerToList", VoidType.v(), LongType.v());
-    mBcl.invokeMethodNoRet(mMem, array_elements);
-  }
+    public void mallocWithSize(Value size) {
+      mBcl.pushMethod(mBcl.getTypeString(mMem), "mallocWithSize", LongType.v(), IntType.v());
+      mBcl.invokeMethodNoRet(mMem, size);
+    }
 
-  void endIntegerList() {
-    mBcl.pushMethod(mMem, "endIntegerList", VoidType.v());
-    mBcl.invokeMethodNoRet(mMem);
-  }
+    void addIntegerToList(Local array_elements) {
+      mBcl.pushMethod(mMem, "addIntegerToList", VoidType.v(), LongType.v());
+      mBcl.invokeMethodNoRet(mMem, array_elements);
+    }
 
-  Local malloc() {
-    mBcl.pushMethod(mMem, "malloc", LongType.v());
-    return mBcl.invokeMethodRet(mMem);
-  }
+    public void readIntArray(Value ret, Value size) {
+      mBcl.pushMethod(mMem, "readIntArray", VoidType.v(), ret.getType(), size.getType());
+      mBcl.invokeMethodNoRet(mMem, ret, size);
+    }
 
-  void finishReading() {
-    mBcl.pushMethod(mMem, "finishReading", VoidType.v());
-    mBcl.invokeMethodNoRet(mMem);
-  }
+    void writeInt(int size) { writeInt( IntConstant.v(size) ); }
+    void incrementAddress(int size) { incrementAddress(IntConstant.v(size)); }
 
-  public void align() {
-    mBcl.pushMethod(mMem, "align", VoidType.v());
-    mBcl.invokeMethodNoRet(mMem);
-  }
+    void writeVar(Local curr) {
+      Type type = curr.getType();
+      if(type instanceof ByteType){
+        writeByte(curr);
+      } else if(type instanceof BooleanType){
+        writeBoolean(curr);
+      } else if(type instanceof ShortType){
+        writeShort(curr);
+      } else if(type instanceof CharType){
+        writeChar(curr);
+      } else if(type instanceof IntType){
+        writeInt(curr);
+      } else if(type instanceof FloatType){
+        writeFloat(curr);
+      } else if(type instanceof DoubleType){
+        writeDouble(curr);
+      } else if(type instanceof LongType){
+        writeLong(curr);
+      }
+    }
 
-  public void readIntArray(Value ret, Value size) {
-    mBcl.pushMethod(mMem, "readIntArray", VoidType.v(), ret.getType(), size.getType());
-    mBcl.invokeMethodNoRet(mMem, ret, size);
-  }
+    private Local typedCall0
+    (
+        final String methodName,
+        Type         type
+    )
+    {
+        mBcl.pushMethod( mBcl.getTypeString(mMem), methodName, type );
+        return mBcl.invokeMethodRet( mMem );
+    }
 
-  public void mallocWithSize(Value size) {
-    mBcl.pushMethod(mBcl.getTypeString(mMem), "mallocWithSize", LongType.v(), IntType.v());
-    mBcl.invokeMethodNoRet(mMem, size);
-  }
+           Local readByte   (){ return typedCall0( "readByte"   ,    ByteType.v() ); }
+           Local readBoolean(){ return typedCall0( "readBoolean", BooleanType.v() ); }
+           Local readShort  (){ return typedCall0( "readShort"  ,   ShortType.v() ); }
+           Local readChar   (){ return typedCall0( "readChar"   ,    CharType.v() ); }
+           Local readInt    (){ return typedCall0( "readInt"    ,     IntType.v() ); }
+    public Local readRef    (){ return typedCall0( "readRef"    ,    LongType.v() ); }
+           Local readFloat  (){ return typedCall0( "readFloat"  ,   FloatType.v() ); }
+           Local readDouble (){ return typedCall0( "readDouble" ,  DoubleType.v() ); }
+           Local readLong   (){ return typedCall0( "readLong"   ,    LongType.v() ); }
+           Local getPointer (){ return typedCall0( "getPointer" ,    LongType.v() ); }
+           Local malloc     (){ return typedCall0( "malloc"     ,    LongType.v() ); }
 
-
+    Local readVar(Type type) {
+      if(type instanceof ByteType){
+        return readByte();
+      } else if(type instanceof BooleanType){
+        return readBoolean();
+      } else if(type instanceof ShortType){
+        return readShort();
+      } else if(type instanceof CharType){
+        return readChar();
+      } else if(type instanceof IntType){
+        return readInt();
+      } else if(type instanceof FloatType){
+        return readFloat();
+      } else if(type instanceof DoubleType){
+        return readDouble();
+      } else if(type instanceof LongType){
+        return readLong();
+      }
+      throw new RuntimeException("How do we handle this case?");
+    }
 
 }

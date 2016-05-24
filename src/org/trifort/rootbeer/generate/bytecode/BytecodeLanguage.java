@@ -20,23 +20,23 @@ import soot.rbclassload.MethodSignatureUtil;
 import soot.rbclassload.RootbeerClassLoader;
 import soot.rbclassload.TypeToString;
 
-public class BytecodeLanguage {
+public class BytecodeLanguage
+{
+    private Jimple    m_jimple;
+    private SootClass m_currClass;
 
-  private Jimple m_jimple;
-  private SootClass m_currClass;
+    //method fields
+    private SootMethod m_currMethod;
+    private JimpleBody m_currBody;
+    private List<Type> m_parameterTypes;
+    private UnitAssembler m_assembler;
 
-  //method fields
-  private SootMethod m_currMethod;
-  private JimpleBody m_currBody;
-  private List<Type> m_parameterTypes;
-  private UnitAssembler m_assembler;
+    private Stack<SootMethod> m_methodStack;
 
-  private Stack<SootMethod> m_methodStack;
-
-  public BytecodeLanguage(){
-    m_jimple = Jimple.v();
-    m_methodStack = new Stack<SootMethod>();
-  }
+    public BytecodeLanguage(){
+        m_jimple = Jimple.v();
+        m_methodStack = new Stack<SootMethod>();
+    }
 
   public SootClass makeClass(String name){
     SootClass ret = new SootClass(name, Modifier.PUBLIC);

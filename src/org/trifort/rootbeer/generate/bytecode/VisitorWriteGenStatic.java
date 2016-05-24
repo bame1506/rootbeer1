@@ -25,67 +25,84 @@ import soot.jimple.LongConstant;
 import soot.jimple.StringConstant;
 import soot.rbclassload.RootbeerClassLoader;
 
-public class VisitorWriteGenStatic extends AbstractVisitorGen {
+/**
+ * Analyzes Kernel code using soot and defines methods for serialization
+ */
+public class VisitorWriteGenStatic extends AbstractVisitorGen
+{
+    private       Local         m_Mem;
+    private final StaticOffsets m_StaticOffsets;
+    private final Set<String>   m_AttachedWriters;
 
-  private Local m_Mem;
-  private StaticOffsets m_StaticOffsets;
-  private Set<String> m_AttachedWriters;
-
-  public VisitorWriteGenStatic(BytecodeLanguage bcl){
-    m_bcl.push(bcl);
-    m_StaticOffsets = new StaticOffsets();
-    m_AttachedWriters = new HashSet<String>();
-  }
-
-  public void makeMethod(){
-    BytecodeLanguage bcl = m_bcl.top();
-    bcl.startMethod("doWriteStaticsToHeap", VoidType.v());
-
-    m_thisRef = bcl.refThis();
-    m_currThisRef.push(m_thisRef);
-    m_gcObjVisitor.push(m_thisRef);
-    m_Mem = bcl.refInstanceField(m_thisRef, "mMem");
-    m_currMem.push(m_Mem);
-
-    BclMemory bcl_mem = new BclMemory(bcl, m_Mem);
-    bcl_mem.useInstancePointer();
-    bcl_mem.mallocWithSize(IntConstant.v(m_StaticOffsets.getEndIndex()));
-    PermissionGraph graph = new PermissionGraph();
-    List<PermissionGraphNode> roots = graph.getRoots();
-    for(PermissionGraphNode node : roots){
-      SootClass soot_class = node.getSootClass();
-      if(soot_class.isApplicationClass()){
-        attachAndCallWriter(soot_class, node.getChildren());
-      } else {
-        //doWriter(soot_class, node.getChildren());
-        doWriter(soot_class, new ArrayList<SootClass>());
-      }
+    public VisitorWriteGenStatic(BytecodeLanguage bcl)
+    {
+        m_bcl.push( bcl );
+        m_StaticOffsets   = new StaticOffsets();
+        m_AttachedWriters = new HashSet<String>();
     }
 
-    //write .class's for array types
-    Set<ArrayType> array_types = RootbeerClassLoader.v().getDfsInfo().getArrayTypes();
-    for(ArrayType type : array_types){
-      writeType(type);
-    }
+    /**
+     * Creates the 'doWriteStaticsToHeap' method which is declared in
+     * Serializer.java
+     */
+    public void makeMethod()
+    {
+        BytecodeLanguage bcl = m_bcl.top();
+        bcl.startMethod( "doWriteStaticsToHeap", VoidType.v() );
 
-    bcl_mem.useStaticPointer();
-    bcl_mem.setAddress(LongConstant.v(m_StaticOffsets.getLockStart()));
-    //write the lock objects for all the classes
-    int count = m_StaticOffsets.getClassSize();
-    for(int i = 0; i < count; ++i){
-      bcl_mem.writeInt(-1);
-    }
-    int zeros = m_StaticOffsets.getZerosSize();
-    for(int i = 0; i < zeros; ++i){
-      bcl_mem.writeByte((byte) 0);
-    }
-    bcl_mem.useInstancePointer();
+        /* get 'mMem' variable from Serializer which is of type Memory.java.
+         * Then start writing the members of the Kenrel class to it */
+        m_thisRef = bcl.refThis();
+        m_currThisRef .push( m_thisRef );
+        m_gcObjVisitor.push( m_thisRef );
+        m_Mem = bcl.refInstanceField( m_thisRef, "mMem" );
+        m_currMem.push( m_Mem );
+        /* this means BclMemory doesn't extend Memory, it is another boiler-
+         * plate code wrapper needed to simplify accessing it using bytecode.
+         * This means it's not a problem to change Memory.java if methods are
+         * neither used by BclMemory nor FixedMemory */
+        final BclMemory bcl_mem = new BclMemory( bcl, m_Mem );
 
-    bcl.returnVoid();
-    bcl.endMethod();
 
-    m_gcObjVisitor.pop();
-  }
+        bcl_mem.useInstancePointer();
+        bcl_mem.mallocWithSize( IntConstant.v( m_StaticOffsets.getEndIndex() ) );
+        final PermissionGraph           graph = new PermissionGraph();
+        final List<PermissionGraphNode> roots = graph.getRoots();
+        for ( PermissionGraphNode node : roots )
+        {
+            SootClass soot_class = node.getSootClass();
+            if ( soot_class.isApplicationClass() ) {
+                attachAndCallWriter( soot_class, node.getChildren() );
+            } else {
+                //doWriter(soot_class, node.getChildren());
+                doWriter(soot_class, new ArrayList<SootClass>());
+            }
+        }
+
+        //write .class's for array types
+        Set<ArrayType> array_types = RootbeerClassLoader.v().getDfsInfo().getArrayTypes();
+        for(ArrayType type : array_types){
+          writeType(type);
+        }
+
+        bcl_mem.useStaticPointer();
+        bcl_mem.setAddress(LongConstant.v(m_StaticOffsets.getLockStart()));
+        //write the lock objects for all the classes
+        int count = m_StaticOffsets.getClassSize();
+        for(int i = 0; i < count; ++i){
+          bcl_mem.writeInt(-1);
+        }
+        int zeros = m_StaticOffsets.getZerosSize();
+        for(int i = 0; i < zeros; ++i){
+          bcl_mem.writeByte((byte) 0);
+        }
+        bcl_mem.useInstancePointer();
+
+        bcl.returnVoid();
+        bcl.endMethod();
+
+        m_gcObjVisitor.pop();
+    }
 
   private void attachAndCallWriter(SootClass soot_class, List<SootClass> children){
     String class_name = soot_class.getName();

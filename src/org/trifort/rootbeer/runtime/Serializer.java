@@ -40,14 +40,9 @@ public abstract class Serializer
         m_classRefToTypeNumber.clear();
     }
 
-    public void writeStaticsToHeap() {
-        doWriteStaticsToHeap();
-    }
-
     /* default argument: write_data = true */
-    public long writeToHeap( Object o ) {
-        return writeToHeap(o, true);
-    }
+    public long writeToHeap( Object o ) { return writeToHeap(o, true); }
+    public void writeStaticsToHeap() { doWriteStaticsToHeap(); }
 
   private static class WriteCacheResult {
     public long m_Ref;
@@ -58,9 +53,7 @@ public abstract class Serializer
     }
   }
 
-  public void addClassRef(long ref, int class_number){
-    m_classRefToTypeNumber.put(ref, class_number);
-  }
+  public void addClassRef(long ref, int class_number){ m_classRefToTypeNumber.put(ref, class_number); }
 
   public int[] getClassRefArray(){
     int max_type = 0;
@@ -181,70 +174,9 @@ public abstract class Serializer
     return ret;
   }
 
-  public void readStaticsFromHeap(){
-    doReadStaticsFromHeap();
-  }
+    public void readStaticsFromHeap(){ doReadStaticsFromHeap(); }
 
-  public Object readField(Object base, String name){
-    Class cls = base.getClass();
-    while(true){
-      try {
-        Field f = cls.getDeclaredField(name);
-        f.setAccessible(true);
-        Object ret = f.get(base);
-        return ret;
-      } catch(Exception ex){
-        cls = cls.getSuperclass();
-        //java.lang.Throwable.backtrace cannot be found this way, I don't know why.
-        if(cls == null){
-          return null;
-        }
-      }
-    }
-  }
-
-  public Object readStaticField( Class cls, String name )
-  {
-      while ( true )
-      {
-          try
-          {
-              Field f = cls.getDeclaredField(name);
-              f.setAccessible(true);
-              Object ret = f.get(null);
-              return ret;
-          }
-          catch ( Exception ex )
-          {
-              cls = cls.getSuperclass();
-          }
-      }
-  }
-
-    public void writeField( Object base, String name, Object value )
-    {
-        Class cls = base.getClass();
-        while ( true )
-        {
-          try
-          {
-              Field f = cls.getDeclaredField(name);
-              f.setAccessible(true);
-              f.set ( base, value );
-              return;
-          }
-          catch(Exception ex)
-          {
-              cls = cls.getSuperclass();
-          }
-        }
-    }
-
-    /**
-     * This is basically the same as writeField called with a null object,
-     * although then writeField would need another parameter for the class
-     */
-    public void writeStaticField( Class cls, String name, Object value )
+    private Object readField( Class cls, Object base, String name )
     {
         while ( true )
         {
@@ -252,23 +184,54 @@ public abstract class Serializer
             {
                 Field f = cls.getDeclaredField( name );
                 f.setAccessible( true );
-                /**
-                 * Originally this was setbyte, setBoolean, ..  in the
-                 * respective versions like writeStaticByteField, but note the
-                 * comment on e.g. setByte:
-                 *    > This method is equivalent to set(obj, bObj), where
-                 *    > bObj is a Byte object and bObj.byteValue() == b.
-                 * @see https://docs.oracle.com/javase/7/docs/api/java/lang/reflect/Field.html#setByte%28java.lang.Object,%20byte%29
-                 */
-                f.set( null, value );
-                return;
+                Object ret = f.get( base );
+                return ret;
             }
             catch ( Exception ex )
+            {
+                cls = cls.getSuperclass();
+                //java.lang.Throwable.backtrace cannot be found this way, I don't know why.
+                if ( cls == null ) {
+                    return null;
+                }
+            }
+        }
+    }
+    public Object readField ( Object base, String name ) {
+        return readField( base.getClass(), base, name );
+    }
+    public Object readStaticField( Class cls, String name ) {
+        return readField( cls, null, name );
+    }
+
+    /**
+     * Tries to reflectively set a possibly static field for a class.
+     * If no field with the name exist, tries superclass.
+     */
+    private void writeField( Class cls, Object base, String name, Object value )
+    {
+        while ( true )
+        {
+            try
+            {
+                Field f = cls.getDeclaredField( name );
+                f.setAccessible( true );
+                f.set ( base, value );
+                return;
+            }
+            catch(Exception ex)
             {
                 cls = cls.getSuperclass();
             }
         }
     }
+    public void writeField( Object base, String name, Object value ) {
+        writeField( base.getClass(), base, name, value );
+    }
+    public void writeStaticField( Class cls, String name, Object value ) {
+        writeField( cls, null, name, value );
+    }
+
     public void writeStaticByteField   (Class cls, String name, byte    value){ writeStaticField(cls,name,value); }
     public void writeStaticBooleanField(Class cls, String name, boolean value){ writeStaticField(cls,name,value); }
     public void writeStaticCharField   (Class cls, String name, char    value){ writeStaticField(cls,name,value); }
@@ -278,9 +241,10 @@ public abstract class Serializer
     public void writeStaticFloatField  (Class cls, String name, float   value){ writeStaticField(cls,name,value); }
     public void writeStaticDoubleField (Class cls, String name, double  value){ writeStaticField(cls,name,value); }
 
-  public abstract void doWriteToHeap(Object o, boolean write_data, long ref, boolean read_only);
-  public abstract void doWriteStaticsToHeap();
-  public abstract Object doReadFromHeap(Object o, boolean read_data, long ref);
-  public abstract void doReadStaticsFromHeap();
-  public abstract int doGetSize(Object o);
+    /* defined by VisitorWriteGenStatic.java (?) */
+    public abstract void   doWriteToHeap(Object o, boolean write_data, long ref, boolean read_only);
+    public abstract Object doReadFromHeap(Object o, boolean read_data, long ref);
+    public abstract void   doWriteStaticsToHeap();
+    public abstract void   doReadStaticsFromHeap();
+    public abstract int    doGetSize(Object o);
 }
