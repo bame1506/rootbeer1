@@ -203,149 +203,80 @@ public abstract class Serializer
     }
   }
 
-  public Object readStaticField(Class cls, String name){
-    while(true){
-      try {
-        Field f = cls.getDeclaredField(name);
-        f.setAccessible(true);
-        Object ret = f.get(null);
-        return ret;
-      } catch(Exception ex){
-        cls = cls.getSuperclass();
+  public Object readStaticField( Class cls, String name )
+  {
+      while ( true )
+      {
+          try
+          {
+              Field f = cls.getDeclaredField(name);
+              f.setAccessible(true);
+              Object ret = f.get(null);
+              return ret;
+          }
+          catch ( Exception ex )
+          {
+              cls = cls.getSuperclass();
+          }
       }
-    }
   }
 
-  public void writeField(Object base, String name, Object value){
-    Class cls = base.getClass();
-    while(true){
-      try {
-        Field f = cls.getDeclaredField(name);
-        f.setAccessible(true);
-        f.set(base, value);
-        return;
-      } catch(Exception ex){
-        cls = cls.getSuperclass();
-      }
+    public void writeField( Object base, String name, Object value )
+    {
+        Class cls = base.getClass();
+        while ( true )
+        {
+          try
+          {
+              Field f = cls.getDeclaredField(name);
+              f.setAccessible(true);
+              f.set ( base, value );
+              return;
+          }
+          catch(Exception ex)
+          {
+              cls = cls.getSuperclass();
+          }
+        }
     }
-  }
 
-  public void writeStaticField(Class cls, String name, Object value){
-    while(true){
-      try {
-        Field f = cls.getDeclaredField(name);
-        f.setAccessible(true);
-        f.set(null, value);
-        return;
-      } catch(Exception ex){
-        cls = cls.getSuperclass();
-      }
+    /**
+     * This is basically the same as writeField called with a null object,
+     * although then writeField would need another parameter for the class
+     */
+    public void writeStaticField( Class cls, String name, Object value )
+    {
+        while ( true )
+        {
+            try
+            {
+                Field f = cls.getDeclaredField( name );
+                f.setAccessible( true );
+                /**
+                 * Originally this was setbyte, setBoolean, ..  in the
+                 * respective versions like writeStaticByteField, but note the
+                 * comment on e.g. setByte:
+                 *    > This method is equivalent to set(obj, bObj), where
+                 *    > bObj is a Byte object and bObj.byteValue() == b.
+                 * @see https://docs.oracle.com/javase/7/docs/api/java/lang/reflect/Field.html#setByte%28java.lang.Object,%20byte%29
+                 */
+                f.set( null, value );
+                return;
+            }
+            catch ( Exception ex )
+            {
+                cls = cls.getSuperclass();
+            }
+        }
     }
-  }
-
-  public void writeStaticByteField(Class cls, String name, byte value){
-    while(true){
-      try {
-        Field f = cls.getDeclaredField(name);
-        f.setAccessible(true);
-        f.setByte(null, value);
-        return;
-      } catch(Exception ex){
-        cls = cls.getSuperclass();
-      }
-    }
-  }
-
-  public void writeStaticBooleanField(Class cls, String name, boolean value){
-    while(true){
-      try {
-        Field f = cls.getDeclaredField(name);
-        f.setAccessible(true);
-        f.setBoolean(null, value);
-        return;
-      } catch(Exception ex){
-        cls = cls.getSuperclass();
-      }
-    }
-  }
-
-  public void writeStaticCharField(Class cls, String name, char value){
-    while(true){
-      try {
-        Field f = cls.getDeclaredField(name);
-        f.setAccessible(true);
-        f.setChar(null, value);
-        return;
-      } catch(Exception ex){
-        cls = cls.getSuperclass();
-      }
-    }
-  }
-
-  public void writeStaticShortField(Class cls, String name, short value){
-    while(true){
-      try {
-        Field f = cls.getDeclaredField(name);
-        f.setAccessible(true);
-        f.setShort(null, value);
-        return;
-      } catch(Exception ex){
-        cls = cls.getSuperclass();
-      }
-    }
-  }
-
-  public void writeStaticIntField(Class cls, String name, int value){
-    while(true){
-      try {
-        Field f = cls.getDeclaredField(name);
-        f.setAccessible(true);
-        f.setInt(null, value);
-        return;
-      } catch(Exception ex){
-        cls = cls.getSuperclass();
-      }
-    }
-  }
-
-  public void writeStaticLongField(Class cls, String name, long value){
-    while(true){
-      try {
-        Field f = cls.getDeclaredField(name);
-        f.setAccessible(true);
-        f.setLong(null, value);
-        return;
-      } catch(Exception ex){
-        cls = cls.getSuperclass();
-      }
-    }
-  }
-
-  public void writeStaticFloatField(Class cls, String name, float value){
-    while(true){
-      try {
-        Field f = cls.getDeclaredField(name);
-        f.setAccessible(true);
-        f.setFloat(null, value);
-        return;
-      } catch(Exception ex){
-        cls = cls.getSuperclass();
-      }
-    }
-  }
-
-  public void writeStaticDoubleField(Class cls, String name, double value){
-    while(true){
-      try {
-        Field f = cls.getDeclaredField(name);
-        f.setAccessible(true);
-        f.setDouble(null, value);
-        return;
-      } catch(Exception ex){
-        cls = cls.getSuperclass();
-      }
-    }
-  }
+    public void writeStaticByteField   (Class cls, String name, byte    value){ writeStaticField(cls,name,value); }
+    public void writeStaticBooleanField(Class cls, String name, boolean value){ writeStaticField(cls,name,value); }
+    public void writeStaticCharField   (Class cls, String name, char    value){ writeStaticField(cls,name,value); }
+    public void writeStaticShortField  (Class cls, String name, short   value){ writeStaticField(cls,name,value); }
+    public void writeStaticIntField    (Class cls, String name, int     value){ writeStaticField(cls,name,value); }
+    public void writeStaticLongField   (Class cls, String name, long    value){ writeStaticField(cls,name,value); }
+    public void writeStaticFloatField  (Class cls, String name, float   value){ writeStaticField(cls,name,value); }
+    public void writeStaticDoubleField (Class cls, String name, double  value){ writeStaticField(cls,name,value); }
 
   public abstract void doWriteToHeap(Object o, boolean write_data, long ref, boolean read_only);
   public abstract void doWriteStaticsToHeap();
