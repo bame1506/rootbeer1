@@ -7,47 +7,47 @@
 
 package org.trifort.rootbeer.runtime;
 
-public class ThreadConfig {
+public class ThreadConfig
+{
+    private int m_threadCountX;
+    private int m_threadCountY;
+    private int m_threadCountZ;
+    private int m_blockCountX ;
+    private int m_blockCountY ;
+    private int m_numThreads  ;
 
-  private int threadCountX;
-  private int threadCountY;
-  private int threadCountZ;
-  private int blockCountX;
-  private int blockCountY;
-  private int numThreads;
+    public ThreadConfig
+    (
+        final int threadCountX,
+        final int threadCountY,
+        final int threadCountZ,
+        final int blockCountX,
+        final int blockCountY,
+        final int numThreads
+    )
+    {
+        m_threadCountX = threadCountX;
+        m_threadCountY = threadCountY;
+        m_threadCountZ = threadCountZ;
+        m_blockCountX  = blockCountX ;
+        m_blockCountY  = blockCountY ;
+        m_numThreads   = numThreads  ;
+        assert( m_threadCountX >= 1 );
+        assert( m_threadCountY >= 1 );
+        assert( m_threadCountZ >= 1 );
+        assert( m_blockCountX  >= 1 );
+        assert( m_blockCountY  >= 1 );
+        assert( m_numThreads == m_threadCountX *
+                                m_threadCountY *
+                                m_threadCountZ *
+                                m_blockCountX  *
+                                m_blockCountY );
+    }
 
-  public ThreadConfig(int threadCountX, int threadCountY, int threadCountZ,
-      int blockCountX, int blockCountY, int numThreads) {
-
-    this.threadCountX = threadCountX;
-    this.threadCountY = threadCountY;
-    this.threadCountZ = threadCountZ;
-    this.blockCountX = blockCountX;
-    this.blockCountY = blockCountY;
-    this.numThreads = numThreads;
-  }
-
-  public int getThreadCountX(){
-    return threadCountX;
-  }
-
-  public int getThreadCountY(){
-    return threadCountY;
-  }
-
-  public int getThreadCountZ(){
-    return threadCountZ;
-  }
-
-  public int getBlockCountX(){
-    return blockCountX;
-  }
-
-  public int getBlockCountY(){
-    return blockCountY;
-  }
-
-  public int getNumThreads(){
-    return numThreads;
-  }
+    public int getThreadCountX(){ return m_threadCountX; }
+    public int getThreadCountY(){ return m_threadCountY; }
+    public int getThreadCountZ(){ return m_threadCountZ; }
+    public int getBlockCountX (){ return m_blockCountX ; }
+    public int getBlockCountY (){ return m_blockCountY ; }
+    public int getNumThreads  (){ return m_numThreads  ; }
 }

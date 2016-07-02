@@ -292,8 +292,8 @@ public class CUDAContext implements Context
         final long neededMemory =
             m_cubinFile.length + Constants.MallocAlignBytes +
             m_exceptionsMemory.getSize() / 4 * Constants.MallocAlignBytes +
-            m_classMemory.getSize() * Constants.MallocAlignBytes +
-            m_handlesMemory.getSize();
+            m_classMemory.getSize() /* * Constants.MallocAlignBytes */ * m_threadConfig.getNumThreads() +
+            m_handlesMemory.getSize() + 1024*1024 /* 1 MB buffer... this really needs some correct formula or better take -.- */;
 
         final String debugOutput =
             "  Debugging Output:\n"                                              +
