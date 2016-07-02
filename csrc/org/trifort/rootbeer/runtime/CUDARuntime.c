@@ -98,33 +98,35 @@ Java_org_trifort_rootbeer_runtime_CUDARuntime_loadGpuDevices
         cuDeviceGetAttribute( &max_grid_dim_z      , CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Z             , device );
         cuDeviceGetAttribute( &threads_per_multiprocessor, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR, device );
 
+        /* @see GpuDevice.java */
         gpu_device = (*env)->CallObjectMethod
         (
             env                                   ,
             gpu_device_class                      ,
             gpu_device_init                       ,
-            i, major_version                      ,
-            minor_version                         ,
-            (*env)->NewStringUTF(env, device_name),
-            (jlong) free_mem                      ,
-            (jlong) total_mem                     ,
-            registers_per_block                   ,
-            warp_size                             ,
-            pitch                                 ,
-            threads_per_block                     ,
-            shared_mem_per_block                  ,
-            clock_rate                            ,
-            mem_clock_rate                        ,
-            const_mem                             ,
-            integrated                            ,
-            threads_per_multiprocessor            ,
-            multiprocessor_count                  ,
-            max_block_dim_x                       ,
-            max_block_dim_y                       ,
-            max_block_dim_z                       ,
-            max_grid_dim_x                        ,
-            max_grid_dim_y                        ,
-            max_grid_dim_z
+            i                                     ,  // device_id
+            major_version                         ,  // major_version
+            minor_version                         ,  // minor_version
+            (*env)->NewStringUTF(env, device_name),  // device_name
+            (jlong) free_mem                      ,  // free_global_mem_size
+            (jlong) total_mem                     ,  // total_global_mem_size
+            registers_per_block                   ,  // max_registers_per_block
+            warp_size                             ,  // warp_size
+            pitch                                 ,  // max_pitch
+            threads_per_block                     ,  // max_threads_per_block
+            shared_mem_per_block                  ,  // max_shared_memory_per_block
+            clock_rate                            ,  // clock_rate
+            mem_clock_rate                        ,  // memory_clock_rate
+            const_mem                             ,  // constant_mem_size
+            integrated                            ,  // integrated
+            threads_per_multiprocessor            ,  // max_threads_per_multiprocessor
+            multiprocessor_count                  ,  // multiprocessor_count
+            max_block_dim_x                       ,  // max_block_dim_x
+            max_block_dim_y                       ,  // max_block_dim_y
+            max_block_dim_z                       ,  // max_block_dim_z
+            max_grid_dim_x                        ,  // max_grid_dim_x
+            max_grid_dim_y                        ,  // max_grid_dim_y
+            max_grid_dim_z                           // max_grid_dim_z
         );
         (*env)->CallBooleanMethod(env, ret, array_list_add, gpu_device);
     }
