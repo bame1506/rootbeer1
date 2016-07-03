@@ -6,10 +6,10 @@ package org.trifort.rootbeer.runtime;
  */
 public class GpuDevice
 {
-    public static final int DEVICE_TYPE_CUDA = 1;
+    public static final int DEVICE_TYPE_CUDA   = 1;
     public static final int DEVICE_TYPE_OPENCL = 2;
-    public static final int DEVICE_TYPE_NEMU = 3;
-    public static final int DEVICE_TYPE_JAVA = 4;
+    public static final int DEVICE_TYPE_NEMU   = 3;
+    public static final int DEVICE_TYPE_JAVA   = 4;
 
     public static GpuDevice newCudaDevice
     (
