@@ -14,7 +14,7 @@
   <packaging>jar</packaging>
   <name>rootbeer1</name>
   <description>Rootbeer GPU Compiler - Java GPU Programming</description>
-  
+
   <properties>
     <java.version>1.7</java.version>
   </properties>
@@ -97,6 +97,7 @@
       <version>1.3</version>
     </dependency>
   </dependencies>
+
   <build>
     <sourceDirectory>${project.basedir}/src</sourceDirectory>
     <!-- <testSourceDirectory>${project.basedir}/src</testSourceDirectory> -->

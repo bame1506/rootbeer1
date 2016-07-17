@@ -11,47 +11,53 @@ public class GpuDevice
     public static final int DEVICE_TYPE_NEMU   = 3;
     public static final int DEVICE_TYPE_JAVA   = 4;
 
+    /* Constructor which saves whether to use CUDA, OpenCL, ... */
+    public GpuDevice( final int device_type )
+    {
+        m_deviceType = device_type;
+    }
+
     public static GpuDevice newCudaDevice
     (
-        int     device_id                     ,
-        int     major_version                 ,
-        int     minor_version                 ,
-        String  device_name                   ,
-        long    free_global_mem_size          ,
-        long    total_global_mem_size         ,
-        int     max_registers_per_block       ,
-        int     warp_size                     ,
-        int     max_pitch                     ,
-        int     max_threads_per_block         ,
-        int     max_shared_memory_per_block   ,
-        int     clock_rate_kHz                ,
-        int     memory_clock_rate_kHz         ,
-        int     constant_mem_size             ,
-        boolean integrated                    ,
-        int     max_threads_per_multiprocessor,
-        int     multiprocessor_count          ,
-        int     max_block_dim_x               ,
-        int     max_block_dim_y               ,
-        int     max_block_dim_z               ,
-        int     max_grid_dim_x                ,
-        int     max_grid_dim_y                ,
-        int     max_grid_dim_z
+        final int     device_id                     ,
+        final int     major_version                 ,
+        final int     minor_version                 ,
+        final String  device_name                   ,
+        final long    free_global_mem_size          ,
+        final long    total_global_mem_size         ,
+        final int     max_registers_per_block       ,
+        final int     warp_size                     ,
+        final int     max_pitch                     ,
+        final int     max_threads_per_block         ,
+        final int     max_shared_memory_per_block   ,
+        final int     clock_rate_kHz                ,
+        final int     memory_clock_rate_kHz         ,
+        final int     constant_mem_size             ,
+        final boolean integrated                    ,
+        final int     max_threads_per_multiprocessor,
+        final int     multiprocessor_count          ,
+        final int     max_block_dim_x               ,
+        final int     max_block_dim_y               ,
+        final int     max_block_dim_z               ,
+        final int     max_grid_dim_x                ,
+        final int     max_grid_dim_y                ,
+        final int     max_grid_dim_z
     )
     {
         GpuDevice ret = new GpuDevice(DEVICE_TYPE_CUDA);
-        ret.setDeviceId    ( device_id       );
-        ret.setDeviceName  ( device_name     );
-        ret.setWarpSize    ( warp_size       );
-        ret.setMaxPitch    ( max_pitch       );
-        ret.setIntegrated  ( integrated      );
-        ret.setMaxBlockDimX( max_block_dim_x );
-        ret.setMaxBlockDimY( max_block_dim_y );
-        ret.setMaxBlockDimZ( max_block_dim_z );
-        ret.setMaxGridDimX ( max_grid_dim_x  );
-        ret.setMaxGridDimY ( max_grid_dim_y  );
-        ret.setMaxGridDimZ ( max_grid_dim_z  );
-        ret.setVersion     ( major_version, minor_version, 0);
-        ret.setClockRateHz                ( clock_rate_kHz * 1000.f );  // clock_rate as returned by cuDeviceGetAttribute is in kHz
+        ret.setDeviceId                   ( device_id                      );
+        ret.setDeviceName                 ( device_name                    );
+        ret.setWarpSize                   ( warp_size                      );
+        ret.setMaxPitch                   ( max_pitch                      );
+        ret.setIntegrated                 ( integrated                     );
+        ret.setMaxBlockDimX               ( max_block_dim_x                );
+        ret.setMaxBlockDimY               ( max_block_dim_y                );
+        ret.setMaxBlockDimZ               ( max_block_dim_z                );
+        ret.setMaxGridDimX                ( max_grid_dim_x                 );
+        ret.setMaxGridDimY                ( max_grid_dim_y                 );
+        ret.setMaxGridDimZ                ( max_grid_dim_z                 );
+        ret.setVersion                    ( major_version, minor_version, 0);
+        ret.setClockRateHz                ( clock_rate_kHz * 1000.f        ); // clock_rate as returned by cuDeviceGetAttribute is in kHz
         ret.setMemoryClockRateHz          ( memory_clock_rate_kHz * 1000.f ); // same as clock_rate
         ret.setFreeGlobalMemoryBytes      ( free_global_mem_size           );
         ret.setTotalGlobalMemoryBytes     ( total_global_mem_size          );
@@ -64,10 +70,11 @@ public class GpuDevice
         return ret;
     }
 
-    public static GpuDevice newOpenCLDevice(String device_name){
-      GpuDevice ret = new GpuDevice(DEVICE_TYPE_OPENCL);
-      ret.setDeviceName(device_name);
-      return ret;
+    public static GpuDevice newOpenCLDevice( final String device_name )
+    {
+        GpuDevice ret = new GpuDevice( DEVICE_TYPE_OPENCL );
+        ret.setDeviceName( device_name );
+        return ret;
     }
 
     private int     m_deviceType                 ;
@@ -96,31 +103,27 @@ public class GpuDevice
     private int     m_maxGridDimY                ;
     private int     m_maxGridDimZ                ;
 
-      public GpuDevice(int device_type) {
-        m_deviceType = device_type;
-      }
+    public Context createContext()
+    {
+        if ( m_deviceType == DEVICE_TYPE_CUDA ) {
+            return new CUDAContext(this);
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
 
-      public Context createContext()
-      {
-          if ( m_deviceType == DEVICE_TYPE_CUDA ) {
-              return new CUDAContext(this);
-          } else {
-              throw new UnsupportedOperationException();
-          }
-      }
-
-      public Context createContext( int memorySize )
-      {
-          if ( m_deviceType == DEVICE_TYPE_CUDA )
-          {
-              CUDAContext ret = new CUDAContext(this);
-              ret.setMemorySize(memorySize);
-              return ret;
-          }
-          else {
-              throw new UnsupportedOperationException();
-          }
-      }
+    public Context createContext( int memorySize )
+    {
+        if ( m_deviceType == DEVICE_TYPE_CUDA )
+        {
+            CUDAContext ret = new CUDAContext(this);
+            ret.setMemorySize(memorySize);
+            return ret;
+        }
+        else {
+            throw new UnsupportedOperationException();
+        }
+    }
 
     public void setVersion(int major, int minor, int patch)
     {

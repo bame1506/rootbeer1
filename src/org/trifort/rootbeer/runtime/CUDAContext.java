@@ -112,14 +112,15 @@ public class CUDAContext implements Context
     }
 
     /* Accessor methods boilerplate code */
+    /* returns the GPU Device by wich this context was created */
     @Override public GpuDevice getDevice   () { return m_gpuDevice;          }
     @Override public long getRequiredMemory() { return m_requiredMemorySize; }
     @Override public StatsRow getStats     () { return m_stats;              }
-    @Override public void setMemorySize  ( long memorySize )           { m_memorySize           = memorySize;   }
-    @Override public void setCacheConfig ( CacheConfig cacheConfig )   { m_cacheConfig          = cacheConfig;  }
-    @Override public void setThreadConfig( ThreadConfig threadConfig ) { m_threadConfig         = threadConfig; }
-    @Override public void setUsingHandles( boolean value )             { m_usingHandles         = value;        }
-    @Override public void useCheckedMemory()                           { m_usingUncheckedMemory = false;        }
+    @Override public void setMemorySize  ( long         memorySize   ){ m_memorySize           = memorySize;   }
+    @Override public void setCacheConfig ( CacheConfig  cacheConfig  ){ m_cacheConfig          = cacheConfig;  }
+    @Override public void setThreadConfig( ThreadConfig threadConfig ){ m_threadConfig         = threadConfig; }
+    @Override public void setUsingHandles( boolean      value        ){ m_usingHandles         = value;        }
+    @Override public void useCheckedMemory()                          { m_usingUncheckedMemory = false;        }
 
     @Override
     public void setKernel( final Kernel kernelTemplate )
@@ -260,7 +261,7 @@ public class CUDAContext implements Context
             byte[] buffer = ResourceReader.getResourceArray(filename, length);
             return buffer;
         }
-        catch(Exception ex)
+        catch ( Exception ex )
         {
 	       ex.printStackTrace();
            throw new RuntimeException(ex);

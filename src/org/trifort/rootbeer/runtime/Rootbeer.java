@@ -7,10 +7,15 @@ import java.util.List;
 
 public class Rootbeer
 {
-    private IRuntime m_cudaRuntime;
-    private List<GpuDevice> m_cards;
+    private IRuntime        m_cudaRuntime;
+    private List<GpuDevice> m_cards      ;
 
-    /* static constructor which extracts and loads the CUDA shared libraries */
+    /**
+     * S tatic constructor which extracts and loads the CUDA shared libraries
+     *
+     * Executed when the class is loaded in contrast to a normal constructor,
+     * which is loaded when an object is instantiated.
+     */
     static {
         CUDALoader loader = new CUDALoader();
         loader.load();
@@ -25,35 +30,12 @@ public class Rootbeer
      */
     public List<GpuDevice> getDevices()
     {
-        if ( m_cards != null ) {
+        if ( m_cards != null )
             return m_cards;
-        }
 
-        m_cards = new ArrayList<GpuDevice>();
-        try
-        {
-            /* @todo: Why not just use: m_cudaRuntime = new CUDARuntime() ? */
-            final Class c = Class.forName( "org.trifort.rootbeer.runtime.CUDARuntime" );
-            Constructor<IRuntime> ctor = c.getConstructor();
-            m_cudaRuntime = ctor.newInstance();
-            m_cards.addAll( m_cudaRuntime.getGpuDevices()) ;
-        }
-        catch ( Exception ex )
-        {
-            ex.printStackTrace();
-            //ignore
-        }
-
-        //if(m_cards.isEmpty()){
-        //  try {
-        //    Class c = Class.forName("org.trifort.rootbeer.runtime.OpenCLRuntime");
-        //    Constructor<IRuntime> ctor = c.getConstructor();
-        //    m_openCLRuntime = ctor.newInstance();
-        //    m_cards.addAll(m_openCLRuntime.getGpuDevices());
-        //  } catch(Exception ex){
-        //    //ignore
-        //  }
-        //}
+        m_cards       = new ArrayList<GpuDevice>();
+        m_cudaRuntime = new CUDARuntime();
+        m_cards.addAll( m_cudaRuntime.getGpuDevices()) ;
 
         return m_cards;
     }
@@ -91,14 +73,14 @@ public class Rootbeer
      **/
     public ThreadConfig getThreadConfig( final List<Kernel> kernels, final GpuDevice device )
     {
-        final BlockShaper block_shaper = new BlockShaper();
-        block_shaper.run( kernels.size(), device.getMultiProcessorCount() );
+        final BlockShaper blockShaper = new BlockShaper();
+        blockShaper.run( kernels.size(), device );
 
         return new ThreadConfig(
-            block_shaper.blockShape(), /* threadCountX */
+            blockShaper.blockShape(),  /* threadCountX */
             1,                         /* threadCountY */
             1,                         /* threadCountZ */
-            block_shaper.gridShape(),  /* blockCountX  */
+            blockShaper.gridShape(),   /* blockCountX  */
             1,                         /* blockCountY  */
             kernels.size()             /* numThreads   */
         );
