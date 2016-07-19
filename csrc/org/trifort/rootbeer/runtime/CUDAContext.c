@@ -1,54 +1,10 @@
 #include "CUDARuntime.h"
 #include "Stopwatch.h"
 #include <cuda.h>
-
-/* One rease for using the CUDA driver api is that nvcc isn't needed,
- * instead this can be compiled with gcc! */
-
-struct ContextState
-{
-    CUdevice   device;
-    CUcontext  context;
-    CUmodule   module;
-    CUfunction function;
-
-    CUdeviceptr gpu_info_space;
-    CUdeviceptr gpu_object_mem;
-    CUdeviceptr gpu_handles_mem;
-    CUdeviceptr gpu_exceptions_mem;
-    CUdeviceptr gpu_class_mem;
-    CUdeviceptr gpu_heap_end;
-
-    void * cpu_object_mem;
-    void * cpu_handles_mem;
-    void * cpu_exceptions_mem;
-    void * cpu_class_mem;
-
-    jlong cpu_object_mem_size;
-    jlong cpu_handles_mem_size;
-    jlong cpu_exceptions_mem_size;
-    jlong cpu_class_mem_size;
-
-    jint * info_space;
-    jint block_count_x;
-    jint block_count_y;
-    jint using_kernel_templates_offset;
-    jint using_exceptions;
-    jint context_built;
-
-    struct stopwatch execMemcopyToDevice;
-    struct stopwatch execGpuRun;
-    struct stopwatch execMemcopyFromDevice;
-};
-
-/* interfaced java classes and methods which we want to access / call */
-jclass    cuda_memory_class  ;
-jmethodID get_address_method ;
-jmethodID get_size_method    ;
-jmethodID get_heap_end_method;
-jmethodID set_heap_end_method;
-jclass    stats_row_class    ;
-jmethodID set_driver_times   ;
+#include <stdio.h>      // printf, sprintf
+#include <stdlib.h>     // malloc, free
+#include <stddef.h>     // NULL
+#include <assert.h>
 
 #define CE( STATUS )                                                \
 {                                                                   \
@@ -67,6 +23,55 @@ jmethodID set_driver_times   ;
         return;                                                     \
     }                                                               \
 }
+
+/* One reason for using the CUDA driver api is that nvcc isn't needed,
+ * instead this can be compiled with gcc! */
+
+struct ContextState
+{
+    CUdevice           device                       ;
+    CUcontext          context                      ;
+    CUmodule           module                       ;
+    CUfunction         function                     ;
+
+    CUdeviceptr        gpu_info_space               ;
+    CUdeviceptr        gpu_object_mem               ;
+    CUdeviceptr        gpu_handles_mem              ;
+    CUdeviceptr        gpu_exceptions_mem           ;
+    CUdeviceptr        gpu_class_mem                ;
+    CUdeviceptr        gpu_heap_end                 ;
+
+    void             * cpu_object_mem               ;
+    void             * cpu_handles_mem              ;
+    void             * cpu_exceptions_mem           ;
+    void             * cpu_class_mem                ;
+
+    jlong              cpu_object_mem_size          ;
+    jlong              cpu_handles_mem_size         ;
+    jlong              cpu_exceptions_mem_size      ;
+    jlong              cpu_class_mem_size           ;
+
+    jint             * info_space                   ;
+    jint               block_count_x                ;
+    jint               block_count_y                ;
+    jint               using_kernel_templates_offset;
+    jint               using_exceptions             ;
+    jint               context_built                ;
+
+    struct stopwatch   execMemcopyToDevice          ;
+    struct stopwatch   execGpuRun                   ;
+    struct stopwatch   execMemcopyFromDevice        ;
+};
+
+/* interfaced java classes and methods which we want to access / call */
+jclass    cuda_memory_class  ;
+jmethodID get_address_method ;
+jmethodID get_size_method    ;
+jmethodID get_heap_end_method;
+jmethodID set_heap_end_method;
+jclass    stats_row_class    ;
+jmethodID set_driver_times   ;
+
 
 /**
 * Throws a runtimeexception called CudaMemoryException
@@ -134,9 +139,9 @@ Java_org_trifort_rootbeer_runtime_CUDAContext_initializeDriver
 JNIEXPORT jlong JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_allocateNativeContext
   (JNIEnv *env, jobject this_ref)
 {
-  struct ContextState * ret = (struct ContextState *) malloc(sizeof(struct ContextState));
-  ret->context_built = 0;
-  return (jlong) ret;
+    struct ContextState * ret = (struct ContextState *) malloc(sizeof(struct ContextState));
+    ret->context_built = 0;
+    return (jlong) ret;
 }
 
 JNIEXPORT void JNICALL
