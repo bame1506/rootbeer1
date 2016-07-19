@@ -378,6 +378,24 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
                            "m_Local" ) )
     assert( nBytesDeviceMLocal == sizeof( hostMLocal ) );
 
+    /* debug output, trying to understand rootbeer */
+    #ifndef NDEBUG
+        #define __PRINTI( NAME ) \
+            printf( "| %32s = % 10i\n", #NAME, NAME );
+        printf( "+-------------- [nativeBuildState] --------------\n" );
+        __PRINTI( heap_end_int )
+
+        #define __PRINTP( PTR, SIZE ) \
+            printf( "| %32s = %p (size: % 10lu B = % 10i KiB)\n", #PTR, PTR, SIZE, SIZE / 1024 );
+
+        __PRINTP( deviceGlobalFreePointer, nBytesDeviceGlobalFreePointer )
+        __PRINTP( deviceMLocal           , nBytesDeviceMLocal            )
+        printf( "|\n" );
+
+        #undef __PRINTI
+        #undef __PRINTP
+    #endif
+
     /** copy data **/
 
     /* why not gpu_info_space used here ??? gpu_info_space is unused else.
