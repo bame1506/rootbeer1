@@ -407,8 +407,11 @@ public class CUDAContext implements Context
                     case NATIVE_BUILD_STATE:
                     {
                         final boolean usingExceptions = Configuration.runtimeInstance().getExceptions();
-                        nativeBuildState( m_nativeContext, m_gpuDevice.getDeviceId(), m_cubinFile,
-                            m_cubinFile.length,
+                        nativeBuildState(
+                            m_nativeContext                 ,
+                            m_gpuDevice.getDeviceId()       ,
+                            m_cubinFile                     ,
+                            m_cubinFile.length              ,
                             m_threadConfig.getThreadCountX(),
                             m_threadConfig.getThreadCountY(),
                             m_threadConfig.getThreadCountZ(),
