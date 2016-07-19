@@ -176,75 +176,83 @@ Java_org_trifort_rootbeer_runtime_CUDAContext_freeNativeContext
  **/
 JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_nativeBuildState
 (
-    JNIEnv *   env,
-    jobject    this_ref,
-    jlong      nativeContext,
-    jint       device_index,
-    jbyteArray cubin_file,
-    jint       cubin_length,
-    jint       thread_count_x,
-    jint       thread_count_y,
-    jint       thread_count_z,
-    jint       block_count_x,
-    jint       block_count_y,
-    jint       num_threads,
-    jobject    object_mem,
-    jobject    handles_mem,
-    jobject    exceptions_mem,
-    jobject    class_mem,
-    jint       using_exceptions,
-    jint       cache_config
+    JNIEnv *   env             ,
+    jobject    rThisRef        ,
+    jlong      rNativeContext  ,
+    jint       rDeviceIndex    ,
+    jbyteArray rCubinFile      ,
+    jint       rCubinLength    ,
+    jint       rThreadCountX   ,
+    jint       rThreadCountY   ,
+    jint       rThreadCountZ   ,
+    jint       rBlockCountX    ,
+    jint       rBlockCountY    ,
+    jint       rNumThreads     ,
+    jobject    rObjectMem      , /* instances of Memory.java */
+    jobject    rHandlesMem     , /* either:                  */
+    jobject    rExceptionsMem  , /*     FixedMemory.java     */
+    jobject    rClassMem       , /* or: CheckedMemody.java   */
+    jint       rUsingExceptions,
+    jint       rCacheConfig
 )
 {
-    /* C90-style variable declarations (not sure if C90 really necessary) */
-    CUfunc_cache cache_config_enum; // prefer shared, L1, ...
+    /* just basically an alias + pointer conversion */
+    struct ContextState * const s /* stateObject */ = (struct ContextState *) rNativeContext;
 
-    struct ContextState * const s /* stateObject */ = (struct ContextState *) nativeContext;
+    s->block_count_x    = rBlockCountX    ;
+    s->block_count_y    = rBlockCountY    ;
+    s->using_exceptions = rUsingExceptions;
 
-    s->block_count_x = block_count_x;
-    s->block_count_y = block_count_y;
-    s->using_exceptions = using_exceptions;
-
-    CE( cuDeviceGet(&(s->device), device_index) )
-    CE( cuCtxCreate(&(s->context), CU_CTX_MAP_HOST, s->device) )
+    CE( cuDeviceGet( &(s->device) , rDeviceIndex ) )
+    CE( cuCtxCreate( &(s->context), CU_CTX_MAP_HOST, s->device ) )
 
     /* Loads fatCubin (device code for multiple architectures) into a module */
-    void * fatcubin = malloc(cubin_length); // holds cubin in memory
-    (*env)->GetByteArrayRegion(env, cubin_file, 0, cubin_length, fatcubin);
-    CE( cuModuleLoadFatBinary(&(s->module), fatcubin) )
-    free(fatcubin);
+    void * fatcubin = malloc( rCubinLength ); // holds cubin in memory
+    /* http://docs.oracle.com/javase/1.5.0/docs/guide/jni/spec/functions.html#wp1716
+     * >copies< C javaByteArray rCubinFile into raw C data fatcubin */
+    (*env)->GetByteArrayRegion( env, rCubinFile, 0, rCubinLength, fatcubin );
+    /* http://docs.nvidia.com/cuda/cuda-c-programming-guide/#module */
+    CE( cuModuleLoadFatBinary( &(s->module), fatcubin) )
+    free( fatcubin );
+    /* get kernel which to start from loaded module (i.e. ptx library) */
+    CE( cuModuleGetFunction( &(s->function), s->module, "_Z5entryPiS_ii" ) )
+    /* c++filt '_Z5entryPiS_ii' -> entry(int*, int*, int, int)
+     * As can be seen in generated_unix.xu the meaning of those kernel
+     * parameters is:
+     *    __global__ void entry
+     *    (
+     *        int * handles,
+     *        int * exceptions,
+     *        int numThreads,
+     *        int usingKernelTemplates
+     *    )
+     */
 
-    CE( cuModuleGetFunction(&(s->function), s->module, "_Z5entryPiS_ii") )
-
-    if ( cache_config != 0 )
+    CUfunc_cache cache_config_enum; // prefer shared, L1, ...
+    if ( rCacheConfig != 0 )
     {
-        switch ( cache_config )
+        switch ( rCacheConfig )
         {
-            case 1:
-                cache_config_enum = CU_FUNC_CACHE_PREFER_SHARED;
-                break;
-            case 2:
-                cache_config_enum = CU_FUNC_CACHE_PREFER_L1;
-                break;
-            case 3:
-                cache_config_enum = CU_FUNC_CACHE_PREFER_EQUAL;
-                break;
+            case 1: cache_config_enum = CU_FUNC_CACHE_PREFER_SHARED; break;
+            case 2: cache_config_enum = CU_FUNC_CACHE_PREFER_L1    ; break;
+            case 3: cache_config_enum = CU_FUNC_CACHE_PREFER_EQUAL ; break;
         }
         CE( cuFuncSetCacheConfig( s->function, cache_config_enum ) )
     }
 
-    s->cpu_object_mem     = (void *) (*env)->CallLongMethod( env, object_mem    , get_address_method );
-    s->cpu_handles_mem    = (void *) (*env)->CallLongMethod( env, handles_mem   , get_address_method );
-    s->cpu_exceptions_mem = (void *) (*env)->CallLongMethod( env, exceptions_mem, get_address_method );
-    s->cpu_class_mem      = (void *) (*env)->CallLongMethod( env, class_mem     , get_address_method );
+    s->cpu_object_mem     = (void *) (*env)->CallLongMethod( env, rObjectMem    , get_address_method );
+    s->cpu_handles_mem    = (void *) (*env)->CallLongMethod( env, rHandlesMem   , get_address_method );
+    s->cpu_exceptions_mem = (void *) (*env)->CallLongMethod( env, rExceptionsMem, get_address_method );
+    s->cpu_class_mem      = (void *) (*env)->CallLongMethod( env, rClassMem     , get_address_method );
 
-    s->cpu_object_mem_size     = (*env)->CallLongMethod( env, object_mem    , get_size_method );
-    s->cpu_handles_mem_size    = (*env)->CallLongMethod( env, handles_mem   , get_size_method );
-    s->cpu_exceptions_mem_size = (*env)->CallLongMethod( env, exceptions_mem, get_size_method );
-    s->cpu_class_mem_size      = (*env)->CallLongMethod( env, class_mem     , get_size_method );
+    s->cpu_object_mem_size     = (*env)->CallLongMethod( env, rObjectMem    , get_size_method );
+    s->cpu_handles_mem_size    = (*env)->CallLongMethod( env, rHandlesMem   , get_size_method );
+    s->cpu_exceptions_mem_size = (*env)->CallLongMethod( env, rExceptionsMem, get_size_method );
+    s->cpu_class_mem_size      = (*env)->CallLongMethod( env, rClassMem     , get_size_method );
 
-    /** allocate mem **/
     s->info_space = (jint *) malloc( sizeof( *(s->info_space) ) );
+
+    /** allocate corresponding memory on gpu **/
     CE( cuMemAlloc( &( s->gpu_info_space  ), sizeof( *(s->info_space) ) ) )
     CE( cuMemAlloc( &( s->gpu_object_mem  ), s->cpu_object_mem_size     ) )
     CE( cuMemAlloc( &( s->gpu_handles_mem ), s->cpu_handles_mem_size    ) )
@@ -252,21 +260,73 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_nativeBuild
     CE( cuMemAlloc( &( s->gpu_heap_end    ), sizeof( jint )             ) )
     if ( s->using_exceptions )
         CE( cuMemAlloc( &( s->gpu_exceptions_mem ), s->cpu_exceptions_mem_size ) )
+    else
+        s->gpu_exceptions_mem = (CUdeviceptr) 0;
 
-    /** set function parameters (cuParamSet is officially deprecated ...) **/
-    CE( cuParamSetSize(s->function, (2 * sizeof(CUdeviceptr)) + (2 * sizeof(int))) )
+    /******** set function parameters ********/
+    /* cuParamSet is officially deprecated ...
+     * http://horacio9573.no-ip.org/cuda/group__CUDA__EXEC__DEPRECATED_gdf689dac0db8f6c1232c339d3f923554.html
+     * Since CUDA Driver 4.0 i.e. NVCC/CUDA 4.0 there is cuLaunchKernel instead
+     * http://stackoverflow.com/questions/19240658/cuda-kernel-launch-parameters-explained-right
+     * It seems like Rootbeer wants to support even 3.0 and 3.2, see
+     * src/org/trifort/rootbeer/generate/opencl/tweaks/GencodeOptions.java
+     */
+    /* Sets the total size in bytes needed by the function parameters of the kernel */
+    int const nBytesTotalParameters = 2 * sizeof(CUdeviceptr) + 2 * sizeof(int);
+    CE( cuParamSetSize(s->function, nBytesTotalParameters ) )
     int offset = 0; // parameter list offset for cuParamSet{i,v}
-    CE( cuParamSetv(s->function, offset, (void *) &(s->gpu_handles_mem), sizeof(CUdeviceptr)) )
-    offset += sizeof(CUdeviceptr);
-    CE( cuParamSetv(s->function, offset, (void *) &(s->gpu_exceptions_mem), sizeof(CUdeviceptr)) )
-    offset += sizeof(CUdeviceptr);
-    CE( cuParamSeti(s->function, offset, num_threads) )
-    offset += sizeof(int);
+    #define setNextParam( SRC, NBYTES )                                 \
+        CE( cuParamSetv( s->function, offset, (void *) SRC, NBYTES ) )  \
+        offset += NBYTES;
+    setNextParam( &(s->gpu_handles_mem   ), sizeof(CUdeviceptr) )
+    setNextParam( &(s->gpu_exceptions_mem), sizeof(CUdeviceptr) )
+    CE( cuParamSeti( s->function, offset, rNumThreads) ); offset += sizeof(int);
+    /* The last kernel parameter is set by cudaRun, remember only the offset! */
+    assert( offset == nBytesTotalParameters - sizeof(int) );
     s->using_kernel_templates_offset = offset;
-    offset += sizeof(int);
-    CE( cuFuncSetBlockShape(s->function, thread_count_x, thread_count_y, thread_count_z) )
 
+    CE( cuFuncSetBlockShape( s->function, rThreadCountX,
+                                          rThreadCountY,
+                                          rThreadCountZ ) )
     s->context_built = 1;
+
+    /* debug output, trying to understand rootbeer */
+    #ifndef NDEBUG
+        #define __PRINTI( NAME ) \
+            printf( "| %32s = % 10i\n", #NAME, NAME );
+        printf( "+-------------- [nativeBuildState] --------------\n" );
+        __PRINTI( rCubinLength  )
+        __PRINTI( rThreadCountX )
+        __PRINTI( rThreadCountY )
+        __PRINTI( rThreadCountZ )
+        __PRINTI( rBlockCountX  )
+        __PRINTI( rBlockCountY  )
+        __PRINTI( rNumThreads   )
+        __PRINTI( rCacheConfig  )
+        __PRINTI( rDeviceIndex  )
+        __PRINTI( s->using_kernel_templates_offset )
+        printf( "|\n" );
+
+        #define __PRINTP( PTR, SIZE ) \
+            printf( "| %32s = %p (size: % 10lu B = % 10i KiB)\n", #PTR, PTR, SIZE, SIZE / 1024 );
+
+        __PRINTP( s->cpu_object_mem    , s->cpu_object_mem_size     )
+        __PRINTP( s->cpu_handles_mem   , s->cpu_handles_mem_size    )
+        __PRINTP( s->cpu_exceptions_mem, s->cpu_exceptions_mem_size )
+        __PRINTP( s->cpu_class_mem     , s->cpu_class_mem_size      )
+        printf( "|\n" );
+
+        __PRINTP( s->gpu_info_space    , sizeof( *(s->info_space) ) )
+        __PRINTP( s->gpu_object_mem    , s->cpu_object_mem_size     )
+        __PRINTP( s->gpu_handles_mem   , s->cpu_handles_mem_size    )
+        __PRINTP( s->gpu_class_mem     , s->cpu_class_mem_size      )
+        __PRINTP( s->gpu_heap_end      , sizeof( jint )             )
+        __PRINTP( s->gpu_exceptions_mem, sizeof( jint )             )
+        printf( "|\n" );
+
+        #undef __PRINTI
+        #undef __PRINTP
+    #endif
 }
 
 JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
