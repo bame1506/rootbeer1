@@ -617,7 +617,6 @@ Starting with the main java-file the dependency structure can be viewed with [in
     |        | * execution.
     |        | * Several methods are Java Native methods implemented by
     |        | * CUDARuntime.c
-    |        | * 
     |        +- ../configuration/Configuration.java
     |        |  +- ../util/ResourceReader.java
     |        |     +- ../configuration/RootbeerPaths.java
@@ -644,169 +643,171 @@ Starting with the main java-file the dependency structure can be viewed with [in
 
     incvis -q -C src src/org/trifort/rootbeer/entry/Main.java
 
+    generate/opencl/tweaks/GencodeOptions.java
+    | * Provides Compute Capability and Architecture enums.
+    | * Can generate a set of command line options to compile for
+    | * all architectures that nvcc version knows
+    src/org/trifort/rootbeer/util/CudaPath.java
+    | * Searches for the path of nvcc or nvcc.exe
+    src/org/trifort/rootbeer/util/CmdRunner.java
+    | * Wrapper to correctly get the output of a command line run
+    
     entry/Main.java
-        configuration/Configuration.java
-            generate/opencl/tweaks/GencodeOptions/CompileArchitecture.java -> not found!
-            generate/opencl/tweaks/GencodeOptions/ComputeCapability.java -> not found!
-            util/ResourceReader.java
-                configuration/RootbeerPaths.java
-        generate/opencl/tweaks/GencodeOptions/CompileArchitecture.java -> not found!
-        generate/opencl/tweaks/GencodeOptions/ComputeCapability.java -> not found!
-        runtime/CUDALoader.java
-            runtime/Rootbeer.java
-                runtime/BlockShaper.java
-                    runtime/GpuDevice.java
-                        runtime/Context.java
-                            runtime/CacheConfig.java
-                            runtime/GpuFuture.java
-                                runtimegpu/GpuException.java
-                                    runtime/Sentinal.java
-                            runtime/Kernel.java
-                            runtime/StatsRow.java
-                                runtime/CUDAContext.java
-                                    runtime/util/Stopwatch.java
-                                    com/lmax/disruptor/EventHandler.java -> not found!
-                                    com/lmax/disruptor/RingBuffer.java -> not found!
-                                    com/lmax/disruptor/dsl/Disruptor.java -> not found!
-                                    generate/bytecode/Constants.java
-                                    runtime/BufferPrinter.java
-                                        runtime/Memory.java
-                                    runtime/CheckedFixedMemory.java
-                                        runtime/FixedMemory.java
-                                          org/omg/CORBA/_IDLTypeStub.java -> not found!
-                                    runtime/CompiledKernel.java
-                                        runtime/Serializer.java
-                                    runtime/GpuEvent.java
-                                        com/lmax/disruptor/EventFactory.java -> not found!
-                                        runtime/GpuEventCommand.java
-                                    runtime/ThreadConfig.java
-                runtime/CUDARuntime.java
-                    runtime/IRuntime.java
-                runtime/OpenCLRuntime.java
-        entry/RootbeerCompiler.java
-            compiler/*.java -> not found!
-            generate/opencl/tweaks/CudaTweaks.java
-                compressor/Compressor.java
-                    org/antlr/runtime/ANTLRStringStream.java -> not found!
-                    org/antlr/runtime/CommonTokenStream.java -> not found!
-                    org/antlr/runtime/NoViableAltException.java -> not found!
-                    org/antlr/runtime/RecognitionException.java -> not found!
-                    org/antlr/runtime/Token.java -> not found!
-                    compressor/OpenCLLexer.java
-                        org/antlr/runtime/*.java -> not found!
-                    compressor/OpenCLParser.java
-                        org/antlr/runtime/*.java -> not found!
-                        org/antlr/runtime/tree/*.java -> not found!
-                deadmethods/DeadMethods.java
-                    util/ReadFile.java
-                    deadmethods/Block.java
-                        deadmethods/BlockParser.java
-                            deadmethods/Segment.java
-                                deadmethods/SegmentParser.java
-                        deadmethods/Method.java
-                    deadmethods/LiveMethodDetector.java
-                    deadmethods/MethodAnnotator.java
-                    deadmethods/MethodNameCompressor.java
-                    deadmethods/MethodNameParser.java
-                generate/opencl/tweaks/GencodeOptions/CompileArchitecture.java -> not found!
-                util/CompilerRunner.java
-                util/CudaPath.java
-                util/WindowsCompile.java
-                    generate/opencl/tweaks/CompileResult.java
-                generate/opencl/tweaks/GencodeOptions.java
-                    util/CmdRunner.java
-                generate/opencl/tweaks/ParallelCompile.java
-                    generate/opencl/tweaks/GencodeOptions/CompileArchitecture.java -> not found!
-                    runtime/BlockingQueue.java
-                    generate/opencl/tweaks/ParallelCompileJob.java
-                generate/opencl/tweaks/Tweaks.java
-            generate/opencl/tweaks/NativeCpuTweaks.java
-            util/*.java -> not found!
-            pack/Pack.java -> not found!
-            soot/*.java -> not found!
-            soot/options/Options.java -> not found!
-            soot/rbclassload/DfsInfo.java -> not found!
-            soot/rbclassload/ListClassTester.java -> not found!
-            soot/rbclassload/ListMethodTester.java -> not found!
-            soot/rbclassload/MethodTester.java -> not found!
-            soot/rbclassload/RootbeerClassLoader.java -> not found!
-            soot/util/JasminOutputStream.java -> not found!
-            CompilerSetup.java -> not found!
-            ForcedFields.java -> not found!
-            KernelEntryPointDetector.java -> not found!
-            MainTester.java -> not found!
-            RootbeerDfs.java -> not found!
-            TestCaseEntryPointDetector.java -> not found!
-            TestCaseFollowTester.java -> not found!
-        entry/RootbeerTest.java
-            test/RootbeerTestAgent.java
-                runtime/RootbeerGpu.java
-                util/ForceGC.java
-                test/ApplicationMain.java
-                    test/TestApplication.java
-                    test/TestApplicationFactory.java
-                test/ChangeThread.java
-                    testcases/rootbeertest/gpurequired/ChangeThreadTest.java
-                        test/TestSerialization.java
-                        testcases/rootbeertest/gpurequired/ChangeThreadRunOnGpu.java
-                    test/TestSerializationFactory.java
-                test/ExMain.java
-                    test/TestException.java
-                    test/TestExceptionFactory.java
-                    testcases/rootbeertest/exception/NullPointer1Test.java
-                        testcases/rootbeertest/exception/NullPointer1RunOnGpu.java
-                    testcases/rootbeertest/exception/NullPointer2Test.java
-                        testcases/rootbeertest/exception/NullPointer2RunOnGpu.java
-                            testcases/rootbeertest/exception/NullPointer2Object.java
-                    testcases/rootbeertest/gpurequired/ExceptionBasicTest.java
-                        testcases/rootbeertest/gpurequired/ExceptionBasicRunOnGpu.java
-                            testcases/rootbeertest/gpurequired/ExceptionTestException.java
-                test/KernelTemplateMain.java
-                    testcases/rootbeertest/kerneltemplate/DoubleToStringKernelTemplateBuilderTest.java
-                        test/TestKernelTemplate.java
-                        testcases/rootbeertest/kerneltemplate/DoubleToStringKernelTemplateBuilderRunOnGpu.java
-                    testcases/rootbeertest/kerneltemplate/DoubleToStringKernelTemplateTest.java
-                        testcases/rootbeertest/kerneltemplate/DoubleToStringKernelTemplateRunOnGpu.java
-                    testcases/rootbeertest/kerneltemplate/FastMatrixTest.java
-                        testcases/rootbeertest/kerneltemplate/MatrixKernel.java
-                    testcases/rootbeertest/kerneltemplate/GpuParametersTest.java
-                        testcases/rootbeertest/kerneltemplate/GpuParametersRunOnGpu.java
-                    testcases/rootbeertest/kerneltemplate/GpuVectorMapTest2.java
-                        testcases/rootbeertest/kerneltemplate/GpuVectorMap2.java
-                            testcases/rootbeertest/kerneltemplate/GpuLongVectorPair.java
-                        testcases/rootbeertest/kerneltemplate/GpuVectorMapRunOnGpu2.java
-                    test/TestKernelTemplateFactory.java
-                test/LoadTestSerialization.java
-                test/Main.java
-                    testcases/rootbeertest/SuperClass.java
-                        testcases/rootbeertest/SuperClassRunOnGpu.java
-                            testcases/otherpackage/CompositeClass6.java
-                                testcases/otherpackage/CompositeClass5.java
-                                    testcases/rootbeertest/CompositeClass4.java
-                                        testcases/rootbeertest/CompositeClass3.java
-                                            testcases/rootbeertest/CompositeClass2.java
-                                                testcases/rootbeertest/CompositeClass1.java
-                                                    testcases/rootbeertest/CompositeClass0.java
-                    testcases/rootbeertest/arraysum/ArraySumTest.java
-                        testcases/rootbeertest/arraysum/ArraySum.java
-                    testcases/rootbeertest/canonical/CanonicalTest.java
-                        testcases/rootbeertest/canonical/CanonicalKernel.java
-                            testcases/rootbeertest/canonical2/CanonicalObject.java
-                                testcases/rootbeertest/canonical2/CanonicalArrays.java
-                    testcases/rootbeertest/exception/NullPointer4Test.java
-                        testcases/rootbeertest/exception/NullPointer4RunOnGpu.java
-                            testcases/rootbeertest/exception/NullPointer4Object.java
-                    testcases/rootbeertest/gpurequired/*.java -> not found!
-                    testcases/rootbeertest/remaptest/RemapTest.java
-                        testcases/rootbeertest/remaptest/RemapRunOnGpu.java
-                            testcases/rootbeertest/remaptest/CallsPrivateMethod.java
-                    testcases/rootbeertest/serialization/*.java -> not found!
-                    TestSerialization.java -> not found!
-                    TestSerializationFactory.java -> not found!
-            util/CurrJarName.java
-            soot/G.java -> not found!
-            soot/Modifier.java -> not found!
-            entry/JarClassLoader.java
+    +- configuration/Configuration.java
+    |  +- util/ResourceReader.java
+    |  |  +- configuration/RootbeerPaths.java
+    +- runtime/CUDALoader.java
+    |  +- runtime/Rootbeer.java
+    |     +- runtime/BlockShaper.java
+    |     |  +- runtime/GpuDevice.java
+    |     |     +- runtime/Context.java
+    |     |         +- runtime/CacheConfig.java
+    |     |         +- runtime/GpuFuture.java
+    |     |         |  +- runtimegpu/GpuException.java
+    |     |         |     +- runtime/Sentinal.java
+    |     |         +- runtime/Kernel.java
+    |     |         +- runtime/StatsRow.java
+    |     |            +- runtime/CUDAContext.java
+    |     |               +- runtime/util/Stopwatch.java
+    |     |               +- com/lmax/disruptor/EventHandler.java -> not found!
+    |     |               +- com/lmax/disruptor/RingBuffer.java -> not found!
+    |     |               +- com/lmax/disruptor/dsl/Disruptor.java -> not found!
+    |     |               +- generate/bytecode/Constants.java
+    |     |               +- runtime/BufferPrinter.java
+    |     |               |  +- runtime/Memory.java
+    |     |               +- runtime/CheckedFixedMemory.java
+    |     |               |  +- runtime/FixedMemory.java
+    |     |               |     +- org/omg/CORBA/_IDLTypeStub.java -> not found!
+    |     |               +- runtime/CompiledKernel.java
+    |     |               |  +- runtime/Serializer.java
+    |     |               +- runtime/GpuEvent.java
+    |     |               |  +- com/lmax/disruptor/EventFactory.java -> not found!
+    |     |               |  +- runtime/GpuEventCommand.java
+    |     |               +- runtime/ThreadConfig.java
+    |     +- runtime/CUDARuntime.java
+    |     |  +- runtime/IRuntime.java
+    |     +- runtime/OpenCLRuntime.java
+    +- entry/RootbeerCompiler.java
+    |       compiler/*.java -> not found!
+    |       generate/opencl/tweaks/CudaTweaks.java
+    |           compressor/Compressor.java
+    |               org/antlr/runtime/ANTLRStringStream.java -> not found!
+    |               org/antlr/runtime/CommonTokenStream.java -> not found!
+    |               org/antlr/runtime/NoViableAltException.java -> not found!
+    |               org/antlr/runtime/RecognitionException.java -> not found!
+    |               org/antlr/runtime/Token.java -> not found!
+    |               compressor/OpenCLLexer.java
+    |                   org/antlr/runtime/*.java -> not found!
+    |               compressor/OpenCLParser.java
+    |                   org/antlr/runtime/*.java -> not found!
+    |                   org/antlr/runtime/tree/*.java -> not found!
+    |           deadmethods/DeadMethods.java
+    |               util/ReadFile.java
+    |               deadmethods/Block.java
+    |                   deadmethods/BlockParser.java
+    |                       deadmethods/Segment.java
+    |                           deadmethods/SegmentParser.java
+    |                   deadmethods/Method.java
+    |               deadmethods/LiveMethodDetector.java
+    |               deadmethods/MethodAnnotator.java
+    |               deadmethods/MethodNameCompressor.java
+    |               deadmethods/MethodNameParser.java
+    |           util/CompilerRunner.java
+    |           util/CudaPath.java
+    |           util/WindowsCompile.java
+    |               generate/opencl/tweaks/CompileResult.java
+    |               util/CmdRunner.java
+    |           generate/opencl/tweaks/ParallelCompile.java
+    |               runtime/BlockingQueue.java
+    |               generate/opencl/tweaks/ParallelCompileJob.java
+    |           generate/opencl/tweaks/Tweaks.java
+    |       generate/opencl/tweaks/NativeCpuTweaks.java
+    |       util/*.java -> not found!
+    |       pack/Pack.java -> not found!
+    |       soot/*.java -> not found!
+    |       soot/options/Options.java -> not found!
+    |       soot/rbclassload/DfsInfo.java -> not found!
+    |       soot/rbclassload/ListClassTester.java -> not found!
+    |       soot/rbclassload/ListMethodTester.java -> not found!
+    |       soot/rbclassload/MethodTester.java -> not found!
+    |       soot/rbclassload/RootbeerClassLoader.java -> not found!
+    |       soot/util/JasminOutputStream.java -> not found!
+    |       CompilerSetup.java -> not found!
+    |       ForcedFields.java -> not found!
+    |       KernelEntryPointDetector.java -> not found!
+    |       MainTester.java -> not found!
+    |       RootbeerDfs.java -> not found!
+    |       TestCaseEntryPointDetector.java -> not found!
+    |       TestCaseFollowTester.java -> not found!
+    +- entry/RootbeerTest.java
+    |       test/RootbeerTestAgent.java
+    |           runtime/RootbeerGpu.java
+    |           util/ForceGC.java
+    |           test/ApplicationMain.java
+    |               test/TestApplication.java
+    |               test/TestApplicationFactory.java
+    |           test/ChangeThread.java
+    |               testcases/rootbeertest/gpurequired/ChangeThreadTest.java
+    |                   test/TestSerialization.java
+    |                   testcases/rootbeertest/gpurequired/ChangeThreadRunOnGpu.java
+    |               test/TestSerializationFactory.java
+    |           test/ExMain.java
+    |               test/TestException.java
+    |               test/TestExceptionFactory.java
+    |               testcases/rootbeertest/exception/NullPointer1Test.java
+    |                   testcases/rootbeertest/exception/NullPointer1RunOnGpu.java
+    |               testcases/rootbeertest/exception/NullPointer2Test.java
+    |                   testcases/rootbeertest/exception/NullPointer2RunOnGpu.java
+    |                       testcases/rootbeertest/exception/NullPointer2Object.java
+    |               testcases/rootbeertest/gpurequired/ExceptionBasicTest.java
+    |                   testcases/rootbeertest/gpurequired/ExceptionBasicRunOnGpu.java
+    |                       testcases/rootbeertest/gpurequired/ExceptionTestException.java
+    |           test/KernelTemplateMain.java
+    |               testcases/rootbeertest/kerneltemplate/DoubleToStringKernelTemplateBuilderTest.java
+    |                   test/TestKernelTemplate.java
+    |                   testcases/rootbeertest/kerneltemplate/DoubleToStringKernelTemplateBuilderRunOnGpu.java
+    |               testcases/rootbeertest/kerneltemplate/DoubleToStringKernelTemplateTest.java
+    |                   testcases/rootbeertest/kerneltemplate/DoubleToStringKernelTemplateRunOnGpu.java
+    |               testcases/rootbeertest/kerneltemplate/FastMatrixTest.java
+    |                   testcases/rootbeertest/kerneltemplate/MatrixKernel.java
+    |               testcases/rootbeertest/kerneltemplate/GpuParametersTest.java
+    |                   testcases/rootbeertest/kerneltemplate/GpuParametersRunOnGpu.java
+    |               testcases/rootbeertest/kerneltemplate/GpuVectorMapTest2.java
+    |                   testcases/rootbeertest/kerneltemplate/GpuVectorMap2.java
+    |                       testcases/rootbeertest/kerneltemplate/GpuLongVectorPair.java
+    |                   testcases/rootbeertest/kerneltemplate/GpuVectorMapRunOnGpu2.java
+    |               test/TestKernelTemplateFactory.java
+    |           test/LoadTestSerialization.java
+    |           test/Main.java
+    |               testcases/rootbeertest/SuperClass.java
+    |                   testcases/rootbeertest/SuperClassRunOnGpu.java
+    |                       testcases/otherpackage/CompositeClass6.java
+    |                           testcases/otherpackage/CompositeClass5.java
+    |                               testcases/rootbeertest/CompositeClass4.java
+    |                                   testcases/rootbeertest/CompositeClass3.java
+    |                                       testcases/rootbeertest/CompositeClass2.java
+    |                                           testcases/rootbeertest/CompositeClass1.java
+    |                                               testcases/rootbeertest/CompositeClass0.java
+    |               testcases/rootbeertest/arraysum/ArraySumTest.java
+    |                   testcases/rootbeertest/arraysum/ArraySum.java
+    |               testcases/rootbeertest/canonical/CanonicalTest.java
+    |                   testcases/rootbeertest/canonical/CanonicalKernel.java
+    |                       testcases/rootbeertest/canonical2/CanonicalObject.java
+    |                           testcases/rootbeertest/canonical2/CanonicalArrays.java
+    |               testcases/rootbeertest/exception/NullPointer4Test.java
+    |                   testcases/rootbeertest/exception/NullPointer4RunOnGpu.java
+    |                       testcases/rootbeertest/exception/NullPointer4Object.java
+    |               testcases/rootbeertest/gpurequired/*.java -> not found!
+    |               testcases/rootbeertest/remaptest/RemapTest.java
+    |                   testcases/rootbeertest/remaptest/RemapRunOnGpu.java
+    |                       testcases/rootbeertest/remaptest/CallsPrivateMethod.java
+    |               testcases/rootbeertest/serialization/*.java -> not found!
+    |               TestSerialization.java -> not found!
+    |               TestSerializationFactory.java -> not found!
+    |       util/CurrJarName.java
+    |       soot/G.java -> not found!
+    |       soot/Modifier.java -> not found!
+    |       entry/JarClassLoader.java
 
 
 
