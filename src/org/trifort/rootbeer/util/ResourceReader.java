@@ -22,9 +22,12 @@ import org.trifort.rootbeer.configuration.RootbeerPaths;
 
 public class ResourceReader
 {
-    public static String getResource(String path) throws IOException
+    /**
+     * Returns a file packed into the jar as a String
+     */
+    public static String getResource( String path ) throws IOException
     {
-        InputStream is = ResourceReader.class.getResourceAsStream(path);
+        InputStream is = ResourceReader.class.getResourceAsStream( path );
         StringBuilder ret = new StringBuilder();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         while(true)
@@ -41,7 +44,7 @@ public class ResourceReader
     /**
      * Buffers the file data in the stream returned by getResourceAsStream
      * into a byte array.
-     * @Todo Automatically determine length?
+     * @todo Automatically determine length?
      */
     public static byte[] getResourceArray
     (
@@ -68,43 +71,44 @@ public class ResourceReader
 
     /**
      * Reads specified file into a list of byte arrays, even if file size
-     * not specified, by concatenaing byte arrays as long as necessary for
+     * not specified, by concatenating byte arrays as long as necessary for
      * the input stream to end.
      * @todo Other way to get file size first and then allocate whole buffer?
      *       @see http://stackoverflow.com/questions/26155314/why-does-getresourceasstream-and-reading-file-with-fileinputstream-return-arra
      *       @see http://www.coderanch.com/t/277331/java-io/java/determining-size-file-classpath
      *   => use ByteArrayOutputStream instead of implementing something similar anew
      **/
-    public static List<byte[]> getResourceArray( String jar_path ) throws IOException
+    public static List<byte[]> getResourceArray
+    (
+        String jar_path
+    ) throws IOException
     {
-        InputStream is = ResourceReader.class.getResourceAsStream(jar_path);
+        InputStream is = ResourceReader.class.getResourceAsStream( jar_path );
         if ( is == null )
-        {
-            jar_path = RootbeerPaths.v().getOutputClassFolder() + File.separator + jar_path;
-            is = new FileInputStream(jar_path);
-        }
+            throw new RuntimeException( "Could not find 'jar_path' in this jar!" );
+
         List<byte[]> ret = new ArrayList<byte[]>();
         /* exists if returned length is -1, i.e. InputStream end reached */
         while(true)
         {
             /* load into a constant size buffer */
-            byte[] buffer = new byte[32*1024];
-            int len = is.read(buffer);
-            if(len == -1) {
+            final byte[] buffer = new byte[32*1024];
+            final int len = is.read( buffer );
+            if ( len == -1 )
                 break;
-            }
+
             /**
              * copy into a buffer which is of equal or less size, normally
              * it is only less for the last bay array in the list, except
              * if the file size is a multiple of 32*1024.
-             * @todo: Increase performance by only copying into small buffer
-             *        if len is < 32*1024, or just use ByteArrayOutputStream
-             *        to return a byte array instead of a list of byte arrays
+             * @todo Increase performance by only copying into small buffer
+             *       if len is < 32*1024, or just use ByteArrayOutputStream
+             *       to return a byte array instead of a list of byte arrays
             */
-            byte[] small_buffer = new byte[len];
-            for(int i = 0; i < len; ++i){
+            final byte[] small_buffer = new byte[len];
+            for( int i = 0; i < len; ++i )
                 small_buffer[i] = buffer[i];
-            }
+
             ret.add(small_buffer);
         }
         is.close();
@@ -122,11 +126,12 @@ public class ResourceReader
         String dest_filename
     ) throws IOException
     {
-        List<byte[]> bytes = getResourceArray(jar_filename);
-        FileOutputStream fout = new FileOutputStream(dest_filename);
-        for ( byte[] byte_array : bytes ) {
-           fout.write(byte_array);
-        }
+        final List<byte[]>     bytes = getResourceArray( jar_filename );
+        final FileOutputStream fout  = new FileOutputStream( dest_filename );
+
+        for ( byte[] byte_array : bytes )
+           fout.write( byte_array );
+
         fout.flush();
         fout.close();
     }
