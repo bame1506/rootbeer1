@@ -339,7 +339,6 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
     jobject  stats_row
 )
 {
-    CUdeviceptr deviceGlobalFreePointer;
     struct ContextState * const s = (struct ContextState *) nativeContext;
 
     stopwatchStart(&(s->execMemcopyToDevice));
@@ -350,16 +349,33 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
     jint heap_end_int = (jint) heap_end_long;
     s->info_space[0] = heap_end_int;
 
-    size_t bytes;
-    CE( cuModuleGetGlobal(&deviceGlobalFreePointer, &bytes, s->module, "global_free_pointer") )
-    CUdeviceptr deviceMLocal;
-    CE( cuModuleGetGlobal(&deviceMLocal, &bytes, s->module, "m_Local") )
-
-    /** copy data **/
     unsigned long long hostMLocal[3];
     hostMLocal[0] = s->gpu_object_mem;
-    hostMLocal[1] = s->cpu_object_mem_size >> 4;    /* WHAT is up with this bitshift ? */
+    hostMLocal[1] = s->cpu_object_mem_size / 16;    /* WHAT is up with this bitshift ? equvi to div 16 */
     hostMLocal[2] = s->gpu_class_mem;
+    /* equality would be more clean programming, but it just isn't, and if
+     * the hostMLocal version is smaller no harm is done, as that size is used
+     * for the rootbeer garbage collector. */
+    assert( hostMLocal[1] * 16 <= s->cpu_object_mem_size );
+
+    /* Get address and size of global_free_pointer which is defined in
+     * src/org/trifort/rootbeer/generate/opencl/CudaKernel.c
+     * from the loaded module i.e. ptx library-like binary. */
+    size_t nBytesDeviceGlobalFreePointer = 0;
+    CUdeviceptr deviceGlobalFreePointer;
+    CE( cuModuleGetGlobal( &deviceGlobalFreePointer,
+                           &nBytesDeviceGlobalFreePointer,
+                           s->module,
+                           "global_free_pointer" ) )
+    assert( nBytesDeviceGlobalFreePointer == sizeof( *(s->info_space) ) );
+
+    CUdeviceptr deviceMLocal;
+    size_t nBytesDeviceMLocal = 0;
+    CE( cuModuleGetGlobal( &deviceMLocal, &nBytesDeviceMLocal, s->module,
+                           "m_Local" ) )
+    assert( nBytesDeviceMLocal == sizeof( hostMLocal ) );
+
+    /** copy data **/
 
     /* why not gpu_info_space used here ??? gpu_info_space is unused else.
      * also info_space holds gpu_heap_end >> 4. Why this duplication? */
