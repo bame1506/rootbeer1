@@ -362,95 +362,128 @@ public class RootbeerCompiler {
     }
   }
 
-  private void addConfigurationFile(ZipOutputStream zos) throws IOException {
-    String folder_name = "org/trifort/rootbeer/runtime/";
-    String name = folder_name + "config.txt";
-    ZipEntry entry = new ZipEntry(name);
-    entry.setSize(1);
-    byte[] contents = new byte[2];
-    contents[0] = (byte) Configuration.compilerInstance().getMode();
-    if(Configuration.compilerInstance().getExceptions()){
-      contents[1] = (byte) 1;
-    } else {
-      contents[1] = (byte) 0;
+    /**
+     * Adds config.txt which contains 2 bytes to jar and home config directory
+     * The first specifies whether the GPU or an Emulator (JEMU, NEMU) is to be used ???
+     * The second byte specifies whether to use and serialize kernel exceptions
+     */
+    private void addConfigurationFile
+    (
+        final ZipOutputStream zos
+    ) throws IOException
+    {
+        final String folderName = "org/trifort/rootbeer/runtime/";
+        final String fileName   = folderName + "config.txt";
+        final ZipEntry entry    = new ZipEntry( fileName );
+        entry.setSize(1);
+
+        final byte[] contents = new byte[2];
+        contents[0] = (byte) Configuration.compilerInstance().getMode();
+        contents[1] = (byte) ( Configuration.compilerInstance().getExceptions() ? 1 : 0 );
+
+
+        final CRC32 crc = new CRC32();
+        crc.update( contents );
+        entry.setCrc( crc.getValue() );
+        zos.putNextEntry( entry );
+        zos.write( contents );
+        zos.flush();
+
+        /* Also write out config.txt to ~/.rootbeer */
+        final File file = new File( RootbeerPaths.v().getOutputClassFolder() +
+                                    File.separator + folderName );
+        if ( ! file.exists() )
+            file.mkdirs();
+
+        final FileOutputStream fout = new FileOutputStream(
+            RootbeerPaths.v().getOutputClassFolder() + File.separator + fileName
+        );
+        fout.write( contents );
+        // http://stackoverflow.com/questions/9272585/difference-between-flush-and-close-function-in-case-of-filewriter-in-java
+        fout.flush();
+        fout.close();
     }
 
-    entry.setCrc(calcCrc32(contents));
-    zos.putNextEntry(entry);
-    zos.write(contents);
-    zos.flush();
+    /**
+     * Copies a given entry from the input jar to the output jar.
+     */
+    private void writeFileToOutput
+    (
+        final ZipInputStream  jin      ,
+        final ZipEntry        jar_entry,
+        final ZipOutputStream zos
+    ) throws Exception
+    {
+        if ( ! jar_entry.isDirectory() )
+        {
+            /* Because the ZipStream wants to know the file size buffer the
+             * whole file and count the bytes, only then forwarding it to
+             * the output zip archive */
+            final List<byte[]> buffered = new ArrayList<byte[]>();
+            int total_size = 0;
+            while ( true )
+            {
+                final byte[] buffer = new byte[ 32*1024 ];
 
-    File file = new File(RootbeerPaths.v().getOutputClassFolder()+File.separator+folder_name);
-    if(file.exists() == false){
-      file.mkdirs();
-    }
+                final int len = jin.read(buffer);
+                if ( len == -1 )
+                    break;
 
-    FileOutputStream fout = new FileOutputStream(RootbeerPaths.v().getOutputClassFolder()+File.separator+name);
-    fout.write(contents);
-    fout.flush();
-    fout.close();
-  }
+                total_size += len;
 
-  private void writeFileToOutput(ZipInputStream jin, ZipEntry jar_entry, ZipOutputStream zos) throws Exception {
-    if(jar_entry.isDirectory() == false){
+                final byte[] truncated = new byte[len];
+                for ( int i = 0; i < len; ++i )
+                    truncated[i] = buffer[i];
 
-      List<byte[]> buffered = new ArrayList<byte[]>();
-      int total_size = 0;
-      while(true){
-        byte[] buffer = new byte[4096];
-        int len = jin.read(buffer);
-        if(len == -1){
-          break;
+                buffered.add( truncated );
+            }
+
+            /* create new entry and write buffer to it */
+            final ZipEntry entry = new ZipEntry( jar_entry.getName() );
+            entry.setSize( total_size );
+            entry.setCrc( jar_entry.getCrc() );
+            zos.putNextEntry( entry );
+
+            for ( byte[] buffer : buffered )
+                zos.write( buffer );
+            zos.flush();
+        } else {
+            zos.putNextEntry( jar_entry );
         }
-        total_size += len;
-        byte[] truncated = new byte[len];
-        for(int i = 0; i < len; ++i){
-          truncated[i] = buffer[i];
+    }
+
+    /**
+     * Adds a file to a jar i.e. zipStream
+     */
+    private void writeFileToOutput
+    (
+        final File f,
+        final ZipOutputStream zos,
+        final String folder
+    ) throws Exception
+    {
+        final String   name  = makeJarFileName(f, folder);
+        final ZipEntry entry = new ZipEntry(name);
+        byte[] contents = readFile(f);
+        entry.setSize( contents.length );
+
+        final CRC32 crc = new CRC32();
+        crc.update( contents );
+        entry.setCrc( crc.getValue() );
+        zos.putNextEntry( entry );
+
+        int wrote_len = 0;
+        final int total_len = contents.length;
+        while(wrote_len < total_len)
+        {
+            int len = 4096;
+            final int len_left = total_len - wrote_len;
+            if( len > len_left )
+                len = len_left;
+            zos.write( contents, wrote_len, len );
+            wrote_len += len;
         }
-        buffered.add(truncated);
-      }
-
-      ZipEntry entry = new ZipEntry(jar_entry.getName());
-      entry.setSize(total_size);
-      entry.setCrc(jar_entry.getCrc());
-      zos.putNextEntry(entry);
-
-      for(byte[] buffer : buffered){
-        zos.write(buffer);
-      }
-
-      zos.flush();
-    } else {
-      zos.putNextEntry(jar_entry);
-    }
-  }
-
-  private void writeFileToOutput(File f, ZipOutputStream zos, String folder) throws Exception {
-    String name = makeJarFileName(f, folder);
-    ZipEntry entry = new ZipEntry(name);
-    byte[] contents = readFile(f);
-    entry.setSize(contents.length);
-
-    entry.setCrc(calcCrc32(contents));
-    zos.putNextEntry(entry);
-
-    int wrote_len = 0;
-    int total_len = contents.length;
-    while(wrote_len < total_len){
-      int len = 4096;
-      int len_left = total_len - wrote_len;
-      if(len > len_left)
-        len = len_left;
-      zos.write(contents, wrote_len, len);
-      wrote_len += len;
-    }
-    zos.flush();
-  }
-
-  private long calcCrc32(byte[] buffer){
-    CRC32 crc = new CRC32();
-    crc.update(buffer);
-    return crc.getValue();
+        zos.flush();
   }
 
   private byte[] readFile(File f) throws Exception {
@@ -555,15 +588,14 @@ public class RootbeerCompiler {
     return cls;
   }
 
-  private void clearOutputFolders() {
-    DeleteFolder deleter = new DeleteFolder();
-    deleter.delete(RootbeerPaths.v().getOutputJarFolder());
-    deleter.delete(RootbeerPaths.v().getOutputClassFolder());
-    deleter.delete(RootbeerPaths.v().getOutputShimpleFolder());
-    deleter.delete(RootbeerPaths.v().getJarContentsFolder());
-  }
+    private void clearOutputFolders()
+    {
+        DeleteFolder deleter = new DeleteFolder();
+        deleter.delete( RootbeerPaths.v().getOutputJarFolder    () );
+        deleter.delete( RootbeerPaths.v().getOutputClassFolder  () );
+        deleter.delete( RootbeerPaths.v().getOutputShimpleFolder() );
+        deleter.delete( RootbeerPaths.v().getJarContentsFolder  () );
+    }
 
-  public String getProvider() {
-    return m_provider;
-  }
+    public String getProvider() { return m_provider; }
 }
