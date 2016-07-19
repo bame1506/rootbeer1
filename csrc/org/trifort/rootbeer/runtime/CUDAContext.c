@@ -425,7 +425,32 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
 
     CE( cuMemcpyDtoH( s->info_space, deviceGlobalFreePointer, sizeof( *(s->info_space) ) ) )
     heap_end_long = s->info_space[0];
-    heap_end_long <<= 4; // mul 16 ?
+    /**
+     * An old bug was using * 16 instead of *= 16 (I think some compiler
+     * warning might have had noticed this...) resulting in:
+     *   1324514 inside 0 outside
+     *     => Something is wrong! Don't add up to 1684701
+     *   1323744 inside 0 outside
+     *     => Something is wrong! Don't add up to 1684701
+     *   1323263 inside 0 outside
+     *     => Something is wrong! Don't add up to 1684701
+     *   1322902 inside 0 outside
+     *     => Something is wrong! Don't add up to 1684701
+     *   [...]
+     *   0 inside 0 outside
+     *     => Something is wrong! Don't add up to 1684701
+     *   0 inside 0 outside
+     *     => Something is wrong! Don't add up to 1684701
+     *   0 inside 0 outside
+     *     => Something is wrong! Don't add up to 1684701
+     *   0 inside 0 outside
+     *     => Something is wrong! Don't add up to 1684701
+     * This means the nHitsB array and more than half of nHitsA array were
+     * not copied back to host from gpu resulting in those values being 0.
+     * This means that nHitsB lies after nHistA in the the rootbeer managed
+     * heap.
+     */
+    heap_end_long *= 16;
     CE( cuMemcpyDtoH( s->cpu_object_mem, s->gpu_object_mem, heap_end_long ) )
     if ( s->using_exceptions )
         CE( cuMemcpyDtoH(s->cpu_exceptions_mem, s->gpu_exceptions_mem, s->cpu_exceptions_mem_size) )
