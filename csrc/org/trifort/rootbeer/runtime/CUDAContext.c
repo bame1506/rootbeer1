@@ -344,9 +344,12 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
     stopwatchStart(&(s->execMemcopyToDevice));
 
     jlong heap_end_long;
-    heap_end_long = (*env)->CallLongMethod(env, object_mem, get_heap_end_method);
-    heap_end_long >>= 4;
-    jint heap_end_int = (jint) heap_end_long;
+    heap_end_long = (*env)->CallLongMethod( env, object_mem, get_heap_end_method );
+    #ifndef NDEBUG
+        printf( "[cudaRun] heap_end_long = %lu\n", heap_end_long );
+    #endif
+    jint heap_end_int = (jint)( heap_end_long / 16 ); // same as div 16
+    assert( ( (jlong) heap_end_int ) * 16 == heap_end_long );
     s->info_space[0] = heap_end_int;
 
     unsigned long long hostMLocal[3];
