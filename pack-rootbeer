@@ -1,3 +1,11 @@
 #!/bin/sh
 
-java -jar lib/pack.jar -mainjar dist/Rootbeer1.jar -directory lib -destjar Rootbeer.jar
+if command -v 'zipmerge' 2>&1 1>/dev/null; then
+    echo '\nPack: Rootbeer.jar'
+    if [ -f Rootbeer.jar ]; then
+        rm Rootbeer.jar
+    fi
+    time -p zipmerge Rootbeer.jar lib/* dist/Rootbeer1.jar
+else
+    time -p java -jar lib/pack.jar -mainjar dist/Rootbeer1.jar -directory lib -destjar Rootbeer.jar
+fi

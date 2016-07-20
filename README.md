@@ -813,6 +813,8 @@ Starting with the main java-file the dependency structure can be viewed with [in
 
 ### Libraries / Dependencies
 
+These libraries are distributed with this repo which bloats it's size and guarantees for at least oen copyright problem.
+
 See folder `lib`.
 
   - `antlr-3.1.3.jar` [Link](http://www.antlr.org/)
@@ -837,8 +839,8 @@ See folder `lib`.
      > Hamcrest is a framework for writing matcher objects allowing 'match' rules to be defined declaratively.
   - `jasminclasses-2.5.0.jar` [Link]()
      >
-  - `pack.jar` [Link]()
-     >
+  - `pack.jar` [Link](https://github.com/pcpratts/pack)
+     > merges jars to one fat jar (same as zipmerge) plus it removes the line `Class-Path:.*` from `META-INF/MANIFEST.MF` from the main jar (would be the last jar witht he zipmerge command).
   - `polyglotclasses-1.3.5.jar` [Link]()
      >
   - `sootclasses-rbclassload.jar` [Link]()
@@ -854,3 +856,14 @@ Some classes do have main functions for testing purposes. Start them e.g. with
     java -classpath build/classes/ org.trifort.rootbeer.runtime.BlockShaper
     
 Note that the second argument may not be different because of the `package` keyword at the top of this file. Instead adjust the classpath if necessary!
+
+
+### ToDo 
+    
+   - add compiler warnings
+   - streamlining pack-rootbeer
+   - add support for #  define with spaces
+   - reduce debug output and explain it (now I udnerstand what block and segments mean)
+   - add support for /* */ style comments -> TYPE_COMMENT recognition somehow
+   - check which metrics do change on a changed kernel, e.g. when adding a local variable
+
