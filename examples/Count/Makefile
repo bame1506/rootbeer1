@@ -13,7 +13,7 @@ Count.class: Count.java $(ROOTBEER_ROOT)/Rootbeer.jar
 
 gpu.jar: CountKernel.class
 	jar -cvf $@.tmp.jar *.class
-	java -jar $(ROOTBEER_ROOT)/Rootbeer.jar $@.tmp.jar gpu.jar -64bit -computecapability=sm_30
+	java -jar $(ROOTBEER_ROOT)/Rootbeer.jar $@.tmp.jar gpu.jar
 
 cpu.jar: manifest.txt Count.class
 	jar -cvfm $@ $^

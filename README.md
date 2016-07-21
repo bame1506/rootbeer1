@@ -348,21 +348,48 @@ All together: `( cd csrc && ./compile_linux_x64 ) && ant jar && ./pack-rootbeer`
 
 ### Command Line Options
 
-* `-runeasytests` = run test suite to see if things are working
-* `-runtest` = run specific test case
-* `-printdeviceinfo` = print out information regarding your GPU
-* `-maxrregcount` = sent to CUDA compiler to limit register count
-* `-noarraychecks` = remove array out of bounds checks once you get your application to work
-* `-nodoubles` = you are telling rootbeer that there are no doubles and we can compile with older versions of CUDA
-* `-norecursion` = you are telling rootbeer that there are no recursions and we can compile with older versions of CUDA
-* `-noexceptions` = remove exception checking
-* `-keepmains` = keep main methods
-* `-shared-mem-size` = specify the shared memory size
-* `-32bit` = compile with 32bit
-* `-64bit` = compile with 64bit (if you are on a 64bit machine you will want to use just this)
-* `-computecapability` = specify the Compute Capability {sm_11,sm_12,sm_20,sm_21,sm_30,sm_35} (default ALL)
+To compile a single jar with Rootbeer you can do:
 
-Once you get started, you will find you want to use a combination of -maxregcount, -shared-mem-size and the thread count sent to the GPU to control occupancy.
+    Rootbeer.jar [Options] <mainjar> <destjar>
+
+| Option               | Description                                             |
+| -------------------- | ------------------------------------------------------- |
+| `-printdeviceinfo`   | print out information regarding your GPU                |
+| `-noarraychecks`     | remove array out of bounds checks once you get your application to work |
+| `-nodoubles`         | you are telling rootbeer that there are no doubles and we can compile with older versions of CUDA |
+| `-norecursion`       | you are telling rootbeer that there are no recursions and we can compile with older versions of CUDA |
+| `-noexceptions`      | remove exception checking |
+| `-nemu`              | use CPU emulator |
+| `-jemu`              | use CPU emulator |
+| `-keepmains`         | keep main methods |
+| `-maxrregcount <number of registers per thread>` | sent to CUDA compiler to limit register count |
+| `-shared-mem-size <size>` | specify the shared memory size |
+| `-computecapability <architecture>` | specify the Compute Capability: `sm_11`, `sm_12`, `sm_20`, `sm_21`, `sm_30`, `sm_35`} (default ALL) |
+| `-32bit`             | compile with 32bit |
+| `-64bit`             | compile with 64bit (if you are on a 64bit machine you will want to use just this) |
+| `-remap-sparse`      | |
+| `-disable-class-remapping` | |
+| `-manualcuda <path>` | Sets source file specified thereafter for compilation  |
+| `-runtests`          | run all available tests but not the large memory tests |
+| `-runeasytests`      | run test suite to see if things are working            |
+| `-runtest <name>`    | run specific test case                                 |
+| `-large-mem-tests`   | run tests for large memory                             |
+
+Once you get started, you will find you want to use a combination of `-maxregcount`, `-shared-mem-size` and the thread count sent to the GPU to control occupancy.
+
+
+This syntax is not yet implemented fully yet, please use the simple syntax above!
+
+    Rootbeer.jar [Options]
+
+Additional options available for non-simple syntax:
+
+| Option               | Description                                             |
+| -------------------- | ------------------------------------------------------- |
+| `-mainjar <path>`    | The jar which will be parsed and compiled by Rootbeer   |
+| `-libjar <path>`     | Can be specified multiple times.                        |
+| `-directory <path>`  | Can be specified multiple times.                        |
+| `-destjar <path>`    | The finished jar will be written to this file           |
 
 
 ### Debugging
@@ -809,6 +836,11 @@ Starting with the main java-file the dependency structure can be viewed with [in
     |       soot/Modifier.java -> not found!
     |       entry/JarClassLoader.java
 
+### Compile Sequence
+
+ 1. entry/Main.main
+ 2. entry/Main.parseArgs
+ 3. entry/RootbeerCompiler.compile
 
 
 ### Libraries / Dependencies
