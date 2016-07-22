@@ -7,6 +7,7 @@
 
 package org.trifort.rootbeer.compiler;
 
+
 import java.util.List;
 
 import org.trifort.rootbeer.generate.bytecode.GenerateForKernel;
@@ -16,45 +17,48 @@ import soot.*;
 import soot.rbclassload.DfsInfo;
 import soot.rbclassload.RootbeerClassLoader;
 
-public class Transform2 {
 
-  private int m_Uuid;
+public class Transform2
+{
+    private int m_Uuid;
 
-  public Transform2(){
-    m_Uuid = 1;
-  }
-
-  public void run(String cls){
-    OpenCLScene scene = new OpenCLScene();
-    OpenCLScene.setInstance(scene);
-    scene.init();
-
-    SootClass soot_class1 = Scene.v().getSootClass(cls);
-    SootMethod method = soot_class1.getMethod("void gpuMethod()");
-
-    String uuid = getUuid();
-    GenerateForKernel generator = new GenerateForKernel(method, uuid);
-    try {
-      generator.makeClass();
-    } catch(Exception ex){
-      ex.printStackTrace();
-      OpenCLScene.releaseV();
-      return;
+    public Transform2(){
+        m_Uuid = 1;
     }
 
-    //add an interface to the class
-    SootClass soot_class = method.getDeclaringClass();
-    SootClass iface_class = Scene.v().getSootClass("org.trifort.rootbeer.runtime.CompiledKernel");
-    soot_class.addInterface(iface_class);
+    public void run( final String cls )
+    {
+        final OpenCLScene scene = new OpenCLScene();
+        OpenCLScene.setInstance( scene );
+        scene.init();
 
-    System.out.println("added interface CompiledKernel");
+        final SootMethod method = Scene.v().getSootClass( cls ).getMethod( "void gpuMethod()" );
 
-    OpenCLScene.releaseV();
-  }
+        final String uuid = getUuid();
+        GenerateForKernel generator = new GenerateForKernel( method, uuid );
+        try {
+            generator.makeClass();
+        } catch ( Exception ex )
+        {
+            ex.printStackTrace();
+            OpenCLScene.releaseV();
+            return;
+        }
 
-  private String getUuid(){
-    int uuid = m_Uuid;
-    m_Uuid++;
-    return Integer.toString(uuid);
-  }
+        //add an interface to the class
+        SootClass soot_class = method.getDeclaringClass();
+        SootClass iface_class = Scene.v().getSootClass("org.trifort.rootbeer.runtime.CompiledKernel");
+        soot_class.addInterface(iface_class);
+
+        System.out.println("added interface CompiledKernel");
+
+        OpenCLScene.releaseV();
+    }
+
+    private String getUuid()
+    {
+        int uuid = m_Uuid;
+        m_Uuid++;
+        return Integer.toString(uuid);
+    }
 }

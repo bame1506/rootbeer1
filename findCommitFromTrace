@@ -1,0 +1,146 @@
+#!/bin/bash
+# File Name: findCommitFromTrace
+#
+# findCommitFromTrace --short develop \
+#     src/soot/SootMethod.java               getBodyFromMethodSource 324 \
+#     src/soot/SootMethod.java               getBody                 91  \
+#     src/soot/coffi/CoffiMethodSource.java  getPhaseOptions         49  \
+#     src/soot/PhaseOptions.java             getPM                   49  \
+#     src/soot/PhaseOptions.java             v                       39  \
+#     src/soot/PackManager.java              soot_PackManager        344 \
+#     src/soot/Singletons.java               PackManager             472 \
+#     src/soot/PackManager.java              DexPrinter              529
+#
+# soot/rbclassload/RootbeerClassLoader/loadScene            (RootbeerClassLoader.java:857)
+# soot/rbclassload/RootbeerClassLoader/loadNecessaryClasses (RootbeerClassLoader.java:320)
+
+verbose=1
+goUp='\n'
+if [ "$1" == '--short' ]; then
+    verbose=0
+    goUp='\r'
+    shift
+fi
+branch=$1 # Note: you can use --all
+shift
+echo "Searching on branch: $branch"
+
+function assert() { if [ ! $? -eq 0 ];then echo "Assert failed at line $1!"; fi }
+
+if [ ! $(( $# % 3 )) -eq 0 ]; then
+    echo -e "\e[31mNumber of arguments must be a multiple of 3: findCommitFromTrace (<file> <match> <line>)*\e[0m"
+    exit
+fi
+args=( "$@" )
+if [ ! $# -eq ${#args[@]} ]; then
+    echo -e "\e[31mSomething went wrong when copying arguments to array\e[0m"
+    exit
+fi
+
+
+stringContains() {
+    #echo "    String to test: $1"
+    #echo "    Substring to test for: $2"
+    [ -z "${1##*$2*}" ] && [ ! -z "$1" ]
+}
+
+lastMatchedCommits=()
+newMatchedCommits=()
+
+# Try to match a method call at the given line in a given file, collect all
+# matchong commits.
+# For the next rule, collect all commits which where matched last and also
+# matches now
+# As we only test commits which actually changed the file, we also need to
+# testadd all inbetween
+
+initialCommit=$(git rev-parse HEAD)
+for (( iArg=0; 3*iArg<${#args[@]}; ++iArg )); do
+{
+    file=${args[ 3*iArg + 0 ]}
+    keyword=${args[ 3*iArg + 1 ]}
+    lineNumber=${args[ 3*iArg + 2 ]}
+
+    if [[ ! "$line" =~ [0-9]* ]]; then
+        echo -e "\e[31mThe specified line number ($lineNumber) contains some non-digits.\e[0m"
+        exit
+    fi
+
+    git checkout -f "$initialCommit" -- "$file"
+    commits=( $(git log --oneline $branch -- "$file" | sed 's| .*||' ) )
+
+    echo -e "\e[35mTrying to find matches for $file:$lineNumber with '$keyword'\e[0m"
+
+    lastWasMatched=""
+    for (( i=0; i<${#commits[@]}; ++i )); do
+    {
+        git checkout -f "${commits[i]}" -- "$file" 2>/dev/null
+        # if match found
+        if sed -n "${lineNumber}p" "$file" | grep -q "$keyword"; then
+        {
+            matchString=$(sed -n "${lineNumber}{ s|^[ \t]*||; p; }" "$file")
+            echo -ne "\e[32m  ${commits[i]}"
+            printf "%$((70-${#matchString}))s\n" ' '
+            echo -ne "\e[0m"
+            # the first matches are always added
+            if [ $iArg -eq 0 ]; then
+            {
+                # add all commits between last positive and this positive
+                # (note that we only tested commits which actually changed
+                #  the currently specified file)
+                if [ -n "$lastWasMatched" ]; then
+                    newMatchedCommits+=( $(git log --oneline $branch | sed -n "/${commits[i-1]}/,/${commits[i]}/"'{ s| .*||p; }') )
+                else
+                    newMatchedCommits+=( ${commits[i]} )
+                fi
+            }
+            else
+            {
+                newCommitCandidates=()
+                if [ -n "$lastWasMatched" ]; then
+                    newCommitCandidates+=( $(git log --oneline $branch | sed -n "/${commits[i-1]}/,/${commits[i]}/"'{ s| .*||p; }') )
+                    if [ $verbose -eq 1 ]; then
+                        echo "  newCommitCandidates = ${newCommitCandidates[@]}"
+                    fi
+                else
+                    newCommitCandidates+=( ${commits[i]} )
+                fi
+
+                # check if matching commits were already found, if so add them
+                for (( iCommitCandidate=0; iCommitCandidate<${#newCommitCandidates[@]}; ++iCommitCandidate )); do
+                {
+                    commit=${newCommitCandidates[iCommitCandidate]}
+                    if stringContains "${lastMatchedCommits[*]}" "$commit"; then
+                        newMatchedCommits+=( ${newCommitCandidates[iCommitCandidate]} )
+                    else
+                        echo -ne "\e[33m  Testing match $commit [$((iCommitCandidate+1))/${#newCommitCandidates[@]}]: commit not found before -> skipping\e[0m$goUp"
+                    fi
+                }
+                done
+                echo '' # line break to see last Testing message
+            }
+            fi
+            lastWasMatched=${commits[i]}
+        }
+        else
+            # No match found
+            echo -ne "  \e[37m${commits[i]}\e[0m"; printf "%60s$goUp" ' '
+            lastWasMatched=''
+        fi
+        shift
+    }
+    done
+
+    echo -e "The commits matching all specified criteria are up till now ($((iArg+1))) are:\n    \e[32m${newMatchedCommits[@]}\e[0m"
+
+    [ ${#lastMatchedCommits[@]} -ge ${#newMatchedCommits[@]} ]
+    echo "last matches: ${#lastMatchedCommits[@]} <-> new matches: ${#newMatchedCommits[@]}"
+    assert $LINENO
+
+    # swap arrays lastMatchedCommits with newMatchedCommits
+    [ ${#lastMatchedCommits[@]} -eq ${#lastMatchedCommits[@]} ]
+    assert $LINENO
+    lastMatchedCommits=( "${newMatchedCommits[@]}" )
+    newMatchedCommits=()
+}
+done

@@ -7,6 +7,7 @@
 
 package org.trifort.rootbeer.generate.opencl;
 
+
 import soot.jimple.NewExpr;
 import soot.rbclassload.MethodSignatureUtil;
 import java.io.BufferedReader;
@@ -47,89 +48,77 @@ import soot.rbclassload.FieldSignatureUtil;
 import soot.rbclassload.NumberedType;
 import soot.rbclassload.RootbeerClassLoader;
 
-public class OpenCLScene {
-  private static OpenCLScene m_instance;
-  private static int m_curentIdent;
-  private Map<String, OpenCLClass> m_classes;
-  private Set<OpenCLArrayType> m_arrayTypes;
-  private MethodHierarchies m_methodHierarchies;
-  private boolean m_usesGarbageCollector;
-  private SootClass m_rootSootClass;
-  private int m_endOfStatics;
-  private ReadOnlyTypes m_readOnlyTypes;
-  private Set<OpenCLInstanceof> m_instanceOfs;
-  private List<CompositeField> m_compositeFields;
-  private List<SootMethod> m_methods;
-  private ClassConstantNumbers m_constantNumbers;
-  private FieldCodeGeneration m_fieldCodeGeneration;
 
-  static {
-    m_curentIdent = 0;
-  }
+/**
+ * Manual (need to set and release instance manually) Singleton which
+ * increments an ID when reinitialized.
+ */
+public class OpenCLScene
+{
+    private static OpenCLScene       m_instance            ;
+    private static int               m_curentIdent         ;
+    private Map<String, OpenCLClass> m_classes             ;
+    private Set<OpenCLArrayType>     m_arrayTypes          ;
+    private MethodHierarchies        m_methodHierarchies   ;
+    private boolean                  m_usesGarbageCollector;
+    private SootClass                m_rootSootClass       ;
+    private int                      m_endOfStatics        ;
+    private ReadOnlyTypes            m_readOnlyTypes       ;
+    private Set<OpenCLInstanceof>    m_instanceOfs         ;
+    private List<CompositeField>     m_compositeFields     ;
+    private List<SootMethod>         m_methods             ;
+    private ClassConstantNumbers     m_constantNumbers     ;
+    private FieldCodeGeneration      m_fieldCodeGeneration ;
 
-  public OpenCLScene(){
-  }
+    static { m_curentIdent = 0; }
+    public OpenCLScene(){ }
 
-  public void init(){
-    m_classes = new LinkedHashMap<String, OpenCLClass>();
-    m_arrayTypes = new LinkedHashSet<OpenCLArrayType>();
-    m_methodHierarchies = new MethodHierarchies();
-    m_instanceOfs = new HashSet<OpenCLInstanceof>();
-    m_methods = new ArrayList<SootMethod>();
-    m_constantNumbers = new ClassConstantNumbers();
-    m_fieldCodeGeneration = new FieldCodeGeneration();
-    loadTypes();
-  }
+    public void init()
+    {
+        m_classes             = new LinkedHashMap<String, OpenCLClass>();
+        m_arrayTypes          = new LinkedHashSet<OpenCLArrayType>();
+        m_methodHierarchies   = new MethodHierarchies();
+        m_instanceOfs         = new HashSet<OpenCLInstanceof>();
+        m_methods             = new ArrayList<SootMethod>();
+        m_constantNumbers     = new ClassConstantNumbers();
+        m_fieldCodeGeneration = new FieldCodeGeneration();
+        loadTypes();
+    }
 
-  public static OpenCLScene v(){
-    return m_instance;
-  }
+    public static OpenCLScene v(){ return m_instance; }
+    public static void setInstance( OpenCLScene scene ){ m_instance = scene; }
 
-  public static void setInstance(OpenCLScene scene){
-    m_instance = scene;
-  }
+    public static void releaseV(){
+        m_instance = null;
+        m_curentIdent++;
+    }
+    public String getIdent(){ return "" + m_curentIdent; }
+    public String getUuid(){ return "ab850b60f96d11de8a390800200c9a66"; }
+    public int getEndOfStatics(){ return m_endOfStatics; }
 
-  public static void releaseV(){
-    m_instance = null;
-    m_curentIdent++;
-  }
+    public int getClassType(SootClass soot_class){
+        return RootbeerClassLoader.v().getClassNumber(soot_class);
+    }
 
-  public String getIdent(){
-    return "" + m_curentIdent;
-  }
+    public void addMethod( final SootMethod soot_method )
+    {
+        SootClass soot_class = soot_method.getDeclaringClass();
 
-  public String getUuid(){
-    return "ab850b60f96d11de8a390800200c9a66";
-  }
+        OpenCLClass ocl_class = getOpenCLClass(soot_class);
+        ocl_class.addMethod(new OpenCLMethod(soot_method, soot_class));
 
-  public int getEndOfStatics(){
-    return m_endOfStatics;
-  }
+        //add the method
+        m_methodHierarchies.addMethod(soot_method);
+        m_methods.add(soot_method);
+    }
 
-  public int getClassType(SootClass soot_class){
-    return RootbeerClassLoader.v().getClassNumber(soot_class);
-  }
+    public List<SootMethod> getMethods(){ return m_methods; }
 
-  public void addMethod(SootMethod soot_method){
-    SootClass soot_class = soot_method.getDeclaringClass();
-
-    OpenCLClass ocl_class = getOpenCLClass(soot_class);
-    ocl_class.addMethod(new OpenCLMethod(soot_method, soot_class));
-
-    //add the method
-    m_methodHierarchies.addMethod(soot_method);
-    m_methods.add(soot_method);
-  }
-
-  public List<SootMethod> getMethods(){
-    return m_methods;
-  }
-
-  public void addArrayType(OpenCLArrayType array_type){
-    if(m_arrayTypes.contains(array_type))
-      return;
-    m_arrayTypes.add(array_type);
-  }
+    public void addArrayType(OpenCLArrayType array_type){
+      if(m_arrayTypes.contains(array_type))
+        return;
+      m_arrayTypes.add(array_type);
+    }
 
   public void addInstanceof(Type type){
     OpenCLInstanceof to_add = new OpenCLInstanceof(type);

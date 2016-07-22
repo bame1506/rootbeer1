@@ -10,13 +10,16 @@ package org.trifort.rootbeer.entry;
 import soot.rbclassload.HierarchySootMethod;
 import soot.rbclassload.MethodTester;
 
-public class MainTester implements MethodTester {
-
-  public boolean test(HierarchySootMethod hsm) {
-    if(hsm.getSubSignature().equals("void main(java.lang.String[])")){
-      return true;
+/**
+ * Returns a positive for main( String[] ) methods
+ */
+public class MainTester implements MethodTester
+{
+    public boolean test( HierarchySootMethod hsm )
+    {
+        if ( hsm.getSubSignature().equals("void main(java.lang.String[])") )
+            return true;
+        else
+            return false;
     }
-    return false;
-  }
-
 }

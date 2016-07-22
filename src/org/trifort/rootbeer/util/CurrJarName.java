@@ -10,23 +10,29 @@ package org.trifort.rootbeer.util;
 import java.io.File;
 import java.net.URLDecoder;
 
-public class CurrJarName {
-
-  public String get(){
-    try {
-      String path = CurrJarName.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-      String ret = URLDecoder.decode(path, "UTF-8");
-      File file = new File(ret);
-      if(file.getName().equals("ant.jar")){
-        return "Rootbeer.jar";
-      }
-      if(file.getName().equals("classes")){
-        return "Rootbeer.jar";
-      }
-      return ret;
-    } catch(Exception ex){
-      ex.printStackTrace();
-      return "Rootbeer.jar";
+/**
+ * Tries to find the name (not the path) of the jar archive where this class
+ * resides in.
+ */
+public class CurrJarName
+{
+    public String get()
+    {
+        try
+        {
+            String path = CurrJarName.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            String ret = URLDecoder.decode(path, "UTF-8");
+            File file = new File( ret );
+            if ( file.getName().equals("ant.jar") )
+              return "Rootbeer.jar";
+            if ( file.getName().equals("classes") )
+                return "Rootbeer.jar";
+            return ret;
+        }
+        catch ( Exception ex )
+        {
+            ex.printStackTrace();
+            return "Rootbeer.jar";
+        }
     }
-  }
 }

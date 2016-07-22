@@ -21,6 +21,7 @@ import org.trifort.rootbeer.runtime.Rootbeer;
 public class Main
 {
     private        int     m_num_args               ;
+    private        boolean m_dontPackFatJar         ;
     private        boolean m_runTests               ;
     private        boolean m_runHardTests           ;
     private        boolean m_disableClassRemapping  ;
@@ -36,10 +37,11 @@ public class Main
     /* Constructor */
     public Main()
     {
-        m_libJars       = new ArrayList<String>();
-        m_directories   = new ArrayList<String>();
-        m_simpleCompile = false;
-        m_runHardTests  = false;
+        m_libJars           = new ArrayList<String>();
+        m_directories       = new ArrayList<String>();
+        m_simpleCompile     = false;
+        m_runHardTests      = false;
+        m_dontPackFatJar    = false;
     }
 
     /* used by org/trifort/rootbeer/test/Main.java */
@@ -150,6 +152,8 @@ public class Main
                     invalidArgs = true;
                 }
             }
+            else if ( arg.equals( "-nofatjar" ) )
+                m_dontPackFatJar = true;
             else if ( arg.equals( "-runtests" ) )
             {
                 m_runTests     = true;
@@ -355,9 +359,11 @@ public class Main
         if ( m_simpleCompile )
         {
             try {
-              compiler.compile( m_mainJar, m_destJar );
+                if ( m_dontPackFatJar )
+                    compiler.dontPackFatJar();
+                compiler.compile( m_mainJar, m_destJar );
             } catch( Exception ex ) {
-              ex.printStackTrace();
+                ex.printStackTrace();
             }
         }
         else

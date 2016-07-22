@@ -32,7 +32,7 @@ that for best occupancy you will want more threads and less shared memory. There
 between thread count, shared memory size and register count. All of these are configurable
 using Rootbeer.
 
-## Programming  
+## Programming
 <b>Kernel Interface:</b> Your code that will run on the GPU will implement the Kernel interface.
 You send data to the gpu by adding a field to the object implementing kernel. `gpuMethod` will access the data.
 
@@ -45,7 +45,7 @@ You send data to the gpu by adding a field to the object implementing kernel. `g
 ###Simple Example:
 This simple example uses kernel lists and no thread config or context. Rootbeer will create a thread config and select the best device automatically. If you wish to use multiple GPUs you need to pass in a Context.
 
-<b>ScalarAddApp.java:</b>  
+<b>ScalarAddApp.java:</b>
 See the [example](https://github.com/pcpratts/rootbeer1/tree/master/examples/ScalarAddApp)
 
 ```java
@@ -114,10 +114,10 @@ public class ScalarAddKernel implements Kernel {
 ```
 
 ### High Performance Example - Batcher's Even Odd Sort
-See the [example](https://github.com/pcpratts/rootbeer1/tree/master/examples/sort)  
-See the [slides](http://trifort.org/ads/index.php/lecture/index/27/)  
+See the [example](https://github.com/pcpratts/rootbeer1/tree/master/examples/sort)
+See the [slides](http://trifort.org/ads/index.php/lecture/index/27/)
 
-<b>GPUSort.java</b>  
+<b>GPUSort.java</b>
 
 ```java
 package org.trifort.rootbeer.sort;
@@ -574,7 +574,7 @@ public class RootbeerGpu (){
 
 ### Viewing Code Generation
 
-CUDA code is generated and placed in ~/.rootbeer/generated.cu  
+CUDA code is generated and placed in ~/.rootbeer/generated.cu
 
 You can use this to find out the register / shared memory usage
 
@@ -599,7 +599,7 @@ examples.
 
 ### Consulting
 
-GPU Consulting available for Rootbeer and CUDA. Please email pcpratts@trifort.org  
+GPU Consulting available for Rootbeer and CUDA. Please email pcpratts@trifort.org
 
 
 ### Known Bugs
@@ -610,7 +610,7 @@ GPU Consulting available for Rootbeer and CUDA. Please email pcpratts@trifort.or
 
 ### Authors
 
-Phil Pratt-Szeliga  
+Phil Pratt-Szeliga
 http://trifort.org/
 Maximilian Knespel
 
@@ -678,7 +678,7 @@ Starting with the main java-file the dependency structure can be viewed with [in
     | * Searches for the path of nvcc or nvcc.exe
     src/org/trifort/rootbeer/util/CmdRunner.java
     | * Wrapper to correctly get the output of a command line run
-    
+
     entry/Main.java
     +- configuration/Configuration.java
     |  +- util/ResourceReader.java
@@ -841,57 +841,140 @@ Starting with the main java-file the dependency structure can be viewed with [in
  1. entry/Main.main
  2. entry/Main.parseArgs
  3. entry/RootbeerCompiler.compile
-
+ 4. entry/RootbeerCompiler.setupSoot
+ 5. entry/RootbeerCompiler.compileForKernels
+ 5. compiler/Transform2.run
+GenerateForKernel
 
 ### Libraries / Dependencies
 
-These libraries are distributed with this repo which bloats it's size and guarantees for at least oen copyright problem.
+These libraries are distributed with this repo which bloats it's size and guarantees for at least one copyright problem.
 
 See folder `lib`.
 
+  - `org.apache.maven.*` Used by Rootbeer Maven Plugin
+
   - `antlr-3.1.3.jar` [Link](http://www.antlr.org/)
      > ANTLR is an exceptionally powerful and flexible tool for parsing formal languages.
-  - `asm-debug-all-5.0.3.jar` [Link](asm.ow2.org)
-     > ASM is an all purpose Java bytecode manipulation and analysis framework. It can be used to modify existing classes or dynamically generate classes, directly in binary form.
-  - `AXMLPrinter2.jar` [Link](https://code.google.com/archive/p/android4me/downloads)
-     > Prints XML document from binary XML file
+    `org.antrl.*`
+    Used by `./src/org/trifort/rootbeer/compressor/*`
+
+  - `pack.jar` [Link](https://github.com/pcpratts/pack)
+     > merges jars to one fat jar (same as zipmerge) plus it removes the line `Class-Path:.*` from `META-INF/MANIFEST.MF` from the main jar (would be the last jar with the zipmerge command).
+    `pack.*`
+
+  - `sootclasses-rbclassload.jar` [Link](https://github.com/pcpratts/soot-rb) fork from [Soot](https://github.com/Sable/soot). First commit is 8eb2f460593d0bc8fcd65f8f22e7c677daef2872 and the last merge to soot is commit 978a7fed3af16177be93d3b19be2a6e446023788 from 2013-05-03. It is unclear whether this jar was compiled from branch `master` or `feature/rbclassload2`. The last soot release is soot-2.5.0 from 2012-11-15, but there seems to be still active development and nightly builds in 2016-07-22.
+    `org.soot.*`
+    Commits added `git log --no-merges --stat --author="pcpratts" --name-only --pretty=format:"" | sort -u` are mainly `soot.rbclassload.*` and the folder `paper`.
+
+
+Unused libraries ??? Reursive dependency?
+
   - `commons-codec-1.6.jar` [Link](https://commons.apache.org/proper/commons-codec/)
-     > Apache Commons Codec (TM) software provides implementations of common encoders and decoders such as Base64, Hex, Phonetic and URLs. 
+     > Apache Commons Codec (TM) software provides implementations of common encoders and decoders such as Base64, Hex, Phonetic and URLs.
+    `org.apache.commons.codec.*`
+
   - `commons-collections4-4.0.jar` [Link](https://commons.apache.org/proper/commons-collections/)
      > Commons-Collections seek to build upon the JDK classes by providing new interfaces, implementations and utilities.
+    `org.apache.commons.collections4.*`
+
+
+Dependencies by Soot (see [build.xml](https://github.com/Sable/soot/blob/develop/build.xml) in Soot repository) or try searching for imports:
+
+  - `asm-debug-all-5.0.3.jar` [Link](asm.ow2.org)
+     > ASM is an all purpose Java bytecode manipulation and analysis framework. It can be used to modify existing classes or dynamically generate classes, directly in binary form.
+    `org.objectweb.asm.*`
+
+  - `AXMLPrinter2.jar` [Link](https://code.google.com/archive/p/android4me/downloads)
+     > Prints XML document from binary XML file
+    `org.xmlpull.*` `android.util.*` `android.content.*`
+
   - `commons-io-2.4.jar` [Link](https://commons.apache.org/proper/commons-io/)
      >
+    `org.apache.commons.io.*`
+
   - `dexlib2-2.0.3-dev.jar` [Link](https://github.com/JesusFreke/smali/tree/master/dexlib2)
      >
+    `org.jf.dexlib2.*`
+
   - `disruptor-3.3.0.jar` [Link](http://lmax-exchange.github.io/disruptor/) [Github](https://github.com/LMAX-Exchange/disruptor) [Technical paper](http://lmax-exchange.github.com/disruptor/files/Disruptor-1.0.pdf)
      > A High Performance Inter-Thread Messaging Library
+    `com.lmax.disruptor.*`
+
   - `guava-18.0.jar` [Link]()
      >
+    `com.google.common.*`
+
   - `hamcrest-all-1.3.jar` [Link](http://hamcrest.org/JavaHamcrest/)
-     > Hamcrest is a framework for writing matcher objects allowing 'match' rules to be defined declaratively.
+     > Hamcrest is a framework for writing matcher objects allowing 'match' rules to be defined declaratively. This is a dependency of soot.
+    `org.hamcrest.*`  com.thoughtworks.qdox.*`
+
   - `jasminclasses-2.5.0.jar` [Link]()
      >
-  - `pack.jar` [Link](https://github.com/pcpratts/pack)
-     > merges jars to one fat jar (same as zipmerge) plus it removes the line `Class-Path:.*` from `META-INF/MANIFEST.MF` from the main jar (would be the last jar witht he zipmerge command).
+    `jas.*` `jasmin.*` `scm.*`
+
   - `polyglotclasses-1.3.5.jar` [Link]()
      >
-  - `sootclasses-rbclassload.jar` [Link]()
-     >
+    `polyglot.*` `ppg.*` `java_cup.*`
+
   - `util-2.0.3-dev.jar` [Link]()
      >
+    `ds.tree.*` `org.jf.util.*`
+    Without this this error appears:
 
+        Exception in thread "main" java.lang.NoClassDefFoundError: org/jf/util/ExceptionWithContext
+        at soot.toDex.DexPrinter.<init>(DexPrinter.java:141)
+        at soot.PackManager.<init>(PackManager.java:529)
+        at soot.Singletons.soot_PackManager(Singletons.java:472)
+        at soot.PackManager.v(PackManager.java:344)
+        at soot.PhaseOptions.getPM(PhaseOptions.java:39)
+        at soot.PhaseOptions.getPhaseOptions(PhaseOptions.java:49)
+        at soot.coffi.CoffiMethodSource.getBody(CoffiMethodSource.java:49)
+        at soot.SootMethod.getBodyFromMethodSource(SootMethod.java:91)
+        at soot.SootMethod.retrieveActiveBody(SootMethod.java:324)
+        at soot.rbclassload.RootbeerClassLoader.loadScene(RootbeerClassLoader.java:857)
+        at soot.rbclassload.RootbeerClassLoader.loadNecessaryClasses(RootbeerClassLoader.java:320)
+        at org.trifort.rootbeer.entry.RootbeerCompiler.setupSoot(RootbeerCompiler.java:215)
+
+    Note thate `DexPrinter.java` does not exist in soot-rb/master, only in branch `feature/rbclassload2`, but there line 141 is not inside the constructor.
+
+    With a bash script `findCommitFromTrace` we can try to find the commit the original author used for compiling `findSootCommitFromTrace.log` suggests that it is one of these commits:
+
+        2a6ddca fd94e35 9127ab1 0a275e3 90774eb 05f5183 084e95e 02a365b
+
+    `PackManager.java` is actually only correct for `2a6ddca`, and `Singletons.java` doesn't seem to match any commits available in soot. So a custom soot build seems to have been used. The problem is, that almost none of the files in any commit in [soot-rb](https://github.com/pcpratts/soot-rb) matches. The jar therefore can not be reproduced, although it could be tried if it works to merge `2a6ddca` into the `feature/rbclassload2` branch and then compile it.
+
+    In neither branches of `soot-rb` does this yield any matches, but searching in the original soot develop branch yields:
+
+        No match at commit 9fdd641
+        No match at commit 4e93aaa
+        Found match at commit 53fb3b3:             setActiveBody(this.getBodyFromMethodSource("jb"));
+        Found match at commit b6305e0:             setActiveBody(this.getBodyFromMethodSource("jb"));
+        No match at commit 820678f
+        No match at commit 8959d45
+        Found match at commit 42b4ef1:             setActiveBody(this.getBodyFromMethodSource("jb"));
+        Found match at commit dc8005e:             setActiveBody(this.getBodyFromMethodSource("jb"));
+        Found match at commit 23bb5d6:             setActiveBody(this.getBodyFromMethodSource("jb"));
+        No match at commit c7f5f88
+        No match at commit c41d165
+
+    Then doing this again with:
+
+        file=src/soot/coffi/CoffiMethodSource.java
+        keyword=getPhaseOptions
+        lineNumber=49
 
 ### Developing
 
 Some classes do have main functions for testing purposes. Start them e.g. with
 
     java -classpath build/classes/ org.trifort.rootbeer.runtime.BlockShaper
-    
+
 Note that the second argument may not be different because of the `package` keyword at the top of this file. Instead adjust the classpath if necessary!
 
 
-### ToDo 
-    
+### ToDo
+
    - add compiler warnings
    - streamlining pack-rootbeer
    - add support for #  define with spaces

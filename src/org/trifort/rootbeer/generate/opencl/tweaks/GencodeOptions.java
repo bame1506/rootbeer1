@@ -36,7 +36,7 @@ public class GencodeOptions
      */
     public String getOptions()
     {
-        /* Version will be something like 7.5 or 5.0 */
+        /* Version will be something like 75 for 7.5 or 50 for 5.0 */
         final int version = getNVCCVersion();
 
         String sm_35;
