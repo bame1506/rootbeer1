@@ -7,6 +7,7 @@
 
 package org.trifort.rootbeer.generate.bytecode;
 
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -22,74 +23,85 @@ import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.FieldRef;
 
-public class ReadOnlyTypes {
 
-  private SootClass m_RootClass;
-  private Set<String> m_WrittenClasses;
-  private Set<String> m_Inspected;
+/**
+ * Caches the class names which are written to inside the code of the
+ * gpuMethod given in the ReadOnlyTypes constructor
+ */
+public class ReadOnlyTypes
+{
+    private SootClass   m_RootClass     ;
+    private Set<String> m_WrittenClasses;
+    private Set<String> m_Inspected     ;
 
-  public ReadOnlyTypes(SootMethod gpuMethod) {
-    m_RootClass = gpuMethod.getDeclaringClass();
-    m_WrittenClasses = new HashSet<String>();
-    m_Inspected = new HashSet<String>();
-    inspectMethod(gpuMethod);
-  }
-
-  public boolean isRootReadOnly(){
-    return isReadOnly(m_RootClass);
-  }
-
-  public boolean isReadOnly(SootClass soot_class){
-    String name = soot_class.getName();
-    if(m_WrittenClasses.contains(name))
-      return false;
-    return true;
-  }
-
-  private void inspectMethod(SootMethod method) {
-    String sig = method.getSignature();
-    if(m_Inspected.contains(sig))
-      return;
-    m_Inspected.add(sig);
-
-    if(method.isConcrete() == false){
-      return;
+    public ReadOnlyTypes( final SootMethod gpuMethod )
+    {
+        m_RootClass      = gpuMethod.getDeclaringClass();
+        m_WrittenClasses = new HashSet<String>();
+        m_Inspected      = new HashSet<String>();
+        inspectMethod(gpuMethod);
     }
-    if(method.hasActiveBody() == false){
-      return;
+
+    public boolean isRootReadOnly() { return isReadOnly( m_RootClass ); }
+
+    public boolean isReadOnly( SootClass soot_class ) {
+        return ! m_WrittenClasses.contains( soot_class.getName() );
     }
-    Body body = method.getActiveBody();
-    if(body == null)
-      return;
-    inspectBody(body);
 
-    FindMethodCalls finder = new FindMethodCalls();
-    Set<SootMethod> calls = finder.findForMethod(method);
-    Iterator<SootMethod> iter = calls.iterator();
-    while(iter.hasNext()){
-      SootMethod curr = iter.next();
-      inspectMethod(curr);
+    /**
+     * Just a wrapper for inspectBody which remembers which methods were
+     * already analyzed and which checks if the methid has a valid body
+     */
+    private void inspectMethod( final SootMethod method )
+    {
+        /* I don't think this check should ever succeed, because
+         * m_Inspected is set to an empty Set in the constructor right
+         * before calling this method. Also this method is private */
+        assert ! m_Inspected.contains( method.getSignature() );
+        m_Inspected.add( method.getSignature() );
+
+        if ( ! method.isConcrete() || ! method.hasActiveBody() )
+            return;
+        final Body body = method.getActiveBody();
+        if ( body == null )
+            return;
+        inspectBody( body );
+
+        final Iterator<SootMethod> iter = new FindMethodCalls().findForMethod( method ).iterator();
+        while ( iter.hasNext() )
+            inspectMethod( iter.next() );
     }
-  }
 
-  private void inspectBody(Body body) {
-    Iterator<Unit> iter = body.getUnits().iterator();
-    while(iter.hasNext()){
-      Unit curr = iter.next();
-      if(curr instanceof AssignStmt == false)
-        continue;
+    /**
+     * Iterates over each Soot statement in the method body, i.e. the user
+     * code and searches for assignments to fields of classes and writes
+     * the the classes which were assigned into m_WrittenClasses,
+     * meaning they are not read-only.
+     * This includes fields (i.e. member variables) of gpuMethod itself.
+     * To check if these are written to, there exists 'isRootReadOnly'
+     *
+     * @see https://github.com/Sable/soot/wiki/Fundamental-Soot-objects
+     */
+    private void inspectBody( final Body body )
+    {
+        Iterator<Unit> iter = body.getUnits().iterator();
+        while ( iter.hasNext() )
+        {
+            final Unit curr = iter.next();
 
-      AssignStmt assign = (AssignStmt) curr;
-      Value lhs = assign.getLeftOp();
+            if ( ! ( curr instanceof AssignStmt ) )
+                continue;
 
-      if(lhs instanceof FieldRef == false)
-        continue;
+            final AssignStmt assign = (AssignStmt) curr;
+            final Value lhs = assign.getLeftOp();
 
-      FieldRef ref = (FieldRef) lhs;
-      SootField field = ref.getField();
-      String name = field.getDeclaringClass().getName();
-      if(m_WrittenClasses.contains(name) == false)
-        m_WrittenClasses.add(name);
+            if ( ! ( lhs instanceof FieldRef ) )
+                continue;
+            final FieldRef ref = (FieldRef) lhs;
+
+            final String variableName = ref.getField().getDeclaringClass().getName();
+            if ( ! m_WrittenClasses.contains( variableName ) )
+                m_WrittenClasses.add( variableName );
+        }
     }
-  }
 }

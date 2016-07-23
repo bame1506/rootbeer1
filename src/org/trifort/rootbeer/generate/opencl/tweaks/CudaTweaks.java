@@ -70,6 +70,8 @@ public class CudaTweaks extends Tweaks {
   /**
    * Compiles CUDA code.
    *
+   * This is only called by OpenCLScene
+   *
    * @param cuda_code string containing code.
    * @param compileArch determine if we need to build 32bit, 64bit or both.
    * @return an array containing compilation results.

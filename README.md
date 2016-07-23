@@ -843,8 +843,16 @@ Starting with the main java-file the dependency structure can be viewed with [in
  3. entry/RootbeerCompiler.compile
  4. entry/RootbeerCompiler.setupSoot
  5. entry/RootbeerCompiler.compileForKernels
- 5. compiler/Transform2.run
-GenerateForKernel
+ 1.1. compiler/Transform2.run
+ 1.1. generate/bytecode/GenerateForKernel.makeClass
+ 1.1. generate/bytecode/GenerateForKernel.makeGpuBody
+ 1.1.1 generate/opencl/OpenCLScene.getCudaCode
+ 1.1.1 generate/opencl/OpenCLScene.makeSourceCode
+ 1.1.1 generate/opencl/OpenCLScene.methodBodiesString
+ 1.1.1 generate/opencl/tweaks/CudaTweaks.compileProgram
+ 1. writeJimpleFile
+ 1. writeClassFile
+ 1. makeOutJar
 
 ### Libraries / Dependencies
 

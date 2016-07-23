@@ -1,3 +1,5 @@
+/* This looks generated, how was it produced ?? */
+
 #define GC_OBJ_TYPE_COUNT char
 #define GC_OBJ_TYPE_COLOR char
 #define GC_OBJ_TYPE_TYPE int
@@ -78,7 +80,7 @@ int org_trifort_rootbeer_get_string_char_array(int thisref, int * exception)
 {
   char * thisref_deref;
   if(thisref == -1){
-    *exception = %%java_lang_NullPointerException_TypeNumber%%; 
+    *exception = %%java_lang_NullPointerException_TypeNumber%%;
     return -1;
   }
   thisref_deref = org_trifort_gc_deref(thisref);
@@ -90,7 +92,7 @@ void org_trifort_rootbeer_set_string_char_array(int thisref, int value, int * ex
 {
   char * thisref_deref;
   if(thisref == -1){
-    *exception = %%java_lang_NullPointerException_TypeNumber%%; 
+    *exception = %%java_lang_NullPointerException_TypeNumber%%;
     return;
   }
   thisref_deref = org_trifort_gc_deref(thisref);
@@ -113,9 +115,9 @@ org_trifort_strlen(char * str_constant){
 $$__device__$$ int
 org_trifort_array_length(int thisref, int * exception){
   $$__global$$ char * thisref_deref;
-  
+
   if(thisref == -1){
-    *exception = %%java_lang_NullPointerException_TypeNumber%%; 
+    *exception = %%java_lang_NullPointerException_TypeNumber%%;
     return 0;
   }
   thisref_deref = org_trifort_gc_deref(thisref);
@@ -123,19 +125,19 @@ org_trifort_array_length(int thisref, int * exception){
   return ret;
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_atomicAddGlobal0_a15_5_5_(int array, int index, int value, int * exception){
   char * array_deref;
   int * int_handle;
   int length;
-  
+
 #ifdef ARRAY_CHECKS
   length = org_trifort_array_length(array, exception);
   if(*exception != 0){
     return 0;
   }
   if(index < 0 || index >= length){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, length, exception);
     return 0;
   }
@@ -146,19 +148,19 @@ int org_trifort_rootbeer_runtime_RootbeerGpu_atomicAddGlobal0_a15_5_5_(int array
   return atomicAdd(int_handle, value);
 }
 
-$$__device__$$ 
+$$__device__$$
 unsigned long long org_trifort_rootbeer_runtime_RootbeerGpu_atomicAddGlobal0_a16_5_6_(int array, int index, unsigned long long value, int * exception){
   char * array_deref;
   unsigned long long * long_handle;
   int length;
-  
+
 #ifdef ARRAY_CHECKS
   length = org_trifort_array_length(array, exception);
   if(*exception != 0){
     return 0;
   }
   if(index < 0 || index >= length){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, length, exception);
     return 0;
   }
@@ -170,19 +172,19 @@ unsigned long long org_trifort_rootbeer_runtime_RootbeerGpu_atomicAddGlobal0_a16
   return atomicAdd(long_handle, value);
 }
 
-$$__device__$$ 
+$$__device__$$
 float org_trifort_rootbeer_runtime_RootbeerGpu_atomicAddGlobal0_a17_5_7_(int array, int index, float value, int * exception){
   char * array_deref;
   float * float_handle;
   int length;
-  
+
 #ifdef ARRAY_CHECKS
   length = org_trifort_array_length(array, exception);
   if(*exception != 0){
     return 0;
   }
   if(index < 0 || index >= length){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, length, exception);
     return 0;
   }
@@ -194,19 +196,19 @@ float org_trifort_rootbeer_runtime_RootbeerGpu_atomicAddGlobal0_a17_5_7_(int arr
   return atomicAdd(float_handle, value);
 }
 
-$$__device__$$ 
+$$__device__$$
 double org_trifort_rootbeer_runtime_RootbeerGpu_atomicAddGlobal0_a18_5_8_(int array, int index, double value, int * exception){
   char * array_deref;
   double * float_handle;
   int length;
-  
+
 #ifdef ARRAY_CHECKS
   length = org_trifort_array_length(array, exception);
   if(*exception != 0){
     return 0;
   }
   if(index < 0 || index >= length){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, length, exception);
     return 0;
   }
@@ -218,19 +220,19 @@ double org_trifort_rootbeer_runtime_RootbeerGpu_atomicAddGlobal0_a18_5_8_(int ar
   return atomicAdd(double_handle, value);
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_atomicSubGlobal0_a15_5_5_(int array, int index, int value, int * exception){
   char * array_deref;
   int * int_handle;
   int length;
-  
+
 #ifdef ARRAY_CHECKS
   length = org_trifort_array_length(array, exception);
   if(*exception != 0){
     return 0;
   }
   if(index < 0 || index >= length){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, length, exception);
     return 0;
   }
@@ -241,19 +243,19 @@ int org_trifort_rootbeer_runtime_RootbeerGpu_atomicSubGlobal0_a15_5_5_(int array
   return atomicSub(int_handle, value);
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_atomicCASGlobal5_a15_5_5_5_(int array, int index, int compare, int value, int * exception){
   char * array_deref;
   int * int_handle;
   int length;
-  
+
 #ifdef ARRAY_CHECKS
   length = org_trifort_array_length(array, exception);
   if(*exception != 0){
     return 0;
   }
   if(index < 0 || index >= length){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, length, exception);
     return 0;
   }
@@ -264,19 +266,19 @@ int org_trifort_rootbeer_runtime_RootbeerGpu_atomicCASGlobal5_a15_5_5_5_(int arr
   return atomicCAS(int_handle, compare, value);
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_atomicExchGlobal5_a15_5_5_(int array, int index, int value, int * exception){
   char * array_deref;
   int * int_handle;
   int length;
-  
+
 #ifdef ARRAY_CHECKS
   length = org_trifort_array_length(array, exception);
   if(*exception != 0){
     return 0;
   }
   if(index < 0 || index >= length){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, length, exception);
     return 0;
   }
@@ -287,19 +289,19 @@ int org_trifort_rootbeer_runtime_RootbeerGpu_atomicExchGlobal5_a15_5_5_(int arra
   return atomicExch(int_handle, value);
 }
 
-$$__device__$$ 
+$$__device__$$
 unsigned long long org_trifort_rootbeer_runtime_RootbeerGpu_atomicExchGlobal6_a16_5_6_(int array, int index, unsigned long long value, int * exception){
   char * array_deref;
   unsigned long long * long_handle;
   int length;
-  
+
 #ifdef ARRAY_CHECKS
   length = org_trifort_array_length(array, exception);
   if(*exception != 0){
     return 0;
   }
   if(index < 0 || index >= length){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, length, exception);
     return 0;
   }
@@ -311,19 +313,19 @@ unsigned long long org_trifort_rootbeer_runtime_RootbeerGpu_atomicExchGlobal6_a1
   return atomicExch(long_handle, value);
 }
 
-$$__device__$$ 
+$$__device__$$
 float org_trifort_rootbeer_runtime_RootbeerGpu_atomicExchGlobal7_a17_5_7_(int array, int index, float value, int * exception){
   char * array_deref;
   float * float_handle;
   int length;
-  
+
 #ifdef ARRAY_CHECKS
   length = org_trifort_array_length(array, exception);
   if(*exception != 0){
     return 0;
   }
   if(index < 0 || index >= length){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, length, exception);
     return 0;
   }
@@ -335,19 +337,19 @@ float org_trifort_rootbeer_runtime_RootbeerGpu_atomicExchGlobal7_a17_5_7_(int ar
   return atomicExch(float_handle, value);
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_atomicMinGlobal5_a15_5_5_(int array, int index, int value, int * exception){
   char * array_deref;
   int * int_handle;
   int length;
-  
+
 #ifdef ARRAY_CHECKS
   length = org_trifort_array_length(array, exception);
   if(*exception != 0){
     return 0;
   }
   if(index < 0 || index >= length){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, length, exception);
     return 0;
   }
@@ -358,19 +360,19 @@ int org_trifort_rootbeer_runtime_RootbeerGpu_atomicMinGlobal5_a15_5_5_(int array
   return atomicMin(int_handle, value);
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_atomicMaxGlobal5_a15_5_5_(int array, int index, int value, int * exception){
   char * array_deref;
   int * int_handle;
   int length;
-  
+
 #ifdef ARRAY_CHECKS
   length = org_trifort_array_length(array, exception);
   if(*exception != 0){
     return 0;
   }
   if(index < 0 || index >= length){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, length, exception);
     return 0;
   }
@@ -381,19 +383,19 @@ int org_trifort_rootbeer_runtime_RootbeerGpu_atomicMaxGlobal5_a15_5_5_(int array
   return atomicMax(int_handle, value);
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_atomicAndGlobal5_a15_5_5_(int array, int index, int value, int * exception){
   char * array_deref;
   int * int_handle;
   int length;
-  
+
 #ifdef ARRAY_CHECKS
   length = org_trifort_array_length(array, exception);
   if(*exception != 0){
     return 0;
   }
   if(index < 0 || index >= length){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, length, exception);
     return 0;
   }
@@ -404,19 +406,19 @@ int org_trifort_rootbeer_runtime_RootbeerGpu_atomicAndGlobal5_a15_5_5_(int array
   return atomicAnd(int_handle, value);
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_atomicOrGlobal5_a15_5_5_(int array, int index, int value, int * exception){
   char * array_deref;
   int * int_handle;
   int length;
-  
+
 #ifdef ARRAY_CHECKS
   length = org_trifort_array_length(array, exception);
   if(*exception != 0){
     return 0;
   }
   if(index < 0 || index >= length){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, length, exception);
     return 0;
   }
@@ -427,19 +429,19 @@ int org_trifort_rootbeer_runtime_RootbeerGpu_atomicOrGlobal5_a15_5_5_(int array,
   return atomicOr(int_handle, value);
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_atomicXorGlobal5_a15_5_5_(int array, int index, int value, int * exception){
   char * array_deref;
   int * int_handle;
   int length;
-  
+
 #ifdef ARRAY_CHECKS
   length = org_trifort_array_length(array, exception);
   if(*exception != 0){
     return 0;
   }
   if(index < 0 || index >= length){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, length, exception);
     return 0;
   }
@@ -452,29 +454,29 @@ int org_trifort_rootbeer_runtime_RootbeerGpu_atomicXorGlobal5_a15_5_5_(int array
 
 $$__device__$$
 void org_trifort_exitMonitorRef(int thisref, int old){
-  char * mem = org_trifort_gc_deref(thisref); 
+  char * mem = org_trifort_gc_deref(thisref);
   mem += 16;
-  if(old == -1){    
-    org_trifort_threadfence();  
-    atomicExch((int *) mem, -1); 
+  if(old == -1){
+    org_trifort_threadfence();
+    atomicExch((int *) mem, -1);
   }
 }
 
 $$__device__$$
 void org_trifort_exitMonitorMem(char * mem, int old){
-  if(old == -1){   
-    org_trifort_threadfence(); 
+  if(old == -1){
+    org_trifort_threadfence();
     atomicExch((int *) mem, -1);
   }
 }
 
-$$__device__$$ 
+$$__device__$$
 long long java_lang_Double_doubleToLongBits(double value, int * exception){
   long long ret = *((long long *) ((double *) &value));
   return ret;
 }
 
-$$__device__$$ 
+$$__device__$$
 double java_lang_Double_longBitsToDouble(long long value, int * exception){
   double ret = *((double *) ((long long *) &value));
   return ret;
@@ -484,7 +486,7 @@ $$__device__$$
 int java_lang_Float_floatToIntBits(float value, int * exception){
   int ret = *((int *) ((float *) &value));
   return ret;
-}  
+}
 
 $$__device__$$
 float java_lang_Float_intBitsToFloat(int value, int * exception){
@@ -492,23 +494,23 @@ float java_lang_Float_intBitsToFloat(int value, int * exception){
   return ret;
 }
 
-$$__device__$$ double java_lang_StrictMath_exp(double parameter0 , int * exception ) { 
-  return exp(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_exp(double parameter0 , int * exception ) {
+  return exp(parameter0);
+}
 
-$$__device__$$ double java_lang_StrictMath_log(double parameter0 , int * exception ) { 
-  return log(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_log(double parameter0 , int * exception ) {
+  return log(parameter0);
+}
 
-$$__device__$$ double java_lang_StrictMath_log10(double parameter0 , int * exception ) { 
-  return log10(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_log10(double parameter0 , int * exception ) {
+  return log10(parameter0);
+}
 
-$$__device__$$ double java_lang_StrictMath_sqrt(double parameter0 , int * exception ) { 
-  return sqrt(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_sqrt(double parameter0 , int * exception ) {
+  return sqrt(parameter0);
+}
 
-$$__device__$$ double java_lang_StrictMath_cbrt(double parameter0 , int * exception ) { 
+$$__device__$$ double java_lang_StrictMath_cbrt(double parameter0 , int * exception ) {
   //2.2204460492503131e-16 is DBL_EPSILON
   if (fabs(parameter0) < 2.2204460492503131e-16){
     return 0.0;
@@ -519,150 +521,150 @@ $$__device__$$ double java_lang_StrictMath_cbrt(double parameter0 , int * except
   }
 
   return -pow(-parameter0, 1.0/3.0);
-} 
+}
 
-$$__device__$$ double java_lang_StrictMath_IEEEremainder(double parameter0 , double parameter1, int * exception ) { 
-  return remainder(parameter0, parameter1); 
-} 
+$$__device__$$ double java_lang_StrictMath_IEEEremainder(double parameter0 , double parameter1, int * exception ) {
+  return remainder(parameter0, parameter1);
+}
 
-$$__device__$$ double java_lang_StrictMath_ceil(double parameter0 , int * exception ) { 
-  return ceil(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_ceil(double parameter0 , int * exception ) {
+  return ceil(parameter0);
+}
 
-$$__device__$$ double java_lang_StrictMath_floor(double parameter0 , int * exception ) { 
-  return floor(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_floor(double parameter0 , int * exception ) {
+  return floor(parameter0);
+}
 
-$$__device__$$ double java_lang_StrictMath_sin(double parameter0 , int * exception ) { 
-  return sin(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_sin(double parameter0 , int * exception ) {
+  return sin(parameter0);
+}
 
-$$__device__$$ double java_lang_StrictMath_cos(double parameter0 , int * exception ) { 
-  return cos(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_cos(double parameter0 , int * exception ) {
+  return cos(parameter0);
+}
 
-$$__device__$$ double java_lang_StrictMath_tan(double parameter0 , int * exception ) { 
-  return tan(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_tan(double parameter0 , int * exception ) {
+  return tan(parameter0);
+}
 
-$$__device__$$ double java_lang_StrictMath_asin(double parameter0 , int * exception ) { 
-  return asin(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_asin(double parameter0 , int * exception ) {
+  return asin(parameter0);
+}
 
-$$__device__$$ double java_lang_StrictMath_acos(double parameter0 , int * exception ) { 
-  return acos(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_acos(double parameter0 , int * exception ) {
+  return acos(parameter0);
+}
 
-$$__device__$$ double java_lang_StrictMath_atan(double parameter0 , int * exception ) { 
-  return atan(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_atan(double parameter0 , int * exception ) {
+  return atan(parameter0);
+}
 
-$$__device__$$ double java_lang_StrictMath_atan2(double parameter0 , double parameter1, int * exception ) { 
-  return atan2(parameter0, parameter1); 
-} 
+$$__device__$$ double java_lang_StrictMath_atan2(double parameter0 , double parameter1, int * exception ) {
+  return atan2(parameter0, parameter1);
+}
 
-$$__device__$$ double java_lang_StrictMath_pow(double parameter0 , double parameter1, int * exception ) { 
-  return pow(parameter0, parameter1); 
-} 
+$$__device__$$ double java_lang_StrictMath_pow(double parameter0 , double parameter1, int * exception ) {
+  return pow(parameter0, parameter1);
+}
 
-$$__device__$$ double java_lang_StrictMath_sinh(double parameter0 , int * exception ) { 
-  return sinh(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_sinh(double parameter0 , int * exception ) {
+  return sinh(parameter0);
+}
 
-$$__device__$$ double java_lang_StrictMath_cosh(double parameter0 , int * exception ) { 
-  return cosh(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_cosh(double parameter0 , int * exception ) {
+  return cosh(parameter0);
+}
 
-$$__device__$$ double java_lang_StrictMath_tanh(double parameter0 , int * exception ) { 
-  return tanh(parameter0); 
-} 
+$$__device__$$ double java_lang_StrictMath_tanh(double parameter0 , int * exception ) {
+  return tanh(parameter0);
+}
 
-$$__device__$$ 
+$$__device__$$
 void org_trifort_rootbeer_runtime_GpuStopwatch_start(int thisref, int * exception){
   long long int time;
-  
+
   time = clock64();
   instance_setter_org_trifort_rootbeer_runtime_GpuStopwatch_m_start(thisref, time, exception);
 }
 
-$$__device__$$ 
+$$__device__$$
 void org_trifort_rootbeer_runtime_GpuStopwatch_stop(int thisref, int * exception){
   long long int time;
-  
+
   time = clock64();
   instance_setter_org_trifort_rootbeer_runtime_GpuStopwatch_m_stop(thisref, time, exception);
 }
 
-$$__device__$$ 
+$$__device__$$
 char org_trifort_rootbeer_runtime_RootbeerGpu_isOnGpu(int * exception){
   return 1;
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_getThreadId(int * exception){
   return getThreadId();
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_getThreadIdxx(int * exception){
   return getThreadIdxx();
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_getThreadIdxy(int * exception){
   return getThreadIdxy();
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_getThreadIdxz(int * exception){
   return getThreadIdxz();
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_getBlockIdxx(int * exception){
   return getBlockIdxx();
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_getBlockIdxy(int * exception){
   return getBlockIdxy();
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_getBlockIdxz(int * exception){
   return getBlockIdxz();
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_getBlockDimx(int * exception){
   return getBlockDimx();
 }
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_getBlockDimy(int * exception){
   return getBlockDimy();
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_getBlockDimz(int * exception){
   return getBlockDimz();
 }
 
-$$__device__$$ 
+$$__device__$$
 long long org_trifort_rootbeer_runtime_RootbeerGpu_getGridDimx(int * exception){
   return getGridDimx();
 }
 
-$$__device__$$ 
+$$__device__$$
 long long org_trifort_rootbeer_runtime_RootbeerGpu_getGridDimy(int * exception){
   return getGridDimy();
 }
 
-$$__device__$$ 
+$$__device__$$
 long long org_trifort_rootbeer_runtime_RootbeerGpu_getGridDimz(int * exception){
   return getGridDimz();
 }
 
-$$__device__$$ 
+$$__device__$$
 long long org_trifort_rootbeer_runtime_RootbeerGpu_getRef(int ref, int * exception){
   return ref;
 }
@@ -676,21 +678,21 @@ char org_trifort_rootbeer_runtime_RootbeerGpu_getSharedByte(int index, int * exc
     return 0;
   }
 #endif
-  return m_shared[index]; 
+  return m_shared[index];
 }
 
 $$__device__$$
 void org_trifort_rootbeer_runtime_RootbeerGpu_setSharedByte(int index, char value, int * exception){
 #ifdef ARRAY_CHECKS
   if(index < 0 || index >= %%shared_mem_size%%){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, %%shared_mem_size%%, exception);
     return;
   }
 #endif
   m_shared[index] = value;
 }
-  
+
 $$__device__$$
 char org_trifort_rootbeer_runtime_RootbeerGpu_getSharedChar(int index, int * exception){
 #ifdef ARRAY_CHECKS
@@ -700,7 +702,7 @@ char org_trifort_rootbeer_runtime_RootbeerGpu_getSharedChar(int index, int * exc
     return 0;
   }
 #endif
-  return m_shared[index]; 
+  return m_shared[index];
 }
 
 $$__device__$$
@@ -714,7 +716,7 @@ void org_trifort_rootbeer_runtime_RootbeerGpu_setSharedChar(int index, char valu
 #endif
   m_shared[index] = value;
 }
-  
+
 $$__device__$$
 char org_trifort_rootbeer_runtime_RootbeerGpu_getSharedBoolean(int index, int * exception){
 #ifdef ARRAY_CHECKS
@@ -724,7 +726,7 @@ char org_trifort_rootbeer_runtime_RootbeerGpu_getSharedBoolean(int index, int * 
     return 0;
   }
 #endif
-  return m_shared[index]; 
+  return m_shared[index];
 }
 
 $$__device__$$
@@ -738,7 +740,7 @@ void org_trifort_rootbeer_runtime_RootbeerGpu_setSharedBoolean(int index, char v
 #endif
   m_shared[index] = value;
 }
-  
+
 $$__device__$$
 short org_trifort_rootbeer_runtime_RootbeerGpu_getSharedShort(int index, int * exception){
   index /= 2;
@@ -747,7 +749,7 @@ short org_trifort_rootbeer_runtime_RootbeerGpu_getSharedShort(int index, int * e
     *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, %%shared_mem_size%%, exception);
     return 0;
-  }  
+  }
 #endif
   return ((short *) m_shared)[index];
 }
@@ -779,7 +781,7 @@ int org_trifort_rootbeer_runtime_RootbeerGpu_getSharedInteger(int index, int * e
 }
 
 $$__device__$$
-void org_trifort_rootbeer_runtime_RootbeerGpu_setSharedInteger(int index, int value, int * exception){  
+void org_trifort_rootbeer_runtime_RootbeerGpu_setSharedInteger(int index, int value, int * exception){
   index /= 4;
 #ifdef ARRAY_CHECKS
   if(index < 0 || index + 4 > %%shared_mem_size%%){
@@ -796,7 +798,7 @@ long long org_trifort_rootbeer_runtime_RootbeerGpu_getSharedLong(int index, int 
   index /= 8;
 #ifdef ARRAY_CHECKS
   if(index < 0 || index + 8 > %%shared_mem_size%%){
-    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds( 
+    *exception = org_trifort_rootbeer_runtimegpu_GpuException_arrayOutOfBounds(
       index, 0, %%shared_mem_size%%, exception);
     return 0;
   }
@@ -816,7 +818,7 @@ void org_trifort_rootbeer_runtime_RootbeerGpu_setSharedLong(int index, long long
 #endif
   ((long long *) m_shared)[index] = value;
 }
-  
+
 $$__device__$$
 float org_trifort_rootbeer_runtime_RootbeerGpu_getSharedFloat(int index, int * exception){
   int int_value = org_trifort_rootbeer_runtime_RootbeerGpu_getSharedInteger(index, exception);
@@ -828,7 +830,7 @@ void org_trifort_rootbeer_runtime_RootbeerGpu_setSharedFloat(int index, float va
   int int_value = *((int *) &value);
   org_trifort_rootbeer_runtime_RootbeerGpu_setSharedInteger(index, int_value, exception);
 }
-  
+
 $$__device__$$
 double org_trifort_rootbeer_runtime_RootbeerGpu_getSharedDouble(int index, int * exception){
   long long long_value = org_trifort_rootbeer_runtime_RootbeerGpu_getSharedLong(index, exception);
@@ -850,7 +852,7 @@ $$__device__$$
 void org_trifort_rootbeer_runtime_RootbeerGpu_setSharedObject(int index, int value, int * exception){
   org_trifort_rootbeer_runtime_RootbeerGpu_setSharedInteger(index, value, exception);
 }
-  
+
 $$__device__$$
 void java_io_PrintStream_println0_9_(int thisref, int str_ret, int * exception){
   int valueref;
@@ -860,15 +862,15 @@ void java_io_PrintStream_println0_9_(int thisref, int str_ret, int * exception){
 
   char * valueref_deref;
 
-  valueref = org_trifort_rootbeer_get_string_char_array(str_ret, exception);  
+  valueref = org_trifort_rootbeer_get_string_char_array(str_ret, exception);
   if(*exception != 0){
-    return; 
-  } 
-  
+    return;
+  }
+
   count = org_trifort_array_length(valueref, exception);
   if(*exception != 0){
-    return; 
-  } 
+    return;
+  }
   valueref_deref = (char *) org_trifort_gc_deref(valueref);
   for(i = 0; i < count; ++i){
     curr_offset = 32 + (i * 4);
@@ -888,18 +890,18 @@ void java_io_PrintStream_println0_11_(int thisref, int obj_ref, int * exception)
 
   str_ref = java_lang_String_valueOf(obj_ref, exception);
   if(*exception != 0){
-    return; 
+    return;
   }
-  
-  valueref = org_trifort_rootbeer_get_string_char_array(str_ref, exception);  
+
+  valueref = org_trifort_rootbeer_get_string_char_array(str_ref, exception);
   if(*exception != 0){
-    return; 
-  } 
-  
+    return;
+  }
+
   count = org_trifort_array_length(valueref, exception);
   if(*exception != 0){
-    return; 
-  } 
+    return;
+  }
   valueref_deref = (char *) org_trifort_gc_deref(valueref);
   for(i = 0; i < count; ++i){
     curr_offset = 32 + (i * 4);
@@ -962,15 +964,15 @@ void java_io_PrintStream_print0_9_(int thisref, int str_ret, int * exception){
 
   char * valueref_deref;
 
-  valueref = org_trifort_rootbeer_get_string_char_array(str_ret, exception);  
+  valueref = org_trifort_rootbeer_get_string_char_array(str_ret, exception);
   if(*exception != 0){
-    return; 
-  } 
-  
+    return;
+  }
+
   count = org_trifort_array_length(valueref, exception);
   if(*exception != 0){
-    return; 
-  } 
+    return;
+  }
   valueref_deref = (char *) org_trifort_gc_deref(valueref);
   for(i = 0; i < count; ++i){
     curr_offset = 32 + (i * 4);
@@ -989,18 +991,18 @@ void java_io_PrintStream_print0_11_(int thisref, int obj_ref, int * exception){
 
   str_ref = java_lang_String_valueOf(obj_ref, exception);
   if(*exception != 0){
-    return; 
+    return;
   }
-  
-  valueref = org_trifort_rootbeer_get_string_char_array(str_ref, exception);  
+
+  valueref = org_trifort_rootbeer_get_string_char_array(str_ref, exception);
   if(*exception != 0){
-    return; 
-  } 
-  
+    return;
+  }
+
   count = org_trifort_array_length(valueref, exception);
   if(*exception != 0){
-    return; 
-  } 
+    return;
+  }
   valueref_deref = (char *) org_trifort_gc_deref(valueref);
   for(i = 0; i < count; ++i){
     curr_offset = 32 + (i * 4);
@@ -1064,22 +1066,22 @@ double org_trifort_rootbeer_runtime_RootbeerGpu_sin(double value, int * exceptio
   return sin(value);
 }
 
-$$__device__$$ 
+$$__device__$$
 void org_trifort_rootbeer_runtime_RootbeerGpu_syncthreads(int * exception){
   org_trifort_syncthreads();
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_runtime_RootbeerGpu_syncthreadsCount(int value, int * exception){
   return org_trifort_syncthreads_count(value);
 }
 
-$$__device__$$ 
+$$__device__$$
 void org_trifort_rootbeer_runtime_RootbeerGpu_threadfence(int * exception){
   org_trifort_threadfence();
 }
 
-$$__device__$$ 
+$$__device__$$
 void org_trifort_rootbeer_runtime_RootbeerGpu_threadfenceBlock(int * exception){
   org_trifort_threadfence_block();
 }
@@ -1183,7 +1185,7 @@ $$__device__$$ GC_OBJ_TYPE_TYPE
 org_trifort_gc_get_type($$__global$$ char * mem_loc){
   mem_loc += sizeof(GC_OBJ_TYPE_COUNT) + sizeof(GC_OBJ_TYPE_COLOR) + sizeof(char) +
     sizeof(GC_OBJ_TYPE_CTOR_USED);
-  
+
   return *(($$__global$$ GC_OBJ_TYPE_TYPE *) &mem_loc[0]);
 }
 
@@ -1201,14 +1203,14 @@ org_trifort_gc_get_ctor_used($$__global$$ char * mem_loc){
 
 $$__device__$$ void
 org_trifort_gc_set_size($$__global$$ char * mem_loc, GC_OBJ_TYPE_SIZE value){
-  mem_loc += sizeof(GC_OBJ_TYPE_COUNT) + sizeof(GC_OBJ_TYPE_COLOR) + sizeof(char) + 
+  mem_loc += sizeof(GC_OBJ_TYPE_COUNT) + sizeof(GC_OBJ_TYPE_COLOR) + sizeof(char) +
     sizeof(GC_OBJ_TYPE_CTOR_USED) + sizeof(GC_OBJ_TYPE_TYPE);
   *(($$__global$$ GC_OBJ_TYPE_SIZE *) &mem_loc[0]) = value;
 }
 
 $$__device__$$ GC_OBJ_TYPE_SIZE
 org_trifort_gc_get_size($$__global$$ char * mem_loc){
-  mem_loc += sizeof(GC_OBJ_TYPE_COUNT) + sizeof(GC_OBJ_TYPE_COLOR) + sizeof(char) + 
+  mem_loc += sizeof(GC_OBJ_TYPE_COUNT) + sizeof(GC_OBJ_TYPE_COLOR) + sizeof(char) +
     sizeof(GC_OBJ_TYPE_CTOR_USED) + sizeof(GC_OBJ_TYPE_TYPE);
   return *(($$__global$$ GC_OBJ_TYPE_SIZE *) &mem_loc[0]);
 }
@@ -1241,45 +1243,45 @@ org_trifort_gc_get_space_size(){
 
 $$__device__$$
 int org_trifort_rootbeer_string_from_chars(int parameter0, int * exception) {
-  int r0 = -1; 
-  int r1 = -1; 
-  int i0; 
-  int $r2 = -1; 
-  int thisref; 
-  char * thisref_deref; 
+  int r0 = -1;
+  int r1 = -1;
+  int i0;
+  int $r2 = -1;
+  int thisref;
+  char * thisref_deref;
   int i;
   int len;
   int characters_copy;
   char ch;
-  
-  thisref = -1; 
-  org_trifort_gc_assign(&thisref, org_trifort_gc_malloc(48)); 
-  if(thisref == -1) { 
-    *exception = %%java_lang_OutOfMemoryError_TypeNumber%%; 
-    return -1; 
-  } 
-  thisref_deref = org_trifort_gc_deref(thisref); 
-  org_trifort_gc_set_count(thisref_deref, 1); 
-  org_trifort_gc_set_color(thisref_deref, COLOR_GREY); 
-  org_trifort_gc_set_type(thisref_deref, %%java_lang_String_TypeNumber%%); 
-  org_trifort_gc_set_ctor_used(thisref_deref, 1); 
-  org_trifort_gc_set_size(thisref_deref, 48); 
-  org_trifort_gc_init_monitor(thisref_deref); 
+
+  thisref = -1;
+  org_trifort_gc_assign(&thisref, org_trifort_gc_malloc(48));
+  if(thisref == -1) {
+    *exception = %%java_lang_OutOfMemoryError_TypeNumber%%;
+    return -1;
+  }
+  thisref_deref = org_trifort_gc_deref(thisref);
+  org_trifort_gc_set_count(thisref_deref, 1);
+  org_trifort_gc_set_color(thisref_deref, COLOR_GREY);
+  org_trifort_gc_set_type(thisref_deref, %%java_lang_String_TypeNumber%%);
+  org_trifort_gc_set_ctor_used(thisref_deref, 1);
+  org_trifort_gc_set_size(thisref_deref, 48);
+  org_trifort_gc_init_monitor(thisref_deref);
 
   org_trifort_rootbeer_set_string_char_array(thisref, parameter0, exception);
-  return thisref; 
+  return thisref;
 }
 
 //<java.lang.String: void <init>(java.lang.String)>
 $$__device__$$
-int java_lang_String_initab850b60f96d11de8a390800200c9a660_9_(int parameter0, int * exception) { 
+int java_lang_String_initab850b60f96d11de8a390800200c9a660_9_(int parameter0, int * exception) {
 
   int i;
   int len;
   int characters_src;
   int characters_copy;
   char ch;
-  
+
   characters_src = org_trifort_rootbeer_get_string_char_array(parameter0, exception);
   if(*exception != 0){
     return 0;
@@ -1293,7 +1295,7 @@ int java_lang_String_initab850b60f96d11de8a390800200c9a660_9_(int parameter0, in
     char__array_set(characters_copy, i, ch, exception);
   }
   return org_trifort_rootbeer_string_from_chars(characters_copy, exception);
-} 
+}
 
 //<java.lang.String: void <init>(char[])>
 $$__device__$$
@@ -1317,10 +1319,10 @@ int java_lang_String_initab850b60f96d11de8a390800200c9a660_a12_(int parameter0, 
 
 __device__ void java_lang_String_initab850b60f96d11de8a390800200c9a66_body0_a12_(int thisref, int parameter0, int * exception);
 
-$$__device__$$ int 
+$$__device__$$ int
 char__array_new(int size, int * exception);
 
-$$__device__$$ void 
+$$__device__$$ void
 char__array_set(int thisref, int parameter0, char parameter1, int * exception);
 
 $$__device__$$ int
@@ -1331,7 +1333,7 @@ org_trifort_char_constant(char * str_constant, int * exception){
   for(i = 0; i < len; ++i){
     char__array_set(characters, i, str_constant[i], exception);
   }
-  
+
   return characters;
 }
 
@@ -1352,7 +1354,7 @@ $$__device__$$ void
 org_trifort_gc_assign_global($$__global$$ int * lhs_ptr, int rhs){
   *lhs_ptr = rhs;
 }
- 
+
 $$__device__$$ int java_lang_StackTraceElement__array_get(int thisref, int parameter0, int * exception);
 $$__device__$$ void java_lang_StackTraceElement__array_set(int thisref, int parameter0, int parameter1, int * exception);
 $$__device__$$ int java_lang_StackTraceElement__array_new(int size, int * exception);
@@ -1420,36 +1422,36 @@ java_lang_Object_hashCode(int thisref, int * exception){
 }
 
 $$__device__$$ int
-java_lang_Class_getName(int thisref , int * exception ) { 
-  int $r1 =-1 ; 
-  $r1 = instance_getter_java_lang_Class_name (thisref , exception ) ; 
-  if ( * exception != 0 ) { 
-    return 0 ; 
-  } 
+java_lang_Class_getName(int thisref , int * exception ) {
+  int $r1 =-1 ;
+  $r1 = instance_getter_java_lang_Class_name (thisref , exception ) ;
+  if ( * exception != 0 ) {
+    return 0 ;
+  }
   return $r1;
 }
 
 $$__device__$$ int
-java_lang_Object_getClass(int thisref, int * exception ) { 
+java_lang_Object_getClass(int thisref, int * exception ) {
   char * mem_loc = org_trifort_gc_deref(thisref);
   int type = org_trifort_gc_get_type(mem_loc);
   return org_trifort_classConstant(type);
 }
 
 $$__device__$$ int
-java_lang_StringValue_from(int thisref, int * exception ) { 
+java_lang_StringValue_from(int thisref, int * exception ) {
   int i, size, new_ref;
   char * mem_loc, * new_mem_loc;
-  
+
   mem_loc = org_trifort_gc_deref(thisref);
   size = org_trifort_gc_get_size(mem_loc);
   new_ref = org_trifort_gc_malloc(size);
   new_mem_loc = org_trifort_gc_deref(new_ref);
-  
+
   for(i = 0; i < size; ++i){
-    new_mem_loc[i] = mem_loc[i];  
+    new_mem_loc[i] = mem_loc[i];
   }
-  
+
   return new_ref;
 }
 
@@ -1460,11 +1462,11 @@ java_util_Arrays_copyOf(int object_array, int new_size, int * exception ){
   char * object_array_deref;
   int length;
   int i;
-  
+
   ret = org_trifort_gc_malloc(32 + (4 * new_size));
   ret_deref = org_trifort_gc_deref(ret);
   object_array_deref = org_trifort_gc_deref(object_array);
-    
+
   for(i = 0; i < 32; ++i){
     ret_deref[i] = object_array_deref[i];
   }
@@ -1487,70 +1489,70 @@ java_util_Arrays_copyOf(int object_array, int new_size, int * exception ){
     }
   }
 
-  return ret; 
+  return ret;
 }
 
 //<java.lang.StringBuilder: java.lang.StringBuilder init()>
 $$__device__$$
-int java_lang_StringBuilder_initab850b60f96d11de8a390800200c9a660_(int * exception){ 
+int java_lang_StringBuilder_initab850b60f96d11de8a390800200c9a660_(int * exception){
   int thisref;
   char * thisref_deref;
   int chars;
 
   thisref = org_trifort_gc_malloc(48);
   if(thisref == -1){
-    *exception = %%java_lang_OutOfMemoryError_TypeNumber%%; 
-    return -1; 
+    *exception = %%java_lang_OutOfMemoryError_TypeNumber%%;
+    return -1;
   }
 
   thisref_deref = org_trifort_gc_deref(thisref);
-  org_trifort_gc_set_count(thisref_deref, 1); 
-  org_trifort_gc_set_color(thisref_deref, COLOR_GREY); 
-  org_trifort_gc_set_type(thisref_deref, %%java_lang_StringBuilder_TypeNumber%%); 
-  org_trifort_gc_set_ctor_used(thisref_deref, 1); 
-  org_trifort_gc_set_size(thisref_deref, 48); 
-  org_trifort_gc_init_monitor(thisref_deref); 
+  org_trifort_gc_set_count(thisref_deref, 1);
+  org_trifort_gc_set_color(thisref_deref, COLOR_GREY);
+  org_trifort_gc_set_type(thisref_deref, %%java_lang_StringBuilder_TypeNumber%%);
+  org_trifort_gc_set_ctor_used(thisref_deref, 1);
+  org_trifort_gc_set_size(thisref_deref, 48);
+  org_trifort_gc_init_monitor(thisref_deref);
 
   chars = char__array_new(0, exception);
-  instance_setter_java_lang_AbstractStringBuilder_value(thisref, chars, exception); 
+  instance_setter_java_lang_AbstractStringBuilder_value(thisref, chars, exception);
   instance_setter_java_lang_AbstractStringBuilder_count(thisref, 0, exception);
-  return thisref; 
+  return thisref;
 }
 
 //<java.lang.StringBuilder: java.lang.StringBuilder void(java.lang.String)>
-$$__device__$$ 
+$$__device__$$
 int java_lang_StringBuilder_initab850b60f96d11de8a390800200c9a660_9_(
   int str ,int * exception){
- 
-  int thisref; 
-  int str_value;
-  int str_count;  
 
-  char * thisref_deref; 
+  int thisref;
+  int str_value;
+  int str_count;
+
+  char * thisref_deref;
   thisref = -1;
-  org_trifort_gc_assign (& thisref , org_trifort_gc_malloc (48 ) ) ; 
-  if ( thisref ==-1 ) { 
-    * exception = %%java_lang_OutOfMemoryError_TypeNumber%%; 
-    return-1 ; 
-  } 
-  thisref_deref = org_trifort_gc_deref (thisref ) ; 
-  org_trifort_gc_set_count ( thisref_deref , 0 ) ; 
-  org_trifort_gc_set_color ( thisref_deref , COLOR_GREY ) ; 
-  org_trifort_gc_set_type ( thisref_deref , %%java_lang_StringBuilder_TypeNumber%% ) ; 
-  org_trifort_gc_set_ctor_used ( thisref_deref , 1 ) ; 
-  org_trifort_gc_set_size ( thisref_deref , 44 ) ; 
-  org_trifort_gc_init_monitor ( thisref_deref ) ; 
+  org_trifort_gc_assign (& thisref , org_trifort_gc_malloc (48 ) ) ;
+  if ( thisref ==-1 ) {
+    * exception = %%java_lang_OutOfMemoryError_TypeNumber%%;
+    return-1 ;
+  }
+  thisref_deref = org_trifort_gc_deref (thisref ) ;
+  org_trifort_gc_set_count ( thisref_deref , 0 ) ;
+  org_trifort_gc_set_color ( thisref_deref , COLOR_GREY ) ;
+  org_trifort_gc_set_type ( thisref_deref , %%java_lang_StringBuilder_TypeNumber%% ) ;
+  org_trifort_gc_set_ctor_used ( thisref_deref , 1 ) ;
+  org_trifort_gc_set_size ( thisref_deref , 44 ) ;
+  org_trifort_gc_init_monitor ( thisref_deref ) ;
 
   str_value = org_trifort_rootbeer_get_string_char_array(str, exception);
   str_count = org_trifort_array_length(str_value, exception);
 
-  instance_setter_java_lang_AbstractStringBuilder_value(thisref, str_value, exception); 
-  instance_setter_java_lang_AbstractStringBuilder_count(thisref, str_count, exception); 
-  return thisref; 
-} 
+  instance_setter_java_lang_AbstractStringBuilder_value(thisref, str_value, exception);
+  instance_setter_java_lang_AbstractStringBuilder_count(thisref, str_count, exception);
+  return thisref;
+}
 
 //<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>
-$$__device__$$ 
+$$__device__$$
 int java_lang_StringBuilder_append10_9_(int thisref,
   int parameter0, int * exception){
 
@@ -1572,9 +1574,9 @@ int java_lang_StringBuilder_append10_9_(int thisref,
     exception);
 
   //get string value and count
-  str_value = org_trifort_rootbeer_get_string_char_array(parameter0, 
+  str_value = org_trifort_rootbeer_get_string_char_array(parameter0,
     exception);
-    
+
   str_count = org_trifort_array_length(str_value, exception);
 
   new_count = sb_count + str_count;
@@ -1598,43 +1600,43 @@ int java_lang_StringBuilder_append10_9_(int thisref,
 }
 
 //<java.lang.StringBuilder: java.lang.StringBuilder append(boolean)>
-$$__device__$$ 
+$$__device__$$
 int java_lang_StringBuilder_append10_1_(int thisref,
   bool parameter0, int * exception){
-  
+
   int str = java_lang_Boolean_toString9_1_(parameter0, exception);
   return java_lang_StringBuilder_append10_9_(thisref, str, exception);
 }
 
 //<java.lang.StringBuilder: java.lang.StringBuilder append(char)>
-$$__device__$$ 
+$$__device__$$
 int java_lang_StringBuilder_append10_3_(int thisref,
   int parameter0, int * exception){
-  
+
   int str = java_lang_Character_toString9_3_(parameter0, exception);
   return java_lang_StringBuilder_append10_9_(thisref, str, exception);
 }
 
 //<java.lang.StringBuilder: java.lang.StringBuilder append(double)>
-$$__device__$$ 
+$$__device__$$
 int java_lang_StringBuilder_append10_8_(int thisref,
   double parameter0, int * exception){
-  
+
   int str = java_lang_Double_toString9_8_(parameter0, exception);
   return java_lang_StringBuilder_append10_9_(thisref, str, exception);
 }
 
 //<java.lang.StringBuilder: java.lang.StringBuilder append(float)>
-$$__device__$$ 
+$$__device__$$
 int java_lang_StringBuilder_append10_7_(int thisref,
   float parameter0, int * exception){
-  
+
   int str = java_lang_Float_toString9_7_(parameter0, exception);
   return java_lang_StringBuilder_append10_9_(thisref, str, exception);
 }
 
 //<java.lang.StringBuilder: java.lang.StringBuilder append(int)>
-$$__device__$$ 
+$$__device__$$
 int java_lang_StringBuilder_append10_5_(int thisref,
   int parameter0, int * exception){
 
@@ -1643,7 +1645,7 @@ int java_lang_StringBuilder_append10_5_(int thisref,
 }
 
 //<java.lang.StringBuilder: java.lang.StringBuilder append(long)>
-$$__device__$$ 
+$$__device__$$
 int java_lang_StringBuilder_append10_6_(int thisref,
   long long parameter0, int * exception){
 
@@ -1652,13 +1654,13 @@ int java_lang_StringBuilder_append10_6_(int thisref,
 }
 
 //<java.lang.StringBuilder: java.lang.String toString()>
-$$__device__$$ 
+$$__device__$$
 int java_lang_StringBuilder_toString9_(int thisref,
   int * exception){
 
   int value;
   int count;
-  int new_chars; 
+  int new_chars;
   int i;
   char c;
 
@@ -1684,9 +1686,9 @@ int java_lang_Integer_initab850b60f96d11de8a390800200c9a66(
 
   thisref = -1;
   thisref = org_trifort_gc_malloc(48);
-  if ( thisref ==-1 ) { 
-    * exception = %%java_lang_OutOfMemoryError_TypeNumber%%; 
-    return-1 ; 
+  if ( thisref ==-1 ) {
+    * exception = %%java_lang_OutOfMemoryError_TypeNumber%%;
+    return-1 ;
   }
   thisref_deref = org_trifort_gc_deref(thisref);
   org_trifort_gc_set_count(thisref_deref, 0);
@@ -1704,13 +1706,13 @@ int java_lang_Integer_initab850b60f96d11de8a390800200c9a66(
 $$__device__$$
 int java_lang_Integer_valueOf(int int_value, int * exception) {
   int return_obj = -1;
-  
+
   org_trifort_gc_assign(
     &return_obj, java_lang_Integer_initab850b60f96d11de8a390800200c9a66(
     int_value, exception));
-  
+
   if(*exception != 0) {
-    return 0; 
+    return 0;
   }
 
   return return_obj;
@@ -1821,55 +1823,55 @@ int java_lang_Object_toString9_(int this_ref, int * exception){
   int hash_code = -1;
   int hex_string = -1;
   int ret_str = -1;
-  
+
   org_trifort_gc_assign(
-    &sb_ref, java_lang_StringBuilder_initab850b60f96d11de8a390800200c9a660_(exception));  
+    &sb_ref, java_lang_StringBuilder_initab850b60f96d11de8a390800200c9a660_(exception));
   if(*exception != 0) {
     return 0;
   }
-  
+
   class_ref = java_lang_Object_getClass(this_ref, exception);
   if(*exception != 0) {
     return 0;
   }
-  
+
   class_name  = java_lang_Class_getName(class_ref, exception);
   if(*exception != 0) {
     return 0;
   }
-  
+
   sb_ref = java_lang_StringBuilder_append10_9_(sb_ref,  class_name, exception);
   if(*exception != 0) {
     return 0;
   }
-  
+
   sb_ref = java_lang_StringBuilder_append10_9_(sb_ref,
     org_trifort_string_constant((char *) "@", exception), exception);
   if(*exception != 0) {
     return 0;
   }
-  
+
   // TODO
   //hash_code = invoke_java_lang_Object_hashCode(this_ref, exception);
   //if(*exception != 0) {
   //  return 0;
   //}
-  
+
   //hex_string = java_lang_Integer_toHexString9_5_(hash_code, exception);
   //if(*exception != 0) {
   //  return 0;
   //}
-  
+
   //sb_ref = java_lang_StringBuilder_append10_9_(sb_ref,  hex_string, exception);
   //if(*exception != 0) {
   //  return 0;
   //}
-  
+
   ret_str = java_lang_StringBuilder_toString9_(sb_ref, exception);
   if(*exception != 0) {
     return 0;
   }
-  
+
   return ret_str;
 }
 
@@ -1880,7 +1882,7 @@ int java_lang_String_valueOf(int obj_ref, int * exception) {
   char bool_val;
 
   if (obj_ref != -1) {
-    
+
     // check type
     if (at_illecker_typeof_Boolean(obj_ref)) {
       bool_val = instance_getter_java_lang_Boolean_value(obj_ref, exception);
@@ -1909,7 +1911,7 @@ int java_lang_String_valueOf(int obj_ref, int * exception) {
   } else {
     return_str = org_trifort_string_constant((char *) "null", exception);
   }
-  
+
   return return_str;
 }
 
@@ -1972,7 +1974,7 @@ int at_illecker_double_to_string(double fvalue, int max, int * exception) {
   if (max < 0) {
     max = 6;
   }
-  // Sorry, we only support 9 digits past the decimal because of our 
+  // Sorry, we only support 9 digits past the decimal because of our
   // conversion method
   if (max > 9) {
     max = 9;
@@ -2014,7 +2016,7 @@ int at_illecker_double_to_string(double fvalue, int max, int * exception) {
     fconvert[fplace++] = "0123456789abcdef"[fracpart % 10];
     fracpart = (fracpart / 10);
   } while(fracpart && (fplace < 20));
-  
+
   // Calculate preceding zeros
   // preceding zeros might be removed in fracpart
   zprelen = max - fplace;
@@ -2067,7 +2069,7 @@ int at_illecker_double_to_string(double fvalue, int max, int * exception) {
 }
 
 //<java.lang.Double: java.lang.String toString(double)>
-$$__device__$$ 
+$$__device__$$
 int java_lang_Double_toString9_8_(double double_val, int * exception) {
 
   // Default is 6 digits after decimal point
@@ -2075,7 +2077,7 @@ int java_lang_Double_toString9_8_(double double_val, int * exception) {
 }
 
 //<java.lang.Float: java.lang.String toString(float)>
-$$__device__$$ 
+$$__device__$$
 int java_lang_Float_toString9_7_(float float_val, int * exception){
 
   // Default is 6 digits after decimal point
@@ -2095,7 +2097,7 @@ int at_illecker_long_to_string(long long value, int max, int base, int * excepti
   char buffer[21];
   int maxlen = 21; // 20 digits + sign
   int currlen = 0;
-  
+
   if (max < 0) {
     max = 0;
   }
@@ -2151,13 +2153,13 @@ int at_illecker_long_to_string(long long value, int max, int base, int * excepti
 }
 
 //<java.lang.Long: java.lang.String toString(long)>
-$$__device__$$ 
+$$__device__$$
 int java_lang_Long_toString9_6_(long long long_val, int * exception){
   return at_illecker_long_to_string(long_val, 0, 10, exception);
 }
 
 //<java.lang.Integer: java.lang.String toString(int)>
-$$__device__$$ 
+$$__device__$$
 int java_lang_Integer_toString9_5_(int int_val, int * exception){
   return at_illecker_long_to_string((long long)int_val, 0, 10, exception);
 }
@@ -2168,12 +2170,12 @@ $$__device__$$
 int at_illecker_strpos(int str_value, int str_count,
                        int sub_str_value, int sub_str_count,
                        int start_pos, int * exception) {
-  
+
   if ( (str_count == 0) || (sub_str_count == 0) ||
       (start_pos > str_count)) {
     return -1;
   }
-  
+
   for (int i = start_pos; i < str_count; i++) {
     if (char__array_get(str_value, i, exception) !=
         char__array_get(sub_str_value, 0, exception)) {
@@ -2204,13 +2206,13 @@ int java_lang_String_indexOf(int str_obj_ref,
   int str_count = 0;
   int search_str_value = 0;
   int search_str_count = 0;
-  
+
   str_value = org_trifort_rootbeer_get_string_char_array(str_obj_ref, exception);
   str_count = org_trifort_array_length(str_value, exception);
-  
+
   search_str_value = org_trifort_rootbeer_get_string_char_array(search_str_obj_ref, exception);
   search_str_count = org_trifort_array_length(search_str_value, exception);
-  
+
   return at_illecker_strpos(str_value, str_count, search_str_value, search_str_count, 0, exception);
 }
 
@@ -2222,13 +2224,13 @@ int java_lang_String_indexOf(int str_obj_ref,
   int str_count = 0;
   int search_str_value = 0;
   int search_str_count = 0;
-  
+
   str_value = org_trifort_rootbeer_get_string_char_array(str_obj_ref, exception);
   str_count = org_trifort_array_length(str_value, exception);
-  
+
   search_str_value = org_trifort_rootbeer_get_string_char_array(search_str_obj_ref, exception);
   search_str_count = org_trifort_array_length(search_str_value, exception);
-  
+
   return at_illecker_strpos(str_value, str_count, search_str_value, search_str_count, from_index, exception);
 }
 
@@ -2238,7 +2240,7 @@ int at_illecker_substring(int str_value, int str_count,
                           int begin_index, int end_index, int * exception) {
   int new_length = 0;
   int new_string = -1;
-  
+
   // set new length
   if (end_index == -1) { // copy to end
     new_length = str_count - begin_index;
@@ -2249,14 +2251,14 @@ int at_illecker_substring(int str_value, int str_count,
       new_length = str_count - begin_index;
     }
   }
-  
+
   new_string = char__array_new(new_length, exception);
-  
+
   for(int i = 0; i < new_length; i++) {
     char__array_set(new_string, i, char__array_get(str_value, begin_index, exception), exception);
     begin_index++;
   }
-  
+
   return org_trifort_rootbeer_string_from_chars(new_string, exception);
 }
 
@@ -2265,10 +2267,10 @@ $$__device__$$
 int java_lang_String_substring(int str_obj_ref, int begin_index, int * exception) {
   int str_value = 0;
   int str_count = 0;
-  
+
   str_value = org_trifort_rootbeer_get_string_char_array(str_obj_ref, exception);
   str_count = org_trifort_array_length(str_value, exception);
-  
+
   return at_illecker_substring(str_value, str_count, begin_index, -1, exception);
 }
 
@@ -2278,10 +2280,10 @@ int java_lang_String_substring(int str_obj_ref, int begin_index,
                                int end_index, int * exception) {
   int str_value = 0;
   int str_count = 0;
-  
+
   str_value = org_trifort_rootbeer_get_string_char_array(str_obj_ref, exception);
   str_count = org_trifort_array_length(str_value, exception);
-  
+
   return at_illecker_substring(str_value, str_count, begin_index, end_index, exception);
 }
 
@@ -2291,11 +2293,11 @@ $$__device__$$
 int at_illecker_strcnt(int str_value, int str_count,
                        int sub_str_value, int sub_str_count, int * exception) {
   int occurrences = 0;
-  
+
   if ( (str_count == 0) || (sub_str_count == 0) ) {
     return 0;
   }
-  
+
   for (int i = 0; i < str_count; i++) {
     if (char__array_get(str_value, i, exception) !=
         char__array_get(sub_str_value, 0, exception)) {
@@ -2329,47 +2331,47 @@ int at_illecker_split(int str_obj_ref, int delim_str_obj_ref,
   int delim_str_value = 0;
   int delim_str_count = 0;
   int delim_occurrences = 0;
-  
+
   str_value = org_trifort_rootbeer_get_string_char_array(str_obj_ref, exception);
   str_count = org_trifort_array_length(str_value, exception);
-  
+
   delim_str_value = org_trifort_rootbeer_get_string_char_array(delim_str_obj_ref, exception);
   delim_str_count = org_trifort_array_length(delim_str_value, exception);
-  
+
   // count delimiters, needed for array size
   delim_occurrences = at_illecker_strcnt(str_value, str_count,
                                          delim_str_value, delim_str_count, exception);
-  
+
   if ( (limit <= 0) || (limit > delim_occurrences) ) {
     return_obj = java_lang_String__array_new(delim_occurrences + 1, exception);
     limit = delim_occurrences + 1;
   } else {
     return_obj = java_lang_String__array_new(limit, exception);
   }
-  
+
   if (delim_occurrences == 0) {
     // return this string
     java_lang_String__array_set(return_obj, 0, str_obj_ref, exception);
-    
+
   } else {
-    
+
     // parse string for tokens
     for (int i = 0; i < limit - 1; i++) {
       end = at_illecker_strpos(str_value, str_count,
                                delim_str_value, delim_str_count, start, exception);
-      
+
       if (end == -1) {
         break;
       }
-      
+
       // add token - substring(start, end - start)
       java_lang_String__array_set(return_obj, i,
                                   at_illecker_substring(str_value, str_count, start, end, exception), exception);
-      
+
       // Exclude the delimiter in the next search
       start = end + delim_str_count;
     }
-    
+
     // add last token
     if (end != -1) {
       // substring(start, END_OF_STRING)
@@ -2392,18 +2394,18 @@ int java_lang_String_split(int str_obj_ref, int delim_str_obj_ref, int * excepti
   return at_illecker_split(str_obj_ref, delim_str_obj_ref, 0, exception);
 }
 
-$$__device__$$ int 
+$$__device__$$ int
 java_lang_Object_clone(int thisref, int * exception){
   char * src_deref;
   char * dest_deref;
   int dest;
   int size;
-  
+
   if(thisref == -1){
     *exception = %%java_lang_NullPointerException_TypeNumber%%;
     return 0;
   }
-  
+
   src_deref = org_trifort_gc_deref(thisref);
   size = org_trifort_getint(src_deref, OBJECT_HEADER_POSITION_OBJECT_SIZE);
   dest = org_trifort_gc_malloc(size);
@@ -2442,7 +2444,7 @@ unsigned long long at_illecker_strtoul(const char *string, char **end_ptr, int b
   int anyDigits = 0;
   int negative=0;
   int overflow=0;
-  
+
   char cvtIn[] = {
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9,		/* '0' - '9' */
     100, 100, 100, 100, 100, 100, 100,		/* punctuation */
@@ -2454,7 +2456,7 @@ unsigned long long at_illecker_strtoul(const char *string, char **end_ptr, int b
     20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
     30, 31, 32, 33, 34, 35
   };
-  
+
   // Skip any leading blanks.
   p = string;
   while (at_illecker_is_space((unsigned char) (*p))) {
@@ -2469,7 +2471,7 @@ unsigned long long at_illecker_strtoul(const char *string, char **end_ptr, int b
       p += 1;
     }
   }
-  
+
   // If no base was provided, pick one from the leading characters
   // of the string.
   if (base == 0) {
@@ -2493,7 +2495,7 @@ unsigned long long at_illecker_strtoul(const char *string, char **end_ptr, int b
       p += 2;
     }
   }
-  
+
   // Sorry this code is so messy, but speed seems important. Do
   // different things for base 8, 10, 16, and other.
   if (base == 8) {
@@ -2573,21 +2575,21 @@ unsigned long long at_illecker_strtoul(const char *string, char **end_ptr, int b
       anyDigits = 1;
     }
   }
-  
+
   // See if there were any digits at all.
   if (!anyDigits) {
     p = string;
   }
-  
+
   if (end_ptr != 0) {
     /* unsafe, but required by the strtoul prototype */
     *end_ptr = (char *) p;
   }
-  
+
   if (overflow) {
     return 0xFFFFFFFFUL;
   }
-  
+
   if (negative) {
     return -result;
   }
@@ -2605,7 +2607,7 @@ $$__device__$$
 long long at_illecker_strtol(const char *string, char **end_ptr, int base) {
   register const char *p;
   long long result;
-  
+
   // Skip any leading blanks.
   p = string;
   while (at_illecker_is_space((unsigned char) (*p))) {
@@ -2641,7 +2643,7 @@ double at_illecker_strtod(const char *string) {
   int mantSize;
   int decPt;
   const char *pExp;
-  
+
   int maxExponent = 511;
   double powersOf10[] = {
     10.,
@@ -2654,13 +2656,13 @@ double at_illecker_strtod(const char *string) {
     1.0e128,
     1.0e256
   };
-  
+
   // Strip off leading blanks and check for a sign.
   p = string;
   while (at_illecker_is_space((unsigned char) (*p))) {
     p += 1;
   }
-  
+
   if (*p == '-') {
     sign = 1; // TRUE
     p += 1;
@@ -2670,7 +2672,7 @@ double at_illecker_strtod(const char *string) {
     }
     sign = 0; // FALSE
   }
-  
+
   // Count the number of digits in the mantissa (including the decimal
   // point), and also locate the decimal point.
   decPt = -1;
@@ -2684,7 +2686,7 @@ double at_illecker_strtod(const char *string) {
     }
     p += 1;
   }
-  
+
   // Now suck up the digits in the mantissa.  Use two integers to
   // collect 9 digits each (this is faster than using floating-point).
   // If the mantissa has more than 18 digits, ignore the extras, since
@@ -2730,7 +2732,7 @@ double at_illecker_strtod(const char *string) {
     }
     fraction = (1.0e9 * frac1) + frac2;
   }
-  
+
   // Skim off the exponent.
   p = pExp;
   if ((*p == 'E') || (*p == 'e')) {
@@ -2758,7 +2760,7 @@ double at_illecker_strtod(const char *string) {
   } else {
     exp = fracExp + exp;
   }
-  
+
   // Generate a floating-point number that represents the exponent.
   // Do this by processing the exponent one bit at a time to combine
   // many powers of 2 of 10. Then combine the exponent with the
@@ -2784,7 +2786,7 @@ double at_illecker_strtod(const char *string) {
   } else {
     fraction *= dblExp;
   }
-  
+
 done:
   if (sign) {
     return -fraction;
@@ -2798,21 +2800,21 @@ long long java_lang_Long_parseLong(int str_obj_ref, int * exception) {
   int str_value = 0;
   int str_count = 0;
   char str_val[255]; // max len of 255
-  
+
   str_value = org_trifort_rootbeer_get_string_char_array(str_obj_ref, exception);
   str_count = org_trifort_array_length(str_value, exception);
-  
+
   // Check if str_count > 255, then truncate
   if (str_count > 255) {
     str_count = 255;
   }
-  
+
   // Convert string to char[]
   for(int i = 0; i < str_count; i++){
     str_val[i] = char__array_get(str_value, i, exception);
   }
   str_val[str_count] = '\0';
-  
+
   return at_illecker_strtol(str_val, 0, 0);
 }
 
@@ -2828,21 +2830,21 @@ double java_lang_Double_parseDouble(int str_obj_ref, int * exception) {
   int str_value = 0;
   int str_count = 0;
   char str_val[255]; // max len of 255
-  
+
   str_value = org_trifort_rootbeer_get_string_char_array(str_obj_ref, exception);
   str_count = org_trifort_array_length(str_value, exception);
-  
+
   // Check if str_count > 255, then truncate
   if (str_count > 255) {
     str_count = 255;
   }
-  
+
   // Convert string to char[]
   for(int i = 0; i < str_count; i++){
     str_val[i] = char__array_get(str_value, i, exception);
   }
   str_val[str_count] = '\0';
-  
+
   return at_illecker_strtod(str_val);
 }
 
@@ -2852,7 +2854,7 @@ float java_lang_Float_parseFloat(int str_obj_ref, int * exception) {
   return java_lang_Double_parseDouble(str_obj_ref, exception);
 }
 
-$$__device__$$ 
+$$__device__$$
 int org_trifort_rootbeer_testcases_rootbeertest_serialization_ForceArrayNewRunOnGpu_getStringArray9_(int thisref, int * exception){
   int r0 = -1;
   int r1 = -1;
@@ -2861,7 +2863,7 @@ int org_trifort_rootbeer_testcases_rootbeertest_serialization_ForceArrayNewRunOn
 
   java_lang_String__array_set(r1, 0,  org_trifort_string_constant((char *) "testForceArrayNew", exception) , exception);
   if(*exception != 0) {
-    return 0; 
+    return 0;
   }
   return java_lang_String__array_get(r1, 0, exception);
 }

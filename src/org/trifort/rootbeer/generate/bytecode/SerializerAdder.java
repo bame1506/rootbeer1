@@ -10,23 +10,23 @@ package org.trifort.rootbeer.generate.bytecode;
 
 import soot.*;
 
-public class SerializerAdder {
 
-  private String m_serializerClassName;
+/**
+ * Only used one damn time by GenerateForKernel.java
+ */
+public class SerializerAdder
+{
+    private String m_serializerClassName;
 
-  public SerializerAdder(){
-  }
+    public SerializerAdder(){}
 
-  public void add(MethodCodeSegment block){
-    System.out.println("generating serialization bytecode...");
-    SootClass block_class = block.getRootSootClass();
+    public void add( final MethodCodeSegment block )
+    {
+        System.out.println( "generating serialization bytecode..." );
+        final VisitorGen generate_visitor = new VisitorGen( block.getRootSootClass() );
+        generate_visitor.generate();
+        m_serializerClassName = generate_visitor.getClassName();
+    }
 
-    VisitorGen generate_visitor = new VisitorGen(block_class);
-    generate_visitor.generate();
-    m_serializerClassName = generate_visitor.getClassName();
-  }
-
-  public String getSerializerClassName() {
-    return m_serializerClassName;
-  }
+    public String getSerializerClassName() { return m_serializerClassName; }
 }

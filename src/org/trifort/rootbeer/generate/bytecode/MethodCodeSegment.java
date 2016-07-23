@@ -22,6 +22,9 @@ import soot.Value;
 import soot.jimple.internal.JimpleLocal;
 
 
+/**
+ * Basically a wrapper around the SootMethod for the user-implementd gpuMethod
+ */
 public class MethodCodeSegment
 {
     private SootMethod m_existingMethod;

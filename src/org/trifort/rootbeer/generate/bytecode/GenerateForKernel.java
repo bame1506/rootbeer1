@@ -21,7 +21,18 @@ import org.trifort.rootbeer.deadmethods.DeadMethods;
 import org.trifort.rootbeer.generate.opencl.OpenCLScene;
 import org.trifort.rootbeer.generate.opencl.tweaks.CompileResult;
 
-import soot.*;
+import soot.Scene;
+import soot.SootClass;
+import soot.SootMethod;
+import soot.Local;
+import soot.Value;
+import soot.BooleanType;
+import soot.Unit;
+import soot.Modifier;
+import soot.RefType;
+import soot.IntType;
+import soot.SootField;
+import soot.Type;
 import soot.jimple.IntConstant;
 import soot.jimple.Jimple;
 import soot.jimple.JimpleBody;
@@ -32,12 +43,12 @@ import soot.rbclassload.RootbeerClassLoader;
 
 public class GenerateForKernel
 {
-    private MethodCodeSegment m_codeSegment               ;
-    private SootClass         m_sootClass                 ;
-    private List<Local>       m_firstIterationLocals      ;
-    private Jimple            m_jimple                    ;
-    private String            m_runtimeBasicBlockClassName;
-    private String            m_serializerClassName       ;
+    private final MethodCodeSegment m_codeSegment               ;
+    private final SootClass         m_sootClass                 ;
+    private final List<Local>       m_firstIterationLocals      ;
+    private final Jimple            m_jimple                    ;
+    private       String            m_runtimeBasicBlockClassName;
+    private       String            m_serializerClassName       ;
 
     public GenerateForKernel
     (
@@ -51,28 +62,104 @@ public class GenerateForKernel
         m_codeSegment          = new MethodCodeSegment( method );
     }
 
-    public Type getType(){
-        return m_sootClass.getType();
-    }
+    public Type getType(){ return m_sootClass.getType(); }
 
-    public void makeClass() throws Exception {
-        m_serializerClassName = m_codeSegment.getSootClass().getName()+"Serializer";
+    /**
+     * compiles user defined gpuMethod and adds some other possibly needed
+     * methods to the Kernel implementation
+     */
+    public void makeClass() throws Exception
+    {
+        m_serializerClassName = m_codeSegment.getSootClass().getName() + "Serializer";
 
-        makeCpuBody();
+        m_codeSegment.makeCpuBody( m_sootClass );
         makeGpuBody();
         makeIsUsingGarbageCollectorBody();
         makeIsReadOnly();
-        makeExceptionNumbers();
 
+        String prefix = "";
+        if ( Options.v().rbcl_remap_all() )
+            prefix = Options.v().rbcl_remap_prefix();
+        makeExceptionMethod( "getNullPointerNumber", prefix+"java.lang.NullPointerException" );
+        makeExceptionMethod( "getOutOfMemoryNumber", prefix+"java.lang.OutOfMemoryError"     );
+
+        /* do these two lines do anything? They could possibly access some
+         * of the many singletons, but all that is very confusing
+         * programming style */
         SerializerAdder adder = new SerializerAdder();
-        adder.add(m_codeSegment);
+        adder.add( m_codeSegment );
     }
 
-    private void makeCpuBody() {
-        m_codeSegment.makeCpuBody(m_sootClass);
+    /**
+     * Adds a method isUsingGarbageCollector returning a hardcoded value.
+     * The garbage collector is by default deactivated.
+     * It is however automatically turned on when the Jimple analyzer
+     * finds a new statement
+     * @see rootbeer/generate/opencl/body/MethodJimpleValueSwitch.java
+     */
+    private void makeIsUsingGarbageCollectorBody()
+    {
+        final BytecodeLanguage bcl = new BytecodeLanguage();
+        bcl.openClass( m_sootClass );
+        bcl.startMethod( "isUsingGarbageCollector", BooleanType.v() );
+        bcl.refThis();
+        if ( OpenCLScene.v().getUsingGarbageCollector() )
+            bcl.returnValue(IntConstant.v(1));
+        else
+            bcl.returnValue(IntConstant.v(0));
+        bcl.endMethod();
     }
 
-    private void makeGetCodeMethodThatReturnsBytes(boolean m32, String filename) {
+    /**
+     * adds method called isReadOnly which returns a hardcoded constant:
+     * 0 if members of gpuMethod are written to, and 1 (true) if not, meaning
+     * the Kernel implementing class containing gpuMethod is read-only
+     *
+     * @todo does it pose a problem if the user also defines a isReadOnly
+     *       method in his Kernel implementation ??? same for other startMethod
+     *       calls like garbage collector
+     */
+    private void makeIsReadOnly()
+    {
+        final BytecodeLanguage bcl = new BytecodeLanguage();
+        bcl.openClass( m_sootClass );
+        bcl.startMethod( "isReadOnly", BooleanType.v() );
+        bcl.refThis();
+        /* the same as (@see rootbeer/generate/bytecode/ReadOnlyTypes.java):
+         *   if ( ! m_WrittenClasses.contains( m_codeSegment.getRootMethod().getDeclaringClass().getName() ) )
+         * which is the same as
+         *   if ( ! m_WrittenClasses.contains( m_sootClass.getName() ) )
+         * m_WrittenClasses is actually complex,
+         * Note that makeGpuBody() is required to be called before this, because
+         * it sets the code segment with
+         *   OpenCLScene.v().addCodeSegment( m_codeSegment );
+         */
+        if ( OpenCLScene.v().getReadOnlyTypes().isRootReadOnly() )
+            bcl.returnValue( IntConstant.v(1) );
+        else
+            bcl.returnValue( IntConstant.v(0) );
+        bcl.endMethod();
+    }
+
+    private void makeExceptionMethod
+    (
+        final String method_name,
+        final String cls_name
+    )
+    {
+        final SootClass soot_class = Scene.v().getSootClass(cls_name);
+        final int number = RootbeerClassLoader.v().getClassNumber(soot_class);
+
+        BytecodeLanguage bcl = new BytecodeLanguage();
+        bcl.openClass( m_sootClass );
+        bcl.startMethod( method_name, IntType.v() );
+        bcl.refThis();
+        bcl.returnValue(IntConstant.v(number));
+        bcl.endMethod();
+    }
+
+    private void makeGetCodeMethodThatReturnsBytes(boolean m32, String filename)
+    {
         BytecodeLanguage bcl = new BytecodeLanguage();
         bcl.openClass(m_sootClass);
         SootClass string = Scene.v().getSootClass("java.lang.String");
@@ -82,7 +169,8 @@ public class GenerateForKernel
         bcl.endMethod();
     }
 
-    private void makeGetCubinSizeMethod(boolean m32, int length){
+    private void makeGetCubinSizeMethod(boolean m32, int length)
+    {
         BytecodeLanguage bcl = new BytecodeLanguage();
         bcl.openClass(m_sootClass);
         bcl.startMethod("getCubin"+(m32 ? "32" : "64")+"Size", IntType.v());
@@ -91,7 +179,8 @@ public class GenerateForKernel
         bcl.endMethod();
     }
 
-    private void makeGetCubinErrorMethod(boolean m32, boolean error){
+    private void makeGetCubinErrorMethod(boolean m32, boolean error)
+    {
         BytecodeLanguage bcl = new BytecodeLanguage();
         bcl.openClass(m_sootClass);
         bcl.startMethod("getCubin"+(m32 ? "32" : "64")+"Error", BooleanType.v());
@@ -104,14 +193,23 @@ public class GenerateForKernel
         bcl.endMethod();
     }
 
-    private void makeGetCodeMethodThatReturnsString(String gpu_code, boolean unix){
+    /**
+     * This much code for a adding a simple method which just returns a string
+     * It is amazing ...
+     */
+    private void makeGetCodeMethodThatReturnsString
+    (
+        final String gpu_code,
+        final boolean unix
+    )
+    {
         //make the getCode method with the results of the opencl code generation
         String name = "getCode";
-        if(unix){
+        if ( unix )
             name += "Unix";
-        } else {
+        else
             name += "Windows";
-        }
+
         SootMethod getCode = new SootMethod(name, new ArrayList(), RefType.v("java.lang.String"), Modifier.PUBLIC);
         getCode.setDeclaringClass(m_sootClass);
         m_sootClass.addMethod(getCode);
@@ -175,9 +273,11 @@ public class GenerateForKernel
         getCode.setActiveBody(body);
     }
 
-    private void makeGpuBody() throws Exception {
-        OpenCLScene.v().addCodeSegment(m_codeSegment);
-        if(Configuration.compilerInstance().getMode() == Configuration.MODE_GPU){
+    private void makeGpuBody() throws Exception
+    {
+        OpenCLScene.v().addCodeSegment( m_codeSegment );
+        if ( Configuration.compilerInstance().getMode() == Configuration.MODE_GPU )
+        {
             CompileResult[] result = OpenCLScene.v().getCudaCode();
             for (CompileResult res : result) {
                 String suffix = res.is32Bit() ? "-32" : "-64";
@@ -195,7 +295,9 @@ public class GenerateForKernel
             }
             makeGetCodeMethodThatReturnsString("", true);
             makeGetCodeMethodThatReturnsString("", false);
-        } else {
+        }
+        else
+        {
             String[] code = OpenCLScene.v().getOpenCLCode();
             //code[0] is unix
             //code[1] is windows
@@ -227,7 +329,8 @@ public class GenerateForKernel
         }
     }
 
-    private String cubinFilename(boolean use_class_folder, String suffix){
+    private String cubinFilename(boolean use_class_folder, String suffix)
+    {
         String class_name = File.separator +
                         m_serializerClassName.replace(".", File.separator) +
                         suffix + ".cubin";
@@ -237,7 +340,8 @@ public class GenerateForKernel
             return class_name;
     }
 
-    private void writeBytesToFile(byte[] bytes, String filename) {
+    private void writeBytesToFile(byte[] bytes, String filename)
+    {
         try {
             File file = new File(filename);
             File parent = file.getParentFile();
@@ -251,65 +355,8 @@ public class GenerateForKernel
         }
     }
 
-    public SootField getField(String name, Type type){
-        return m_sootClass.getField(name, type);
-    }
-
-    public void addFirstIterationLocal(Local local) {
-        m_firstIterationLocals.add(local);
-    }
-
-    private void makeIsUsingGarbageCollectorBody() {
-        BytecodeLanguage bcl = new BytecodeLanguage();
-        bcl.openClass(m_sootClass);
-        bcl.startMethod("isUsingGarbageCollector", BooleanType.v());
-        bcl.refThis();
-        if(OpenCLScene.v().getUsingGarbageCollector())
-            bcl.returnValue(IntConstant.v(1));
-        else
-            bcl.returnValue(IntConstant.v(0));
-        bcl.endMethod();
-    }
-
-    public String getRuntimeBasicBlockName() {
-        return m_runtimeBasicBlockClassName;
-    }
-
-    public String getSerializerName() {
-        return m_serializerClassName;
-    }
-
-    private void makeIsReadOnly() {
-        BytecodeLanguage bcl = new BytecodeLanguage();
-        bcl.openClass(m_sootClass);
-        bcl.startMethod("isReadOnly", BooleanType.v());
-        bcl.refThis();
-        if(OpenCLScene.v().getReadOnlyTypes().isRootReadOnly())
-            bcl.returnValue(IntConstant.v(1));
-        else
-            bcl.returnValue(IntConstant.v(0));
-        bcl.endMethod();
-    }
-
-    private void makeExceptionNumbers() {
-        String prefix = Options.v().rbcl_remap_prefix();
-        if(Options.v().rbcl_remap_all() == false){
-            prefix = "";
-        }
-        makeExceptionMethod("getNullPointerNumber", prefix+"java.lang.NullPointerException");
-        makeExceptionMethod("getOutOfMemoryNumber", prefix+"java.lang.OutOfMemoryError");
-    }
-
-    private void makeExceptionMethod(String method_name, String cls_name) {
-        SootClass soot_class = Scene.v().getSootClass(cls_name);
-        int number = RootbeerClassLoader.v().getClassNumber(soot_class);
-
-        BytecodeLanguage bcl = new BytecodeLanguage();
-        bcl.openClass(m_sootClass);
-        bcl.startMethod(method_name, IntType.v());
-        bcl.refThis();
-        bcl.returnValue(IntConstant.v(number));
-        bcl.endMethod();
-    }
-
+    public SootField getField(String name, Type type) { return m_sootClass.getField(name, type); }
+    public void addFirstIterationLocal(Local local) { m_firstIterationLocals.add(local); }
+    public String getRuntimeBasicBlockName() { return m_runtimeBasicBlockClassName; }
+    public String getSerializerName       () { return m_serializerClassName; }
 }
