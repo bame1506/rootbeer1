@@ -7,52 +7,56 @@
 
 package org.trifort.rootbeer.deadmethods;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class MethodNameParser
 {
-    public List<String> parse( final List<Block> blocks )
+    /**
+     * returns a list of strings containing the method names to the list
+     * of blocks being given. Note that non-method definition blocks are
+     * ignored. I.e. the returned list might contain fewer strings than blocks
+     */
+    public static List<String> parse( final List<Block> blocks )
     {
         final List<String> ret = new ArrayList<String>();
         for ( Block block : blocks )
         {
             if ( block.isMethod() )
             {
-                String name = parseMethodName(block);
+                final String name = parseMethodName( block.getFullString() );
                 ret.add(name);
-                Method method = new Method(name);
-                block.setMethod(method);
+                block.setMethod( new Method(name) );
             }
         }
         return ret;
     }
 
-    private String parseMethodName( Block block )
+    /**
+     * Equivalent to this sed regex command: s|([^ ]*\(|\1|p
+     * I.e. find the first word in front of the first opening parenthesis (
+     * @todo use java regex
+     */
+    private static String parseMethodName( final String str )
     {
-        final String str = block.getFullString();
         int first_char_pos = str.indexOf('(') - 1;
         while ( first_char_pos >= 0 )
         {
-            char c = str.charAt( first_char_pos );
-            if(c == ' ')
-                --first_char_pos;
-            else
+            if ( str.charAt( first_char_pos ) != ' ' )
                 break;
-
+            --first_char_pos;
         }
 
         int first_space_pos = first_char_pos - 1;
         while ( first_space_pos >= 0 )
         {
-            char c = str.charAt(first_space_pos);
-            if ( c == ' ' )
+            if ( str.charAt( first_space_pos ) == ' ' )
                 break;
-            else
-                --first_space_pos;
-
+            --first_space_pos;
         }
-        final String method_name = str.substring( first_space_pos+1, first_char_pos+1 );
-        return method_name;
+
+        return str.substring( first_space_pos+1, first_char_pos+1 );
     }
 }

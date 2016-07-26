@@ -608,6 +608,18 @@ GPU Consulting available for Rootbeer and CUDA. Please email pcpratts@trifort.or
    Install cross-compiling libraries:
    `sudo apt-get install gcc-4.9-multilib g++-4.9-multilib`
 
+ - java.lang.ClassCastException: MonteCarloPiKernel cannot be cast to [J
+	at MonteCarloPiKernel.org_trifort_readFromHeapRefFields_MonteCarloPiKernel0(Jasmin)
+	at MonteCarloPiKernelSerializer.doReadFromHeap(Jasmin)
+	at org.trifort.rootbeer.runtime.Serializer.readFromHeap(Serializer.java:155)
+	at org.trifort.rootbeer.runtime.CUDAContext.readBlocksList(CUDAContext.java:452)
+	at org.trifort.rootbeer.runtime.CUDAContext$GpuEventHandler.onEvent(CUDAContext.java:332)
+	at org.trifort.rootbeer.runtime.CUDAContext$GpuEventHandler.onEvent(CUDAContext.java:308)
+	at com.lmax.disruptor.BatchEventProcessor.run(BatchEventProcessor.java:128)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:724)
+
 ### Authors
 
 Phil Pratt-Szeliga
@@ -850,6 +862,13 @@ Starting with the main java-file the dependency structure can be viewed with [in
  1.1.1 generate/opencl/OpenCLScene.makeSourceCode
  1.1.1 generate/opencl/OpenCLScene.methodBodiesString
  1.1.1 generate/opencl/tweaks/CudaTweaks.compileProgram
+ 1.1.1 deadmethods/DeadMethods.parseString
+ 1.1.1 deadmethods/DeadMethods.getResult
+ 1.1.1 deadmethods/LiveMethodDetector.parse
+ 1.1.1 generate/opencl/tweaks/ParallelCompile.compile
+ 1.1.1 generate/opencl/tweaks/ParallelCompile.run
+ 1.1.1 generate/opencl/tweaks/ParallelCompileJob.compile
+ 1.1.1 generate/opencl/tweaks/ParallelCompileJob.getResult
  1. writeJimpleFile
  1. writeClassFile
  1. makeOutJar
@@ -981,12 +1000,76 @@ Some classes do have main functions for testing purposes. Start them e.g. with
 Note that the second argument may not be different because of the `package` keyword at the top of this file. Instead adjust the classpath if necessary!
 
 
+### Memory
+
+All memory is managed by rootbeer in these variables:
+
+    __shared__ char m_shared[%%shared_mem_size%%];
+    struct m_Local {
+        /**
+         * Pointer to memory with objects aligned to 16 byte boundaries
+         */
+        unsigned long long dpObjectMem,        // 0
+        unsigned long long objectMemSizeDiv16, // 1
+        /**
+         * memory for reda-only members of classes
+         */
+        unsigned long long dpClassMem          // 2
+    }
+
+### Folder Structure
+
+    src/org/trifort/rootbeer/
+    +- compiler
+    +- compressor
+    +- configuration
+    +- deadmethods
+    |  * Classes needed to find methods in the generated C source code which
+    |  * are unused.
+    |  *   1. lines or smaller units of strings are categorized into
+    |  *      TYPE_COMMENT, TYPE_STRING, ... in so called Segments.
+    |  *   2. segments are conjoined to so called Blocks. One block may be a
+    |  *      function body or function declaration or a preprocessor directive.
+    |  *   3. Get the name of each method and look create a call graph,
+    |  *      filtering unused methods for performance reasons?
+    +- entry
+    +- generate
+    +- generate
+    |  +- bytecode
+    |     +- permissiongraph
+    |  +- opencl
+    |     +- body
+    |     +- fields
+    |     +- tweaks
+    +- remap
+    +- runtime
+    |  +- nemu
+    |  +- gpu
+    |  +- util
+    +- runtimegpu
+    +- test
+    +- testcases
+    |  +- everything
+    |  +- otherpackage
+    |  +- otherpackage2
+    |  +- rootbeertest
+    |  |  +- arraysum
+    |  |  +- baseconversion
+    |  |  +- canonical
+    |  |  +- canonical2
+    |  |  +- exception
+    |  |  +- gpurequired
+    |  |  +- kerneltemplate
+    |  |  +- math
+    |  |  +- ofcoarse
+    |  |  +- remaptest
+    |  |  +- serialization
+    +- util
+
+
 ### ToDo
 
    - add compiler warnings
    - streamlining pack-rootbeer
-   - add support for #  define with spaces
-   - reduce debug output and explain it (now I udnerstand what block and segments mean)
-   - add support for /* */ style comments -> TYPE_COMMENT recognition somehow
    - check which metrics do change on a changed kernel, e.g. when adding a local variable
-
+   - CompiledKernel backtrace verfolgen in Rootbeer und vlt. einfach so Fehler schon suchen oder Debug-Methoden einbauen

@@ -101,8 +101,8 @@ public class CudaTweaks extends Tweaks {
             //cuda_code = compressor.compress(cuda_code);
 
             File generated = new File( RootbeerPaths.v().getRootbeerHome() + "generated.cu" );
-            writer = new PrintWriter(generated);
-            writer.println(cuda_code.toString());
+            writer = new PrintWriter( generated );
+            writer.println( cuda_code.toString() );
             writer.flush();
             writer.close();
 

@@ -5,12 +5,18 @@
  * See the file LICENSE for copying permission.
  */
 
+
 package org.trifort.rootbeer.deadmethods;
 
+
+/**
+ * Abstraction which save a string and the recognized type of what the string
+ * represents in C source code. Could be a simple struct in C
+ */
 public class Segment
 {
-    private String m_str ;
-    private int    m_type;
+    private final String m_str ;
+    private final int    m_type;
 
     public Segment( final String str, final int type )
     {
@@ -20,17 +26,4 @@ public class Segment
 
     public String getString(){ return m_str ; }
     public int    getType  (){ return m_type; }
-
-    @Override public String toString()
-    {
-        switch ( m_type )
-        {
-            case SegmentParser.TYPE_FREE   : return "TYPE_FREE: "    + m_str;
-            case SegmentParser.TYPE_COMMENT: return "TYPE_COMMENT: " + m_str;
-            case SegmentParser.TYPE_STRING : return "TYPE_STRING: "  + m_str;
-            case SegmentParser.TYPE_CHAR   : return "TYPE_CHAR: "    + m_str;
-            case SegmentParser.TYPE_DEFINE : return "TYPE_DEFINE: "  + m_str;
-      }
-      throw new RuntimeException( "unknown type: " + m_type + " str: " + m_str );
-    }
 }

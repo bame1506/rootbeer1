@@ -22,9 +22,7 @@ public class BlockingQueue<T>
 {
     private LinkedBlockingQueue<T> m_Queue;
 
-    public BlockingQueue(){
-        m_Queue = new LinkedBlockingQueue<T>();
-    }
+    public BlockingQueue(){ m_Queue = new LinkedBlockingQueue<T>(); }
 
     public void put(T item)
     {
@@ -38,9 +36,7 @@ public class BlockingQueue<T>
         }
     }
 
-    public int size(){
-        return m_Queue.size();
-    }
+    public int size(){ return m_Queue.size(); }
 
     /**
      * Retrieves and removes the head of this queue, waiting if necessary

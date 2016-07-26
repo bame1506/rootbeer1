@@ -7,14 +7,16 @@
 
 package org.trifort.rootbeer.deadmethods;
 
+
 import java.util.List;
 import java.util.Set;
 
 import org.trifort.rootbeer.util.ReadFile;
 
+
 public class DeadMethods
 {
-    private static final boolean debugging = true;
+    private static final boolean debugging = false;
 
     private List<Block> m_blocks;
     private Set<String> m_live;
@@ -39,17 +41,14 @@ public class DeadMethods
 
     public void parseString( String contents )
     {
-        final SegmentParser segment_parser = new SegmentParser();
-        final List<Segment> segments       = segment_parser.parse(contents);
-
-        final BlockParser block_parser     = new BlockParser();
-        final List<Block> blocks           = block_parser.parse(segments);
-
-        final MethodNameParser name_parser = new MethodNameParser();
-        final List<String> method_names    = name_parser.parse(blocks);
-
-        final MethodAnnotator annotator    = new MethodAnnotator();
-        annotator.parse( blocks, method_names );
+        /* categorize lines by comment, string, ... */
+        final List<Segment> segments     = new SegmentParser().parse( contents );
+        /* group segments to method declarations, method bodies, ... */
+        final List<Block>   blocks       = new BlockParser().parse( segments );
+        /* get the method names and save them into each block with Block.setMethod */
+        final List<String>  method_names = new MethodNameParser().parse( blocks );
+        /* find and set the names of methods each block actually invokes */
+        new MethodAnnotator().parse( blocks, method_names );
 
         m_blocks = blocks;
 
@@ -57,40 +56,96 @@ public class DeadMethods
         if ( debugging )
         {
             System.out.println( "+------------ DeadMethods.parseString ------------" );
-            for ( Segment segment : segments )
+            /**
+             * Sample Output:
+             * | TYPE_FREE   : __device__  char *
+             * | TYPE_FREE   : org_trifort_gc_deref( int handle )
+             * | TYPE_FREE   : {
+             * | TYPE_FREE   :     char * data_arr = (char *) m_Local[0];
+             * | TYPE_COMMENT: // dpObjectMem
+             * | TYPE_FREE   :     long long lhandle = handle;
+             * | TYPE_FREE   :     lhandle = lhandle << 4;
+             * | TYPE_FREE   :     return &data_arr[lhandle];
+             * | TYPE_FREE   : }
+             * I.e. segments are functional units of some kind, often this
+             * corresponds to one segment per line, but things like __device__
+             * and end-of-line comments are split into another segment
+             *
+             * Uncomment this to see if SegmentParser works correctly
+             */
+            for ( final Segment segment : segments )
             {
-                System.out.println( "| " + segment.toString() );
+                System.out.print( "| TYPE_" );
+                switch ( segment.getType() )
+                {
+                    case SegmentParser.TYPE_FREE   : System.out.print( "FREE   " ); break;
+                    case SegmentParser.TYPE_COMMENT: System.out.print( "COMMENT" ); break;
+                    case SegmentParser.TYPE_STRING : System.out.print( "STRING " ); break;
+                    case SegmentParser.TYPE_CHAR   : System.out.print( "CHAR   " ); break;
+                    case SegmentParser.TYPE_DEFINE : System.out.print( "DEFINE " ); break;
+                    default:
+                        throw new RuntimeException( "unknown type: " +
+                        segment.getType() + " str: " + segment.getString() );
+                }
+                System.out.println( ": " + segment.getString() );
             }
-            for ( Block block : blocks )
+
+            /**
+             * Test if the function name and body and function calls were
+             * recognized correctly
+             *
+             * Example Output:
+             * @verbatim
+             *   | <block method=no, name="">
+             *   | #include <assert.h>
+             *   | </block>
+             *   | <block method=no, name="">
+             *   | __constant__ size_t m_Local[3];
+             *   | </block>
+             *   | <block method=yes, name="getThreadId">
+             *   | __device__ int getThreadId()
+             *   {
+             *       int linearized = 0;
+             *       int max        = 1;
+             *
+             *       linearized += threadIdx.z * max; max *= blockDim.z;
+             *       linearized += threadIdx.y * max; max *= blockDim.y;
+             *       linearized += threadIdx.x * max; max *= blockDim.x;
+             *       linearized += blockIdx.y  * max; max *= gridDim.y;
+             *       linearized += blockIdx.x  * max;
+             *       return linearized;
+             *   }| </block>
+             *   | <block method=yes, name="getThreadIdxx">
+             *   | __device__ int       getThreadIdxx(){
+             *    return threadIdx.x; }| </block>
+             * @endverbatim
+             */
+            for ( final Block block : blocks )
             {
-                System.out.println( "| <block>" );
+                System.out.print( "| <block method=" );
+                System.out.print( block.isMethod() ? "yes" : "no" );
+                System.out.print( ", name=\"" );
+                if ( block.isMethod() )
+                    System.out.print( block.getMethod().getName() );
+                System.out.println( "\">" );
                 System.out.println( "| " + block.toString() );
+                if ( block.isMethod() )
+                {
+                    final List<String> invokedNames = block.getMethod().getInvoked();
+                    System.out.print( "| invoked these " + invokedNames.size() + " methods: " );
+                    for ( final String invoked : invokedNames )
+                        System.out.print( invoked + " " );
+                    System.out.println();
+                }
                 System.out.println( "| </block>" );
-            }
-            for ( Block block : blocks )
-            {
-                if ( block.isMethod() )
-                {
-                    Method method = block.getMethod();
-                    System.out.println( "| " + method.getName() );
-                }
-            }
-            for ( Block block : blocks )
-            {
-                if ( block.isMethod() )
-                {
-                    Method method = block.getMethod();
-                    System.out.println( "| name: "+method.getName() );
-                    for ( String invoked : method.getInvoked() )
-                        System.out.println( "|   invoked: "+invoked );
-                }
             }
         }
     }
 
     /**
-     * Returns a newline separated list of methods which are in the set live
-     * and also of other non-method members
+     * Returns a newline separated list of methods which are in the set 'live'
+     * and also of other non-method members.
+     * This basically returns the source code which is actually needed.
      */
     private String outputLive
     (
@@ -106,7 +161,11 @@ public class DeadMethods
                 /* @todo isn't this possibly hazardous to use contains instead
                  * of equals? */
                 if ( ! live.contains( block.getMethod().getName() ) )
+                {
+                    if ( debugging )
+                        System.out.println( "[DeadMethods.java] Filtered out dead method '" + block.getMethod().getName() + "'" );
                     continue;
+                }
                 ret.append( block.toString() );
                 ret.append( "\n" );
             }
@@ -119,8 +178,8 @@ public class DeadMethods
 
         if ( debugging )
         {
-            System.out.println( "+------------ DeadMethods.outputLive ------------" );
-            System.out.println( ret.toString() );
+            //System.out.println( "+------------ DeadMethods.outputLive ------------" );
+            //System.out.println( ret.toString() );
         }
 
         return ret.toString();
@@ -129,25 +188,15 @@ public class DeadMethods
     public String getResult()
     {
         if ( m_live == null )
-        {
-            LiveMethodDetector detector = new LiveMethodDetector();
-            m_live = detector.parse( m_blocks );
-        }
-
+            m_live = new LiveMethodDetector().parse( m_blocks );
         return outputLive( m_blocks, m_live );
     }
 
     public String getCompressedResult()
     {
         if ( m_live == null )
-        {
-            LiveMethodDetector detector = new LiveMethodDetector();
-            m_live = detector.parse(m_blocks);
-        }
-
-        MethodNameCompressor compressor = new MethodNameCompressor();
-        List<Block> blocks = compressor.parse(m_blocks, m_live);
-
+            m_live = new LiveMethodDetector().parse( m_blocks );
+        List<Block> blocks = new MethodNameCompressor().parse( m_blocks, m_live );
         return outputLive(blocks, m_live);
     }
 }
