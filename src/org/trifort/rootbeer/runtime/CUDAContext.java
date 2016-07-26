@@ -1,4 +1,6 @@
+
 package org.trifort.rootbeer.runtime;
+
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -20,6 +22,7 @@ import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 
 import org.trifort.rootbeer.generate.bytecode.Constants;
+
 
 public class CUDAContext implements Context
 {
@@ -57,9 +60,7 @@ public class CUDAContext implements Context
      * start (or first use of this class) and not on each new object creation.
      * This also means when initializing multiple GPU devices this function
      * is only called once. */
-    static {
-        initializeDriver();
-    }
+    static { initializeDriver(); }
 
     public CUDAContext( final GpuDevice device )
     {
@@ -204,11 +205,10 @@ public class CUDAContext implements Context
             m_classMemory        = new FixedMemory(1024); /* why 1024 ??? */
             m_exceptionsMemory   = new FixedMemory(getExceptionsMemSize(m_threadConfig));
             m_textureMemory      = new FixedMemory(8);
-            if ( m_usingHandles ) {
+            if ( m_usingHandles )
                 m_handlesMemory  = new FixedMemory(4*m_threadConfig.getNumThreads());
-            } else {
+            else
                 m_handlesMemory  = new FixedMemory(4);
-            }
         }
         else
         {
@@ -216,28 +216,27 @@ public class CUDAContext implements Context
             m_classMemory        = new CheckedFixedMemory(1024);
             m_exceptionsMemory   = new CheckedFixedMemory(getExceptionsMemSize(m_threadConfig));
             m_textureMemory      = new CheckedFixedMemory(8);
-            if ( m_usingHandles ) {
+            if ( m_usingHandles )
                 m_handlesMemory  = new CheckedFixedMemory(4*m_threadConfig.getNumThreads());
-            } else {
+            else
                 m_handlesMemory  = new CheckedFixedMemory(4);
-            }
         }
         /* findMemory size needs m_classMemory, m_textureMemory to be set! */
-        if ( m_memorySize == -1 ) {
+        if ( m_memorySize == -1 )
             findMemorySize( );
-        }
-        if ( m_usingUncheckedMemory ) {
+        if ( m_usingUncheckedMemory )
             m_objectMemory = new FixedMemory( m_memorySize );
-        }   else {
+        else
             m_objectMemory = new CheckedFixedMemory( m_memorySize );
-        }
 
+        /* push a new command into the multithreaded com.lmax ring buffer */
         final long seq = m_ringBuffer.next();
-        GpuEvent gpuEvent = m_ringBuffer.get( seq );
+        final GpuEvent gpuEvent = m_ringBuffer.get( seq );
         gpuEvent.setValue( GpuEventCommand.NATIVE_BUILD_STATE );
         gpuEvent.getFuture().reset();
         m_ringBuffer.publish( seq );
-        gpuEvent.getFuture().take(); /* wait for NATIVE_BUILD_STATE to have finished */
+        /* wait for NATIVE_BUILD_STATE to have finished */
+        gpuEvent.getFuture().take();
     }
 
     private long getExceptionsMemSize( ThreadConfig thread_config )
@@ -638,6 +637,8 @@ public class CUDAContext implements Context
         m_stats.setDeserializationTime( m_readBlocksStopwatch.elapsedTimeMillis() );
     }
 
+    /************** Declarations which will be implemented using **************
+     **************     the java native interface from C++       **************/
     private static native void initializeDriver();
     private native long allocateNativeContext();
     private native void freeNativeContext(long nativeContext);

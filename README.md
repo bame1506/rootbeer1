@@ -608,13 +608,21 @@ GPU Consulting available for Rootbeer and CUDA. Please email pcpratts@trifort.or
    Install cross-compiling libraries:
    `sudo apt-get install gcc-4.9-multilib g++-4.9-multilib`
 
- - java.lang.ClassCastException: MonteCarloPiKernel cannot be cast to [J
+ - 
+   java.lang.ClassCastException: MonteCarloPiKernel cannot be cast to [J
 	at MonteCarloPiKernel.org_trifort_readFromHeapRefFields_MonteCarloPiKernel0(Jasmin)
 	at MonteCarloPiKernelSerializer.doReadFromHeap(Jasmin)
 	at org.trifort.rootbeer.runtime.Serializer.readFromHeap(Serializer.java:155)
 	at org.trifort.rootbeer.runtime.CUDAContext.readBlocksList(CUDAContext.java:452)
 	at org.trifort.rootbeer.runtime.CUDAContext$GpuEventHandler.onEvent(CUDAContext.java:332)
 	at org.trifort.rootbeer.runtime.CUDAContext$GpuEventHandler.onEvent(CUDAContext.java:308)
+     * Down below this are multithreading related. 
+     * I.e. CudaContext.GpuEventHandler.onEvent is called concurrently. 
+     * The setup is done using the lmax.com queue with:
+     *   m_disruptor            = new Disruptor<GpuEvent>( GpuEvent.EVENT_FACTORY, 64, m_exec );
+     *   m_handler              = new GpuEventHandler();
+     *   m_disruptor.handleEventsWith( m_handler );
+     *   m_ringBuffer           = m_disruptor.start(); 
 	at com.lmax.disruptor.BatchEventProcessor.run(BatchEventProcessor.java:128)
 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
