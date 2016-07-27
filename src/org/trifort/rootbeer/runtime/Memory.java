@@ -54,9 +54,9 @@ public interface Memory
     public void clearHeapEndPtr();
     public void setHeapEndPtr(long value);
     public long getHeapEndPtr();
-    public long getPointer();
+    public long getPointer();               /* manually managed relative pointer to address for heap */
     public long getSize();
-    public long getAddress();
+    public long getAddress();               /* memory pointer where the ByteArray resides */
     public void setAddress(long address);
     public void close();
 

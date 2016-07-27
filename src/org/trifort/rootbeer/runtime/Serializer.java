@@ -7,32 +7,35 @@
 
 package org.trifort.rootbeer.runtime;
 
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+
 public abstract class Serializer
 {
-    public Memory mMem;
-    public Memory mTextureMem;
+    public final Memory mMem;
+    public final Memory mTextureMem;
 
-    private static final Map<Object, Long>  mWriteToGpuCache;
-    private static final Map<Long, Object>  mReverseWriteToGpuCache;
-    private static final Map<Long, Object>  mReadFromGpuCache;
-    private static       Map<Long, Integer> m_classRefToTypeNumber;
+    private final static Map<Object, Long>  mWriteToGpuCache;
+    private final static Map<Long, Object>  mReverseWriteToGpuCache;
+    private final static Map<Long, Object>  mReadFromGpuCache;
+    private final static Map<Long, Integer> m_classRefToTypeNumber;
 
     /* static initializer for static members */
-    static {
+    static
+    {
         mWriteToGpuCache        = new IdentityHashMap<Object, Long>();
-        mReverseWriteToGpuCache = new HashMap<Long, Object>();
-        mReadFromGpuCache       = new HashMap<Long, Object>();
+        mReverseWriteToGpuCache = new HashMap<Long, Object >();
+        mReadFromGpuCache       = new HashMap<Long, Object >();
         m_classRefToTypeNumber  = new HashMap<Long, Integer>();
     }
 
-    public Serializer( Memory mem, Memory texture_mem )
+    public Serializer( final Memory mem, final Memory texture_mem )
     {
-        mMem = mem;
+        mMem        = mem;
         mTextureMem = texture_mem;
         mReadFromGpuCache.clear();
         mWriteToGpuCache.clear();
@@ -41,55 +44,58 @@ public abstract class Serializer
     }
 
     /* default argument: write_data = true */
-    public long writeToHeap( Object o ) { return writeToHeap(o, true); }
+    public long writeToHeap( final Object o ) { return writeToHeap(o, true); }
     public void writeStaticsToHeap() { doWriteStaticsToHeap(); }
 
-  private static class WriteCacheResult {
-    public long m_Ref;
-    public boolean m_NeedToWrite;
-    public WriteCacheResult(long ref, boolean need_to_write){
-      m_Ref = ref;
-      m_NeedToWrite = need_to_write;
-    }
-  }
+    public void addClassRef(long ref, int class_number){ m_classRefToTypeNumber.put(ref, class_number); }
 
-  public void addClassRef(long ref, int class_number){ m_classRefToTypeNumber.put(ref, class_number); }
+    public int[] getClassRefArray()
+    {
+        int max_type = 0;
+        for(int num : m_classRefToTypeNumber.values()){
+            if(num > max_type){
+                max_type = num;
+            }
+        }
+        int[] ret = new int[max_type+1];
+        for(long value : m_classRefToTypeNumber.keySet()){
+            int pos = m_classRefToTypeNumber.get(value);
+            ret[pos] = (int) (value >> 4);
+        }
+        return ret;
+    }
 
-  public int[] getClassRefArray(){
-    int max_type = 0;
-    for(int num : m_classRefToTypeNumber.values()){
-      if(num > max_type){
-        max_type = num;
-      }
+    private static class WriteCacheResult
+    {
+        public long m_Ref;
+        public boolean m_NeedToWrite;
+        public WriteCacheResult(long ref, boolean need_to_write){
+            m_Ref = ref;
+            m_NeedToWrite = need_to_write;
+        }
     }
-    int[] ret = new int[max_type+1];
-    for(long value : m_classRefToTypeNumber.keySet()){
-      int pos = m_classRefToTypeNumber.get(value);
-      ret[pos] = (int) (value >> 4);
-    }
-    return ret;
-  }
 
     private static synchronized WriteCacheResult checkWriteCache
     (
-        Object  o        ,
-        int     size     ,
-        boolean read_only,
-        Memory  mem
+        final Object  o        ,
+        final int     size     ,
+        final boolean read_only, // unused ???
+        final Memory  mem
     )
     {
         //strings are cached in Java 1.6, we need to make strings individual units
         //for rootbeer so concurrent modifications change different objects
         if ( o instanceof String )
         {
-            long ref = mem.mallocWithSize(size);
-            return new WriteCacheResult(ref, true);
+            long ref = mem.mallocWithSize( size );
+            return new WriteCacheResult( ref, true );
         }
         else
         {
-            if(mWriteToGpuCache.containsKey(o)){
-              long ref = mWriteToGpuCache.get(o);
-              return new WriteCacheResult(ref, false);
+            if ( mWriteToGpuCache.containsKey(o) )
+            {
+                long ref = mWriteToGpuCache.get(o);
+                return new WriteCacheResult(ref, false);
             }
             long ref = mem.mallocWithSize(size);
             mWriteToGpuCache.put(o, ref);
@@ -98,14 +104,25 @@ public abstract class Serializer
         }
     }
 
-  public Object writeCacheFetch(long ref){
-    synchronized(mWriteToGpuCache){
-      if(mReverseWriteToGpuCache.containsKey(ref)){
-        return mReverseWriteToGpuCache.get(ref);
-      }
-      return null;
+    public Object writeCacheFetch( final long ref )
+    {
+        /* in the context of multithreading execute this block atomically
+         * in order to avoid race conditions.
+         * E.g. avoid changes to mReverseWriteToGpuCache between containsKey
+         * and get.
+         * @todo so why is synchronized called with a lock on mWriteToGpuCache
+         *       instead of mReverseWriteToGpuCache ??? ???
+         *       In the end might not matter, as we just can abuse a random
+         *       object as a lock. The same lock would be used in both method
+         *       invocations
+         */
+        synchronized ( mWriteToGpuCache )
+        {
+            if ( mReverseWriteToGpuCache.containsKey(ref) )
+                return mReverseWriteToGpuCache.get(ref);
+            return null;
+        }
     }
-  }
 
     public long writeToHeap( Object o, boolean write_data )
     {
@@ -130,49 +147,58 @@ public abstract class Serializer
         return result.m_Ref;
     }
 
-  protected Object checkCache(long address, Object item){
-    synchronized(mReadFromGpuCache){
-      if(mReadFromGpuCache.containsKey(address)){
-        return mReadFromGpuCache.get(address);
-      } else {
-        mReadFromGpuCache.put(address, item);
-        return item;
-      }
+    protected Object checkCache( final long address, final Object item )
+    {
+        synchronized( mReadFromGpuCache )
+        {
+            if ( mReadFromGpuCache.containsKey( address ) )
+                return mReadFromGpuCache.get(address);
+            else
+                mReadFromGpuCache.put( address, item );
+                return item;
+        }
     }
-  }
 
-  public Object readFromHeap(Object o, boolean read_data, long address){
-    synchronized(mReadFromGpuCache){
-      if(mReadFromGpuCache.containsKey(address)){
-        Object ret = mReadFromGpuCache.get(address);
+    public Object readFromHeap
+    (
+        final Object  o,
+        final boolean read_data,
+        final long    address
+    )
+    {
+        synchronized ( mReadFromGpuCache )
+        {
+            if ( mReadFromGpuCache.containsKey(address) )
+            {
+                Object ret = mReadFromGpuCache.get(address);
+                return ret;
+            }
+        }
+        long null_ptr_check = address >> 4;
+        if(null_ptr_check == -1){
+            return null;
+        }
+        //if(o == null){
+        //    System.out.println("readFromHeap: null. addr: "+address);
+        //} else {
+        //    System.out.println("readFromHeap: "+o.toString()+". addr: "+address+" class: "+o.getClass());
+        //}
+        //BufferPrinter printer = new BufferPrinter();
+        //printer.print(mMem, address-128, 256);
+        Object ret = doReadFromHeap(o, read_data, address);
+        //if(ret == null){
+        //    System.out.println("doReadFromHeap: null. addr: "+address);
+        //} else {
+        //    if(ret instanceof char[]){
+        //        char[] char_array = (char[]) ret;
+        //        String str = new String(char_array);
+        //        System.out.println("doReadFromHeap char[]: "+str+".["+char_array.length+"] addr: "+address);
+        //    } else {
+        //        System.out.println("doReadFromHeap: "+ret.toString()+". addr: "+address);
+        //    }
+        //}
         return ret;
-      }
     }
-    long null_ptr_check = address >> 4;
-    if(null_ptr_check == -1){
-      return null;
-    }
-    //if(o == null){
-    //  System.out.println("readFromHeap: null. addr: "+address);
-    //} else {
-    //  System.out.println("readFromHeap: "+o.toString()+". addr: "+address+" class: "+o.getClass());
-    //}
-    //BufferPrinter printer = new BufferPrinter();
-    //printer.print(mMem, address-128, 256);
-    Object ret = doReadFromHeap(o, read_data, address);
-    //if(ret == null){
-    //  System.out.println("doReadFromHeap: null. addr: "+address);
-    //} else {
-    //  if(ret instanceof char[]){
-    //    char[] char_array = (char[]) ret;
-    //    String str = new String(char_array);
-    //    System.out.println("doReadFromHeap char[]: "+str+".["+char_array.length+"] addr: "+address);
-    //  } else {
-    //    System.out.println("doReadFromHeap: "+ret.toString()+". addr: "+address);
-    //  }
-    //}
-    return ret;
-  }
 
     public void readStaticsFromHeap(){ doReadStaticsFromHeap(); }
 
@@ -197,18 +223,20 @@ public abstract class Serializer
             }
         }
     }
-    public Object readField ( Object base, String name ) {
-        return readField( base.getClass(), base, name );
-    }
-    public Object readStaticField( Class cls, String name ) {
-        return readField( cls, null, name );
-    }
+    public Object readField ( Object base, String name ) { return readField( base.getClass(), base, name ); }
+    public Object readStaticField( Class cls, String name ) { return readField( cls, null, name ); }
 
     /**
      * Tries to reflectively set a possibly static field for a class.
      * If no field with the name exist, tries superclass.
      */
-    private void writeField( Class cls, Object base, String name, Object value )
+    private void writeField
+    (
+        Class        cls  ,
+        final Object base ,
+        final String name ,
+        final Object value
+    )
     {
         while ( true )
         {
@@ -225,13 +253,8 @@ public abstract class Serializer
             }
         }
     }
-    public void writeField( Object base, String name, Object value ) {
-        writeField( base.getClass(), base, name, value );
-    }
-    public void writeStaticField( Class cls, String name, Object value ) {
-        writeField( cls, null, name, value );
-    }
-
+    public void writeField( Object base, String name, Object value ) { writeField( base.getClass(), base, name, value ); }
+    public void writeStaticField       (Class cls, String name, Object  value){ writeField( cls, null, name, value ); }
     public void writeStaticByteField   (Class cls, String name, byte    value){ writeStaticField(cls,name,value); }
     public void writeStaticBooleanField(Class cls, String name, boolean value){ writeStaticField(cls,name,value); }
     public void writeStaticCharField   (Class cls, String name, char    value){ writeStaticField(cls,name,value); }
@@ -241,9 +264,9 @@ public abstract class Serializer
     public void writeStaticFloatField  (Class cls, String name, float   value){ writeStaticField(cls,name,value); }
     public void writeStaticDoubleField (Class cls, String name, double  value){ writeStaticField(cls,name,value); }
 
-    /* defined by VisitorWriteGenStatic.java (?) */
-    public abstract void   doWriteToHeap(Object o, boolean write_data, long ref, boolean read_only);
-    public abstract Object doReadFromHeap(Object o, boolean read_data, long ref);
+    /* defined by VisitorWriteGenStatic.java using soot. I don't exactly see why it is necessary to use Soot to write these out */
+    public abstract void   doWriteToHeap (Object o, boolean write_data, long ref, boolean read_only);
+    public abstract Object doReadFromHeap(Object o, boolean read_data , long ref);
     public abstract void   doWriteStaticsToHeap();
     public abstract void   doReadStaticsFromHeap();
     public abstract int    doGetSize(Object o);
