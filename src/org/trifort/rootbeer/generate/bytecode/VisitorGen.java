@@ -54,15 +54,15 @@ public class VisitorGen extends AbstractVisitorGen
         m_bcl.push( new BytecodeLanguage() );
         makeSentinalCtors( m_sentinalCtorsCreated );
         makeSerializer();
-        addGetSerializerMethod();
+        addGetSerializerMethod( m_bcl.top(), m_runtimeBasicBlock, m_className );
     }
 
     private void makeSerializer()
     {
         makeGcObjectClass();
         makeCtor();
-        makeWriteStaticsToHeapMethod();
-        makeReadStaticsFromHeapMethod();
+        makeWriteStaticsToHeapMethod ( m_bcl.top()              );
+        makeReadStaticsFromHeapMethod( m_bcl.top()              );
         makeGetSizeMethod();
         makeGetLengthMethod();
         makeWriteToHeapMethod();
@@ -186,27 +186,33 @@ public class VisitorGen extends AbstractVisitorGen
         read_gen.makeReadFromHeapMethod();
     }
 
-    private void makeWriteStaticsToHeapMethod() {
-        VisitorWriteGenStatic static_write_gen = new VisitorWriteGenStatic(m_bcl.top());
-        static_write_gen.makeMethod();
+    private static void makeWriteStaticsToHeapMethod( final BytecodeLanguage bcl )
+    {
+        new VisitorWriteGenStatic( bcl ).makeMethod();
     }
 
-    private void makeReadStaticsFromHeapMethod() {
-        VisitorReadGenStatic static_read_gen = new VisitorReadGenStatic(m_bcl.top());
-        static_read_gen.makeMethod();
+    private static void makeReadStaticsFromHeapMethod( final BytecodeLanguage bcl )
+    {
+        new VisitorReadGenStatic( bcl ).makeMethod();
     }
 
-    private void addGetSerializerMethod() {
-        m_bcl.top().openClass(m_runtimeBasicBlock);
+    private static void addGetSerializerMethod
+    (
+        final BytecodeLanguage bcl,
+        final SootClass runtimeBasicBlock,
+        final String className
+    )
+    {
+        bcl.openClass( runtimeBasicBlock );
         SootClass gc_object_visitor_soot_class = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Serializer");
         SootClass mem_cls = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Memory");
-        m_bcl.top().startMethod("getSerializer", gc_object_visitor_soot_class.getType(), mem_cls.getType(), mem_cls.getType());
-        Local thisref = m_bcl.top().refThis();
-        Local param0 = m_bcl.top().refParameter(0);
-        Local param1 = m_bcl.top().refParameter(1);
-        Local ret = m_bcl.top().newInstance(m_className, param0, param1);
-        m_bcl.top().returnValue(ret);
-        m_bcl.top().endMethod();
+        bcl.startMethod("getSerializer", gc_object_visitor_soot_class.getType(), mem_cls.getType(), mem_cls.getType());
+        Local thisref = bcl.refThis();
+        Local param0 = bcl.refParameter(0);
+        Local param1 = bcl.refParameter(1);
+        Local ret = bcl.newInstance( className, param0, param1 );
+        bcl.returnValue(ret);
+        bcl.endMethod();
     }
 
     private void makeCtor() {
