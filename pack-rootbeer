@@ -5,7 +5,8 @@ if command -v 'zipmerge' 2>&1 1>/dev/null; then
     if [ -f Rootbeer.jar ]; then
         rm Rootbeer.jar
     fi
-    time -p zipmerge Rootbeer.jar lib/* dist/Rootbeer1.jar
+    # Note: does not work for files with spaces in it
+    time -p zipmerge Rootbeer.jar $(find lib -maxdepth 1 -type f) dist/Rootbeer1.jar
 else
     time -p java -jar lib/pack.jar -mainjar dist/Rootbeer1.jar -directory lib -destjar Rootbeer.jar
 fi
