@@ -46,6 +46,17 @@ Java_org_trifort_rootbeer_runtime_FixedMemory_doWrite##NAME             \
     jlong    cpu_base                                                   \
 )                                                                       \
 {                                                                       \
+    /* FixedMemory.javaWriteTYPE calls incrementAddress after this      \
+     * write. It is important that the increment is identical to        \
+     * sizeof, but there is trouble with a sizeof operator */           \
+    assert( sizeof( jbyte    ) == 1 );                                  \
+    assert( sizeof( jboolean ) == 1 );                                  \
+    assert( sizeof( jshort   ) == 2 );                                  \
+    assert( sizeof( jint     ) == 4 );                                  \
+    assert( sizeof( jfloat   ) == 4 );                                  \
+    assert( sizeof( jdouble  ) == 8 );                                  \
+    assert( sizeof( jlong    ) == 8 );                                  \
+                                                                        \
     assert( ptr % sizeof( TYPE ) == 0 );                                \
     ( (TYPE*) ( cpu_base + ptr ) )[0] = value;                          \
 }                                                                       \
