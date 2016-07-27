@@ -65,8 +65,8 @@ public class VisitorGen extends AbstractVisitorGen
         makeReadStaticsFromHeapMethod( m_bcl.top()              );
         makeGetSizeMethod            ( m_bcl.top()              );
         makeGetLengthMethod();
-        makeWriteToHeapMethod();
-        makeReadFromHeapMethod();
+        makeWriteToHeapMethod        ( m_bcl.top(), m_className );
+        makeReadFromHeapMethod       ( m_bcl.top(), m_className );
     }
 
     private void makeGcObjectClass()
@@ -168,19 +168,30 @@ public class VisitorGen extends AbstractVisitorGen
 
     }
 
-    private void makeWriteToHeapMethod() {
+    private static void makeWriteToHeapMethod
+    (
+        final BytecodeLanguage bcl,
+        final String className
+    )
+    {
         List<Type> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefLikeTypes();
         VisitorWriteGen write_gen = new VisitorWriteGen(types,
-            m_className, m_bcl.top());
+            className, bcl );
         write_gen.makeWriteToHeapMethod();
     }
 
-    private void makeReadFromHeapMethod() {
+    private static void makeReadFromHeapMethod
+    (
+        final BytecodeLanguage bcl,
+        final String className
+    )
+    {
         List<Type> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefLikeTypes();
         VisitorReadGen read_gen = new VisitorReadGen(types,
-            m_className, m_bcl.top());
+            className, bcl );
         read_gen.makeReadFromHeapMethod();
     }
+
 
     private static void makeWriteStaticsToHeapMethod( final BytecodeLanguage bcl )
     {
