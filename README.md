@@ -1,8 +1,8 @@
-#About this Fork
+# About this Fork
 
 This fork adds several small bugfixes, quite some code comments, code reduction and also changes the code style of sighted files to something more similar to e.g. [imresh](https://github.com/ComputationalRadiationPhysics/imresh) i.e. braces on new line, 4 spaces instead of 2 indentation and alignment of similar and especially of boiler-plate code.
 
-#Rootbeer
+# Rootbeer
 
 The Rootbeer GPU Compiler lets you use GPUs from within Java. It allows you to use almost anything from Java on the GPU:
 
@@ -42,7 +42,7 @@ You send data to the gpu by adding a field to the object implementing kernel. `g
       void gpuMethod();
     }
 
-###Simple Example:
+### Simple Example:
 This simple example uses kernel lists and no thread config or context. Rootbeer will create a thread config and select the best device automatically. If you wish to use multiple GPUs you need to pass in a Context.
 
 <b>ScalarAddApp.java:</b>
@@ -325,9 +325,15 @@ public class GPUSortKernel implements Kernel {
        java -Xmx8g -jar Rootbeer.jar App-GPU-compiled.jar App-GPU.jar
        zipmerge App.jar Rootbeer.jar App-GPU-compiled.jar
 
-6. `java -jar App.jar`f
+6. `java -jar App.jar`
 
-All together: `( cd csrc && ./compile_linux_x64 ) && ant jar && ./pack-rootbeer`
+All together: 
+
+    ( cd csrc && ./compile_linux_x64 ) && ant jar && ./pack-rootbeer
+    
+To compile the CountKernel example: 
+
+    ( cd ../.. && ( cd csrc && ./compile_linux_x64 ) && ant clean && 'rm' -f dist/Rootbeer1.jar Rootbeer.jar && ant jar && ./pack-rootbeer ) && make clean && make -B && java -jar Count.jar
 
 ### Building Rootbeer from Source
 
@@ -364,7 +370,7 @@ To compile a single jar with Rootbeer you can do:
 | `-keepmains`         | keep main methods |
 | `-maxrregcount <number of registers per thread>` | sent to CUDA compiler to limit register count |
 | `-shared-mem-size <size>` | specify the shared memory size |
-| `-computecapability <architecture>` | specify the Compute Capability: `sm_11`, `sm_12`, `sm_20`, `sm_21`, `sm_30`, `sm_35`} (default ALL) |
+| `-computecapability <architecture>` | specify the Compute Capability: `sm_11`, `sm_12`, `sm_20`, `sm_21`, `sm_30`, `sm_35` (default ALL) |
 | `-32bit`             | compile with 32bit |
 | `-64bit`             | compile with 64bit (if you are on a 64bit machine you will want to use just this) |
 | `-remap-sparse`      | |
@@ -608,31 +614,51 @@ GPU Consulting available for Rootbeer and CUDA. Please email pcpratts@trifort.or
    Install cross-compiling libraries:
    `sudo apt-get install gcc-4.9-multilib g++-4.9-multilib`
 
- - 
-   java.lang.ClassCastException: MonteCarloPiKernel cannot be cast to [J
-	at MonteCarloPiKernel.org_trifort_readFromHeapRefFields_MonteCarloPiKernel0(Jasmin)
-	at MonteCarloPiKernelSerializer.doReadFromHeap(Jasmin)
-	at org.trifort.rootbeer.runtime.Serializer.readFromHeap(Serializer.java:155)
-	at org.trifort.rootbeer.runtime.CUDAContext.readBlocksList(CUDAContext.java:452)
-	at org.trifort.rootbeer.runtime.CUDAContext$GpuEventHandler.onEvent(CUDAContext.java:332)
-	at org.trifort.rootbeer.runtime.CUDAContext$GpuEventHandler.onEvent(CUDAContext.java:308)
-     * Down below this are multithreading related. 
-     * I.e. CudaContext.GpuEventHandler.onEvent is called concurrently. 
-     * The setup is done using the lmax.com queue with:
-     *   m_disruptor            = new Disruptor<GpuEvent>( GpuEvent.EVENT_FACTORY, 64, m_exec );
-     *   m_handler              = new GpuEventHandler();
-     *   m_disruptor.handleEventsWith( m_handler );
-     *   m_ringBuffer           = m_disruptor.start(); 
-	at com.lmax.disruptor.BatchEventProcessor.run(BatchEventProcessor.java:128)
-	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
-	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
-	at java.lang.Thread.run(Thread.java:724)
+ - The following backtrace was made with commit 7777a351917216f03 as can be seen by using `findCommitFromTrace`
+ 
+       findCommitFromTrace --short pfuscherei \
+           src/org/trifort/rootbeer/runtime/Serializer.java  doReadFromHeap 155 \
+           src/org/trifort/rootbeer/runtime/CUDAContext.java readFromHeap   452 \
+           src/org/trifort/rootbeer/runtime/CUDAContext.java readBlocksList 332 \
+           src/org/trifort/rootbeer/runtime/CUDAContext.java onEvent        308
+
+    The first commit which changes `CUDAContext.java` thereafter is 
+     > 0f2a7ae4c6b0e9763f84
+     > 
+     > Add comments to understand multi-GPU problem
+
+       java.lang.ClassCastException: MonteCarloPiKernel cannot be cast to [J
+	   at MonteCarloPiKernel.org_trifort_readFromHeapRefFields_MonteCarloPiKernel0(Jasmin)
+       * the backtrace becomes a bit occluded here, because doReadFromHeap
+       * is written out using soot in VisitorReadGen.makeMethod  
+       * called by VisitorGen.generate 
+       * called by SerializerAdder.add
+       * called by GenerateForKernel.makeClass
+	   at MonteCarloPiKernelSerializer.doReadFromHeap(Jasmin)
+	   at org.trifort.rootbeer.runtime.Serializer.readFromHeap(Serializer.java:155)
+	   at org.trifort.rootbeer.runtime.CUDAContext.readBlocksList(CUDAContext.java:452)
+	   * this is at `case NATIVE_RUN_LIST:`
+       at org.trifort.rootbeer.runtime.CUDAContext$GpuEventHandler.onEvent(CUDAContext.java:332)
+	   at org.trifort.rootbeer.runtime.CUDAContext$GpuEventHandler.onEvent(CUDAContext.java:308)
+       * Down below this are multithreading related. 
+       * I.e. CudaContext.GpuEventHandler.onEvent is called concurrently. 
+       * The setup is done using the lmax.com queue with:
+       *   m_disruptor            = new Disruptor<GpuEvent>( GpuEvent.EVENT_FACTORY, 64, m_exec );
+       *   m_handler              = new GpuEventHandler();
+       *   m_disruptor.handleEventsWith( m_handler );
+       *   m_ringBuffer           = m_disruptor.start(); 
+	   at com.lmax.disruptor.BatchEventProcessor.run(BatchEventProcessor.java:128)
+	   at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+	   at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	   at java.lang.Thread.run(Thread.java:724)
+       * The command executed i.e. NATIVE_RUN_LIST is set by
+       * CudaContext.runAsync( List<Kernel> )
+
 
 ### Authors
 
-Phil Pratt-Szeliga
-http://trifort.org/
-Maximilian Knespel
+ - Phil Pratt-Szeliga http://trifort.org/
+ - Maximilian Knespel
 
 
 ### File Structure
@@ -863,20 +889,20 @@ Starting with the main java-file the dependency structure can be viewed with [in
  3. entry/RootbeerCompiler.compile
  4. entry/RootbeerCompiler.setupSoot
  5. entry/RootbeerCompiler.compileForKernels
- 1.1. compiler/Transform2.run
- 1.1. generate/bytecode/GenerateForKernel.makeClass
- 1.1. generate/bytecode/GenerateForKernel.makeGpuBody
- 1.1.1 generate/opencl/OpenCLScene.getCudaCode
- 1.1.1 generate/opencl/OpenCLScene.makeSourceCode
- 1.1.1 generate/opencl/OpenCLScene.methodBodiesString
- 1.1.1 generate/opencl/tweaks/CudaTweaks.compileProgram
- 1.1.1 deadmethods/DeadMethods.parseString
- 1.1.1 deadmethods/DeadMethods.getResult
- 1.1.1 deadmethods/LiveMethodDetector.parse
- 1.1.1 generate/opencl/tweaks/ParallelCompile.compile
- 1.1.1 generate/opencl/tweaks/ParallelCompile.run
- 1.1.1 generate/opencl/tweaks/ParallelCompileJob.compile
- 1.1.1 generate/opencl/tweaks/ParallelCompileJob.getResult
+    1. compiler/Transform2.run
+    1. generate/bytecode/GenerateForKernel.makeClass
+    1. generate/bytecode/GenerateForKernel.makeGpuBody
+       1. generate/opencl/OpenCLScene.getCudaCode
+       1. generate/opencl/OpenCLScene.makeSourceCode
+       1. generate/opencl/OpenCLScene.methodBodiesString
+       1. generate/opencl/tweaks/CudaTweaks.compileProgram
+       1. deadmethods/DeadMethods.parseString
+       1. deadmethods/DeadMethods.getResult
+       1. deadmethods/LiveMethodDetector.parse
+       1. generate/opencl/tweaks/ParallelCompile.compile
+       1. generate/opencl/tweaks/ParallelCompile.run
+       1. generate/opencl/tweaks/ParallelCompileJob.compile
+       1. generate/opencl/tweaks/ParallelCompileJob.getResult
  1. writeJimpleFile
  1. writeClassFile
  1. makeOutJar
@@ -901,18 +927,6 @@ See folder `lib`.
   - `sootclasses-rbclassload.jar` [Link](https://github.com/pcpratts/soot-rb) fork from [Soot](https://github.com/Sable/soot). First commit is 8eb2f460593d0bc8fcd65f8f22e7c677daef2872 and the last merge to soot is commit 978a7fed3af16177be93d3b19be2a6e446023788 from 2013-05-03. It is unclear whether this jar was compiled from branch `master` or `feature/rbclassload2`. The last soot release is soot-2.5.0 from 2012-11-15, but there seems to be still active development and nightly builds in 2016-07-22.
     `org.soot.*`
     Commits added `git log --no-merges --stat --author="pcpratts" --name-only --pretty=format:"" | sort -u` are mainly `soot.rbclassload.*` and the folder `paper`.
-
-
-Unused libraries ??? Reursive dependency?
-
-  - `commons-codec-1.6.jar` [Link](https://commons.apache.org/proper/commons-codec/)
-     > Apache Commons Codec (TM) software provides implementations of common encoders and decoders such as Base64, Hex, Phonetic and URLs.
-    `org.apache.commons.codec.*`
-
-  - `commons-collections4-4.0.jar` [Link](https://commons.apache.org/proper/commons-collections/)
-     > Commons-Collections seek to build upon the JDK classes by providing new interfaces, implementations and utilities.
-    `org.apache.commons.collections4.*`
-
 
 Dependencies by Soot (see [build.xml](https://github.com/Sable/soot/blob/develop/build.xml) in Soot repository) or try searching for imports:
 
