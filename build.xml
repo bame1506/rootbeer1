@@ -4,12 +4,14 @@
   </target>
   <target name="compile">
     <mkdir dir="build/classes"/>
-    <javac srcdir="src" destdir="build/classes" 
+    <javac srcdir="src" destdir="build/classes"
       classpath="lib/disruptor-3.3.0.jar:lib/antlr-3.1.3.jar:lib/AXMLPrinter2.jar:lib/baksmali-1.3.2.jar:lib/commons-codec-1.6.jar:lib/commons-io-2.4.jar:lib/jasminclasses-2.5.0.jar:lib/pack.jar:lib/polyglotclasses-1.3.5.jar:lib/sootclasses-rbclassload.jar"
       debug="true"
-      debugLevel="lines,vars,source" 
-      includeantruntime="false" 
-    />
+      debugLevel="lines,vars,source"
+      includeantruntime="false"
+    >
+        <compilerarg value="-Xlint:unchecked"/>
+    </javac>
     <copy file="src/org/trifort/rootbeer/generate/opencl/BarrierNativeBoth.c" todir="build/classes/org/trifort/rootbeer/generate/opencl/" />
     <copy file="src/org/trifort/rootbeer/generate/opencl/BothNativeHeader.c" todir="build/classes/org/trifort/rootbeer/generate/opencl/" />
     <copy file="src/org/trifort/rootbeer/generate/opencl/BothNativeKernel.c" todir="build/classes/org/trifort/rootbeer/generate/opencl/" />
@@ -21,7 +23,7 @@
     <copy file="src/org/trifort/rootbeer/generate/opencl/WindowsNativeHeader.c" todir="build/classes/org/trifort/rootbeer/generate/opencl/" />
     <copy file="src/org/trifort/rootbeer/generate/opencl/WindowsNativeKernel.c" todir="build/classes/org/trifort/rootbeer/generate/opencl/" />
     <copy file="src/org/trifort/rootbeer/runtime/nemu/NativeCpuDevice.h" todir="build/classes/org/trifort/rootbeer/runtime/nemu/" />
-    <copy file="src/org/trifort/rootbeer/runtime/nemu/NativeCpuDevice.c" todir="build/classes/org/trifort/rootbeer/runtime/nemu/" /> 
+    <copy file="src/org/trifort/rootbeer/runtime/nemu/NativeCpuDevice.c" todir="build/classes/org/trifort/rootbeer/runtime/nemu/" />
     <copy todir="build/classes/org/trifort/rootbeer/runtime/binaries/">
       <fileset dir="csrc">
         <include name="*.so.1"/>
