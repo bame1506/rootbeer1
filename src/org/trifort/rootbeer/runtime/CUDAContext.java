@@ -3,6 +3,7 @@ package org.trifort.rootbeer.runtime;
 
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -26,9 +27,11 @@ import org.trifort.rootbeer.generate.bytecode.Constants;
 
 public class CUDAContext implements Context
 {
+    /* if true activates debug output for this class */
+    private final static boolean         debugging = true      ;
 
-    final private GpuDevice              m_gpuDevice           ;
-    final private boolean                m_is32bit             ;
+    private final GpuDevice              m_gpuDevice           ;
+    private final boolean                m_is32bit             ;
 
     private long                         m_nativeContext       ;
     private long                         m_memorySize          ; /**<- bytes */
@@ -47,13 +50,13 @@ public class CUDAContext implements Context
     private boolean                      m_usingHandles        ;
 
     /* Performance metrics / debug variables */
-    final private StatsRow               m_stats               ;
-    final private Stopwatch              m_readBlocksStopwatch ; /**<- device->host memcpy timer */
+    private final StatsRow               m_stats               ;
+    private final Stopwatch              m_readBlocksStopwatch ; /**<- device->host memcpy timer */
 
-    final private ExecutorService        m_exec                ;
-    final private Disruptor   <GpuEvent> m_disruptor           ;
-    final private EventHandler<GpuEvent> m_handler             ;
-    final private RingBuffer  <GpuEvent> m_ringBuffer          ;
+    private final ExecutorService        m_exec                ;
+    private final Disruptor   <GpuEvent> m_disruptor           ;
+    private final EventHandler<GpuEvent> m_handler             ;
+    private final RingBuffer  <GpuEvent> m_ringBuffer          ;
 
     /* This is a static constructor for initializing all static members once.
      * Unlike the constructor this function is only called once on program
@@ -78,7 +81,7 @@ public class CUDAContext implements Context
             }
         } );
         m_disruptor            = new Disruptor<GpuEvent>( GpuEvent.EVENT_FACTORY, 64, m_exec );
-        m_handler              = new GpuEventHandler();
+        m_handler              = (EventHandler<GpuEvent>) new GpuEventHandler();
         m_disruptor.handleEventsWith( m_handler );
         m_ringBuffer           = m_disruptor.start();
         /* the started event handler will exist as long as the object to this
@@ -325,7 +328,8 @@ public class CUDAContext implements Context
             "    cubin32 size     : " + m_compiledKernel.getCubin32Size() + " B\n" +
             "    cubin64 size     : " + m_compiledKernel.getCubin64Size() + " B\n" +
             "    alignment        : " + Constants.MallocAlignBytes        + " B\n" ;
-        System.out.print( debugOutput );
+        if ( debugging )
+            System.out.print( debugOutput );
         if ( neededMemory > Math.min( freeMemSizeGPU, freeMemSizeCPU ) ) {
             final String error =
                 "OutOfMemory while allocating Java CPU and GPU memory.\n"     +
@@ -341,6 +345,8 @@ public class CUDAContext implements Context
   @Override
   public void run()
   {
+    if ( debugging )
+        System.out.println( "[CUDAContext.java:run(void)] calling runAsync" );
       GpuFuture future = runAsync();
       future.take();
   }
@@ -367,18 +373,22 @@ public class CUDAContext implements Context
     @Override
     public GpuFuture runAsync( final List<Kernel> work )
     {
+        if ( debugging )
+            System.out.println( "[CUDAContext.java:runAsync] Putting NATIVE_RUN_LIST into queue" );
         final long seq = m_ringBuffer.next();
         GpuEvent gpuEvent = m_ringBuffer.get( seq );
             gpuEvent.setKernelList( work );
-            gpuEvent.setValue(GpuEventCommand.NATIVE_RUN_LIST);
+            gpuEvent.setValue( GpuEventCommand.NATIVE_RUN_LIST );
         gpuEvent.getFuture().reset();
-        m_ringBuffer.publish(seq);
+        m_ringBuffer.publish( seq );
         return gpuEvent.getFuture();
     }
 
     @Override
     public void run( final List<Kernel> work )
     {
+        if ( debugging )
+            System.out.println( "[CUDAContext.java:run(List<Kernel>)] calling runAsync" );
         GpuFuture future = runAsync(work);
         future.take();
     }
@@ -400,11 +410,14 @@ public class CUDAContext implements Context
             final boolean  endOfBatch
         )
         {
-            try {
+            try
+            {
                 switch ( gpuEvent.getValue() )
                 {
                     case NATIVE_BUILD_STATE:
                     {
+                        if ( debugging )
+                            System.out.println( "[CUDAContext.java] execute NATIVE_BUILD_STATE" );
                         final boolean usingExceptions = Configuration.runtimeInstance().getExceptions();
                         nativeBuildState(
                             m_nativeContext                 ,
@@ -429,6 +442,8 @@ public class CUDAContext implements Context
                     }
                     case NATIVE_RUN:
                     {
+                        if ( debugging )
+                            System.out.println( "[CUDAContext.java] execute NATIVE_RUN" );
                         /* send Kernel members to GPU (serializing) */
                         writeBlocksTemplate();
                         runGpu();
@@ -439,6 +454,8 @@ public class CUDAContext implements Context
                     }
                     case NATIVE_RUN_LIST:
                     {
+                        if ( debugging )
+                            System.out.println( "[CUDAContext.java] execute NATIVE_RUN_LIST" );
                         writeBlocksList( gpuEvent.getKernelList() );
                         runGpu();
                         readBlocksList(  gpuEvent.getKernelList() );
@@ -462,7 +479,7 @@ public class CUDAContext implements Context
         }
     }
 
-    /* @see writeBlocksList(List<Kernel> work) */
+    /* @see writeBlocksList( List<Kernel> work ) */
     private void writeBlocksTemplate()
     {
         /* function body could be replaced with this:
@@ -476,8 +493,8 @@ public class CUDAContext implements Context
         m_objectMemory.clearHeapEndPtr();
         m_handlesMemory.setAddress(0);
 
-        final Serializer serializer = m_compiledKernel.getSerializer(m_objectMemory, m_textureMemory);
-        serializer.writeStaticsToHeap();
+        final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
+        serializer.writeStaticsToHeap(); // writes statics to m_objectMemory
 
         final long handle = serializer.writeToHeap( m_compiledKernel );
         m_handlesMemory.writeRef(handle);
@@ -494,6 +511,23 @@ public class CUDAContext implements Context
     }
 
     /**
+     * Format a value like 13941672 to '13 MiB 302 kiB 936 B'
+     */
+    private static String formatSize( long nBytes )
+    {
+        final int factor = 1024;
+        final List<String> units = Arrays.asList( "B", "kiB", "MiB", "GiB", "TiB" );
+        String ret = "";
+        for ( int i = 0; i < units.size(); ++i )
+        {
+            ret = ( nBytes % factor ) + " " + units.get(i) + " " + ret;
+            if ( ( nBytes /= factor ) == 0 )
+                break;
+        }
+        return ret;
+    }
+
+    /**
      * This seems to serialize and send to the GPU all the Kernel objects.
      *
      * This is used by GpuEvent NATIVE_RUN[_LIST] which is only used by
@@ -504,7 +538,7 @@ public class CUDAContext implements Context
      * i.e. a total of roughly 1 MB to send, may be negligible compared to
      * the device-to-host copy latency.
      */
-    private void writeBlocksList( List<Kernel> work )
+    private void writeBlocksList( final List<Kernel> work )
     {
         final Stopwatch watch = new Stopwatch();
         watch.start();
@@ -516,18 +550,63 @@ public class CUDAContext implements Context
         m_objectMemory.clearHeapEndPtr();
         m_handlesMemory.setAddress(0);
 
-        final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
-        serializer.writeStaticsToHeap();
+        if ( debugging )
+        {
+            System.out.println( "[CUDAContext.java:writeBlocksList] m_objectMemory  current address: " + m_objectMemory.getPointer() );
+            System.out.println( "[CUDAContext.java:writeBlocksList] m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
+        }
 
-        for ( Kernel kernel : work )
+        final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
+        serializer.writeStaticsToHeap();  // writes statics to m_objectMemory
+
+        if ( debugging )
+        {
+            System.out.println( "[CUDAContext.java:writeBlocksList] m_objectMemory  current address: " + m_objectMemory.getPointer() );
+            System.out.println( "[CUDAContext.java:writeBlocksList] m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
+        }
+
+        /* this writes each kernel and their non-static members to object
+         * memory and saves the returned manual/relative pointer for the
+         * heap byte array to m_handlesMemory so that each kernel can be
+         * refound on GPU.
+         *    m_handlesMemory will increase by work.size() * 4 Bytes
+         *    m_objectMemory increases by work.size()+1 * (sum of all members
+         *      kernel)
+         *    @todo I can't explain where the +1 comes from ...
+         */
+        for ( final Kernel kernel : work )
             m_handlesMemory.writeRef( serializer.writeToHeap( kernel ) );
+
+        if ( debugging )
+        {
+            System.out.println( "[CUDAContext.java:writeBlocksList] work.size                      : " + work.size() );
+            System.out.println( "[CUDAContext.java:writeBlocksList] m_objectMemory  current address: " + m_objectMemory.getPointer() );
+            System.out.println( "[CUDAContext.java:writeBlocksList] m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
+        }
+
         m_objectMemory.align16();
 
-        if ( Configuration.getPrintMem() )
+        if ( debugging )
         {
-            final BufferPrinter printer = new BufferPrinter();
-            printer.print(m_objectMemory, 0, 256);
+            System.out.println( "[CUDAContext.java:writeBlocksList] m_objectMemory  current address: " + m_objectMemory.getPointer() );
+            System.out.println( "[CUDAContext.java:writeBlocksList] m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
         }
+
+        if ( debugging && ! Configuration.getPrintMem() )
+        {
+            /* @todo For some reason the size returned by getSize is different
+             * on each different compilation Oo ? But it stays the same on
+             * different runs with the same binary. Is something like the time
+             * encoded Oo? ??? */
+            System.out.println(
+                "[CUDAContext.java:writeBlocksList] After writing here " +
+                "are the first 256 Bytes of m_objectMemory (" + m_objectMemory.getSize() + " B = " +
+                formatSize( m_objectMemory.getSize() ) + ") :" );
+            new BufferPrinter().print( m_objectMemory, 0, 1024 );
+        }
+
+        if ( Configuration.getPrintMem() )
+            new BufferPrinter().print( m_objectMemory, 0, 256 );
 
         watch.stop();
         m_stats.setSerializationTime( watch.elapsedTimeMillis() );
@@ -538,6 +617,9 @@ public class CUDAContext implements Context
      **/
     private void runGpu()
     {
+        if ( debugging )
+            System.out.println( "[CUDAContext.java:runGpu] execute cudaRun()" );
+
         final Stopwatch watch = new Stopwatch();
         watch.start();
             cudaRun( m_nativeContext, m_objectMemory, !m_usingHandles ? 1 : 0, m_stats );
