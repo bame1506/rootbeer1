@@ -7,23 +7,29 @@
 
 package org.trifort.rootbeer.generate.bytecode;
 
-public class RegisterNamer {
-  static RegisterNamer mInstance = null;
-  int count;
 
-  public RegisterNamer(){
-    count = 0;
-  }
+/**
+ * Singleton for returning monotonically increasing IDs as string
+ * Only used at a single location in BytecodeLanguage.java
+ */
+public class RegisterNamer
+{
+    static RegisterNamer mInstance = null;
+    int count;
 
-  public static RegisterNamer v(){
-    if(mInstance == null)
-      mInstance = new RegisterNamer();
-    return mInstance;
-  }
+    public RegisterNamer(){ count = 0; }
 
-  public String getName(){
-    String ret = "rbreg" + Integer.toString(count);
-    count++;
-    return ret;
-  }
+    public static RegisterNamer v()
+    {
+        if ( mInstance == null )
+            mInstance = new RegisterNamer();
+        return mInstance;
+    }
+
+    public String getName()
+    {
+        String ret = "rbreg" + Integer.toString(count);
+        count++;
+        return ret;
+    }
 }
