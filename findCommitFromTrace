@@ -12,9 +12,10 @@
 #     src/soot/PackManager.java              DexPrinter              529
 #
 # findCommitFromTrace --short pfuscherei \
-#     src/org/trifort/rootbeer/runtime/CUDAContext.java readFromHeap 452 \
+#     src/org/trifort/rootbeer/runtime/Serializer.java  doReadFromHeap 155 \
+#     src/org/trifort/rootbeer/runtime/CUDAContext.java readFromHeap   452 \
 #     src/org/trifort/rootbeer/runtime/CUDAContext.java readBlocksList 332 \
-#     src/org/trifort/rootbeer/runtime/CUDAContext.java onEvent 308
+#     src/org/trifort/rootbeer/runtime/CUDAContext.java onEvent        308
 
 # soot/rbclassload/RootbeerClassLoader/loadScene            (RootbeerClassLoader.java:857)
 # soot/rbclassload/RootbeerClassLoader/loadNecessaryClasses (RootbeerClassLoader.java:320)
