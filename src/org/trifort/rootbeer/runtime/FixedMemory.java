@@ -1,11 +1,13 @@
 package org.trifort.rootbeer.runtime;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
 import org.omg.CORBA._IDLTypeStub;
 import org.trifort.rootbeer.generate.bytecode.Constants;
+
 
 /**
  * This class is only a wrapper for FixedMemory.c
@@ -18,34 +20,34 @@ import org.trifort.rootbeer.generate.bytecode.Constants;
  */
 public class FixedMemory implements Memory
 {
-  /**
-   * start address of memroy chunk.
-   * This address isn't changed except for malloc and free
-   */
-  protected final long       m_address        ;
-  protected final long       m_size           ; /**< site in bytes of memory chunk */
-  protected final MemPointer m_staticPointer  ;
-  protected final MemPointer m_instancePointer;
-  protected       MemPointer m_currentPointer ;
-  protected final List<List<Long>> m_integerList;
+    /**
+     * start address of memroy chunk.
+     * This address isn't changed except for malloc and free
+     */
+    protected final long       m_address        ;
+    protected final long       m_size           ; /**< size in bytes of memory chunk */
+    protected final MemPointer m_staticPointer  ;
+    protected final MemPointer m_instancePointer;
+    protected       MemPointer m_currentPointer ;
+    protected final List<List<Long>> m_integerList;
 
-  /**
-   * Allocates a memory location of fixed width i.e. which is serialized
-   *
-   * @param[in] size memory size to allocate in bytes
-   */
-  public FixedMemory( long size )
-  {
-      m_address = malloc(size);
-      if( m_address == 0 /* null pointer */ ) {
-          throw new RuntimeException("cannot allocate memory of size: "+size);
-      }
-      m_size            = size;
-      m_instancePointer = new MemPointer("instance_mem");
-      m_staticPointer   = new MemPointer("static_mem");
-      m_currentPointer  = m_instancePointer;
-      m_integerList     = new ArrayList<List<Long>>();
-  }
+    /**
+     * Allocates a memory location of fixed width i.e. which is serialized
+     *
+     * @param[in] size memory size to allocate in bytes
+     */
+    public FixedMemory( long size )
+    {
+        m_address = malloc(size);
+        if( m_address == 0 /* null pointer */ ) {
+            throw new RuntimeException("cannot allocate memory of size: "+size);
+        }
+        m_size            = size;
+        m_instancePointer = new MemPointer("instance_mem");
+        m_staticPointer   = new MemPointer("static_mem");
+        m_currentPointer  = m_instancePointer;
+        m_integerList     = new ArrayList<List<Long>>();
+    }
 
     protected long currPointer(){ return m_currentPointer.m_pointer;}
 
@@ -159,10 +161,10 @@ public class FixedMemory implements Memory
     @Override public List<byte[]> getBuffer() { throw new UnsupportedOperationException("Not supported yet."); }
     @Override public void finishCopy(long size) {}
     @Override public void finishRead() {}
-    @Override public void useInstancePointer() { m_currentPointer = m_instancePointer; }
-    @Override public void useStaticPointer  () { m_currentPointer = m_staticPointer  ; }
+    @Override public void useInstancePointer(){ m_currentPointer = m_instancePointer; }
+    @Override public void useStaticPointer  (){ m_currentPointer = m_staticPointer  ; }
     @Override public void align(){ m_currentPointer.align(); } /* unused, but maybe still necessary, because it seems, that BclMemory should normal have been an implementation to the same Memory.java interface as this one ...?? */
-    @Override public void close() { free(m_address); }
+    @Override public void close(){ free(m_address); }
 
     @Override
     public void readIntArray(int[] array, int size) {
@@ -171,34 +173,34 @@ public class FixedMemory implements Memory
       }
     }
 
-  public void startIntegerList(){
-    m_integerList.add(new ArrayList<Long>());
-    pushAddress();
-  }
-
-  public void addIntegerToList(long value){
-    List<Long> top = m_integerList.get(m_integerList.size()-1);
-    top.add(value);
-  }
-
-  public void endIntegerList(){
-    popAddress();
-    List<Long> top = m_integerList.get(m_integerList.size()-1);
-    for(Long curr : top){
-      writeRef(curr);
+    public void startIntegerList(){
+        m_integerList.add(new ArrayList<Long>());
+        pushAddress();
     }
-    m_integerList.remove(m_integerList.size()-1);
-  }
 
-  public void finishReading(){
-    long ptr = m_currentPointer.m_pointer;
-
-    int mod = (int) (ptr % Constants.MallocAlignBytes);
-    if(mod != 0){
-      ptr += (Constants.MallocAlignBytes - mod);
+    public void addIntegerToList(long value){
+        List<Long> top = m_integerList.get(m_integerList.size()-1);
+        top.add(value);
     }
-    setPointer(ptr);
-  }
+
+    public void endIntegerList(){
+        popAddress();
+        List<Long> top = m_integerList.get(m_integerList.size()-1);
+        for(Long curr : top){
+            writeRef(curr);
+        }
+        m_integerList.remove(m_integerList.size()-1);
+    }
+
+    public void finishReading(){
+        long ptr = m_currentPointer.m_pointer;
+
+        int mod = (int) (ptr % Constants.MallocAlignBytes);
+        if(mod != 0){
+            ptr += (Constants.MallocAlignBytes - mod);
+        }
+        setPointer(ptr);
+    }
 
     @Override
     public void align16()
@@ -330,9 +332,16 @@ public class FixedMemory implements Memory
          */
         private void align()
         {
-            if ( m_pointer % 8 != 0 ) {
+            if ( m_pointer % 8 != 0 )
                 setAddress( m_pointer + ( 8 - m_pointer % 8 ) );
-            }
+            /* This actually is used:
+             *  at org.trifort.rootbeer.runtime.FixedMemory.align(FixedMemory.java:164)
+             *  at CountKernelSerializer.doWriteToHeap(Jasmin) -> set by VisitorWriteGen.java using Soot
+             *  at org.trifort.rootbeer.runtime.Serializer.writeToHeap(Serializer.java:144)
+             *  at org.trifort.rootbeer.runtime.Serializer.writeToHeap(Serializer.java:47)
+             *  at org.trifort.rootbeer.runtime.CUDAContext.writeBlocksList(CUDAContext.java:539)
+             */
+            //throw new RuntimeException( "[FixedMemory.java:MemPointer:align] Why is it aligned to 8 not 16 bytes here?!" );
         }
 
         /**
