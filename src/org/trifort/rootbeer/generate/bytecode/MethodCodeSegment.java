@@ -27,9 +27,7 @@ import soot.jimple.internal.JimpleLocal;
  */
 public class MethodCodeSegment
 {
-    private SootMethod m_existingMethod;
-    private SootMethod m_clonedMethod  ;
-    private SootClass  m_clonedClass   ;
+    private final SootMethod m_existingMethod;
 
     public MethodCodeSegment( SootMethod method ){ m_existingMethod = method; }
 
@@ -63,6 +61,4 @@ public class MethodCodeSegment
         ret.add( m_existingMethod.getDeclaringClass().getType() );
         return ret;
     }
-
-    public void makeCpuBody(SootClass soot_class) { m_clonedClass = soot_class; }
 }
