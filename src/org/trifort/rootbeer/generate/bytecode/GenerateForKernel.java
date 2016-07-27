@@ -44,6 +44,7 @@ import soot.rbclassload.RootbeerClassLoader;
 public class GenerateForKernel
 {
     private final MethodCodeSegment m_codeSegment               ;
+    /* the class in which gpuMethod resides in */
     private final SootClass         m_sootClass                 ;
     private final List<Local>       m_firstIterationLocals      ;
     private final Jimple            m_jimple                    ;
@@ -72,7 +73,6 @@ public class GenerateForKernel
     {
         m_serializerClassName = m_codeSegment.getSootClass().getName() + "Serializer";
 
-        m_codeSegment.makeCpuBody( m_sootClass );
         makeGpuBody();
         makeIsUsingGarbageCollectorBody();
         makeIsReadOnly();
@@ -83,11 +83,14 @@ public class GenerateForKernel
         makeExceptionMethod( "getNullPointerNumber", prefix+"java.lang.NullPointerException" );
         makeExceptionMethod( "getOutOfMemoryNumber", prefix+"java.lang.OutOfMemoryError"     );
 
-        /* do these two lines do anything? They could possibly access some
-         * of the many singletons, but all that is very confusing
-         * programming style */
-        SerializerAdder adder = new SerializerAdder();
-        adder.add( m_codeSegment );
+        /**
+         * these lines add routines like doWriteStaticsToHeap which serialize
+         * members for transmission between host and GPU
+         * Commenting this out leads to problems like
+         * java.lang.AbstractMethodError: CountKernel.getSerializer(Lorg/trifort/rootbeer/runtime/Memory;Lorg/trifort/rootbeer/runtime/Memory;)Lorg/trifort/rootbeer/runtime/Serializer;
+         * at org.trifort.rootbeer.runtime.CUDAContext.writeBlocksList(CUDAContext.java:544)
+         */
+        new VisitorGen( m_sootClass ).generate();
     }
 
     /**
@@ -210,7 +213,8 @@ public class GenerateForKernel
         else
             name += "Windows";
 
-        SootMethod getCode = new SootMethod(name, new ArrayList(), RefType.v("java.lang.String"), Modifier.PUBLIC);
+        /* create a new method with no input parameters which returns a String */
+        final SootMethod getCode = new SootMethod( name, new ArrayList<Type>(), RefType.v("java.lang.String"), Modifier.PUBLIC );
         getCode.setDeclaringClass(m_sootClass);
         m_sootClass.addMethod(getCode);
 
@@ -234,7 +238,7 @@ public class GenerateForKernel
 
         //specialinvoke $r1.<java.lang.StringBuilder: void <init>()>();
         SootMethod string_builder_ctor = string_builder_soot_class.getMethod("void <init>()");
-        Value r1_ctor = m_jimple.newSpecialInvokeExpr(r1, string_builder_ctor.makeRef(), new ArrayList());
+        Value r1_ctor = m_jimple.newSpecialInvokeExpr( r1, string_builder_ctor.makeRef(), new ArrayList<Value>() );
         Unit r1_ctor_unit = m_jimple.newInvokeStmt(r1_ctor);
         assembler.add(r1_ctor_unit);
 
@@ -249,13 +253,14 @@ public class GenerateForKernel
         GpuCodeSplitter splitter = new GpuCodeSplitter();
         List<String> blocks = splitter.split(gpu_code);
 
-        for(String block : blocks){
+        for ( final String block : blocks )
+        {
             Value curr_string_constant = StringConstant.v(block);
 
+            final List<Value> args = new ArrayList<Value>();
+            args.add( curr_string_constant );
             //virtualinvoke r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("gpu code");
-            List args = new ArrayList();
-            args.add(curr_string_constant);
-            Value invoke_expr = m_jimple.newVirtualInvokeExpr(r2, string_builder_append.makeRef(), args);
+            Value invoke_expr = m_jimple.newVirtualInvokeExpr(r2, string_builder_append.makeRef(), args );
             Unit invoke_stmt = m_jimple.newInvokeStmt(invoke_expr);
             assembler.add(invoke_stmt);
         }
