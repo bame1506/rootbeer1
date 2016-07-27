@@ -47,7 +47,6 @@ public class VisitorWriteGen extends AbstractVisitorGen {
   public VisitorWriteGen(List<Type> ordered_history, String class_name,
     BytecodeLanguage bcl){
 
-    m_bcl = new Stack<BytecodeLanguage>();
     m_CurrObj = new Stack<Local>();
     m_OrderedHistory = ordered_history;
     mWriteToHeapMethodsMade = new HashSet<Type>();
@@ -56,7 +55,6 @@ public class VisitorWriteGen extends AbstractVisitorGen {
     m_bcl.push(bcl);
 
     m_CurrentMem = new Stack<Local>();
-    m_gcObjVisitor = new Stack<Local>();
   }
 
   public void makeWriteToHeapMethod() {
