@@ -52,6 +52,7 @@ public class Count
             context.setKernel( tasks.get(0) );
             context.setUsingHandles( true ); /* ? */
             context.buildState();
+            System.out.println( "[Count.java:main] Calling context.run( tasks )" );
             context.run( tasks );
         }
         finally

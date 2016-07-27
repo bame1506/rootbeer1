@@ -1,3 +1,4 @@
+# ( cd ../.. && ( cd csrc && ./compile_linux_x64 ) && ant clean && 'rm'f dist/Rootbeer1.jar Rootbeer.jar && ant jar && ./pack-rootbeer ) && make clean && make -B && java -jar Count.jar
 ROOTBEER_ROOT := ../..
 
 .phony: clean all
