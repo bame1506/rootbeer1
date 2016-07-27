@@ -7,6 +7,7 @@
 
 package org.trifort.rootbeer.generate.bytecode;
 
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -16,12 +17,20 @@ import org.trifort.rootbeer.generate.opencl.OpenCLClass;
 import org.trifort.rootbeer.generate.opencl.OpenCLScene;
 import org.trifort.rootbeer.generate.opencl.OpenCLType;
 
-import soot.*;
+import soot.Scene;
+import soot.SootClass;
+import soot.IntType;
+import soot.VoidType;
+import soot.RefType;
+import soot.ArrayType;
+import soot.Type;
+import soot.Local;
 import soot.jimple.IntConstant;
 import soot.jimple.NullConstant;
 import soot.rbclassload.NumberedType;
 import soot.rbclassload.RootbeerClassLoader;
 import soot.rbclassload.StringToType;
+
 
 public class VisitorGen extends AbstractVisitorGen
 {
