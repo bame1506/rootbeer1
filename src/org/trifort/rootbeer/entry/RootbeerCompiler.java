@@ -8,6 +8,8 @@
 package org.trifort.rootbeer.entry;
 
 
+import java.nio.file.Files;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -371,8 +373,13 @@ public class RootbeerCompiler
         else
         {
             /* don't pack Rootbeer.jar using the pack Routine. User can do
-             * it himself e.g. with zipmerge, thereby saving time */
-            new File( m_JarWithoutRootbeer ).renameTo( new File( outjar_name ) );
+             * it himself e.g. with zipmerge, thereby saving time
+             * Do not use renameTo as it does not work if src and destination
+             * are in different hard drives. Note Files is Java 1.6+
+             */
+            System.out.println( "m_JarWithoutRootbeer = " + m_JarWithoutRootbeer );
+            Files.copy( new File(m_JarWithoutRootbeer).toPath(),
+                        new File(outjar_name).toPath(), REPLACE_EXISTING );
         }
     }
 
