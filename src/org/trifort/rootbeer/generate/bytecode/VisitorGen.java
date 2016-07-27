@@ -64,7 +64,7 @@ public class VisitorGen extends AbstractVisitorGen
         makeWriteStaticsToHeapMethod ( m_bcl.top()              );
         makeReadStaticsFromHeapMethod( m_bcl.top()              );
         makeGetSizeMethod            ( m_bcl.top()              );
-        makeGetLengthMethod();
+        makeGetLengthMethod          ( m_bcl.top()              );
         makeWriteToHeapMethod        ( m_bcl.top(), m_className );
         makeReadFromHeapMethod       ( m_bcl.top(), m_className );
     }
@@ -76,19 +76,85 @@ public class VisitorGen extends AbstractVisitorGen
         m_bcl.top().makeClass(m_className, "org.trifort.rootbeer.runtime.Serializer");
     }
 
-    private void makeGetLengthMethod(){
-        SootClass object_soot_class = Scene.v().getSootClass("java.lang.Object");
-        m_bcl.top().startMethod("doGetSize", IntType.v(), object_soot_class.getType());
-        m_thisRef = m_bcl.top().refThis();
-        m_param0 = m_bcl.top().refParameter(0);
+    /**
+     * Make Method returning size for a given object
+     * int doGetSize( Object o )
+     * {
+     *     if ( type instanceof short[] )
+     * }
+     */
+    private void makeGetLengthMethod( final BytecodeLanguage bcl )
+    {
+        SootClass object_soot_class = Scene.v().getSootClass( "java.lang.Object" );
+        bcl.startMethod( "doGetSize", IntType.v(), object_soot_class.getType() );
+        m_thisRef = bcl.refThis();
+        m_param0 = bcl.refParameter(0);
 
         List<Type> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefLikeTypes();
-        for(Type type : types){
-            makeGetSizeMethodForType(type);
-        }
+        for ( Type type : types )
+        {
+            if ( ! ( type instanceof ArrayType ) &&
+                 ! ( type instanceof RefType   )   )
+            {
+                continue;
+            }
 
-        m_bcl.top().returnValue(IntConstant.v(0));
-        m_bcl.top().endMethod();
+            if ( m_getSizeMethodsMade.contains( type ) )
+                continue;
+            m_getSizeMethodsMade.add( type );
+
+            /* Ignore size methods for reference to objects, interfaces and
+             * private types */
+            if ( type instanceof RefType )
+            {
+                final RefType ref_type = (RefType) type;
+                final SootClass soot_class = ref_type.getSootClass();
+                if ( soot_class.getName().equals("java.lang.Object") )
+                    continue;
+                if ( soot_class.isInterface() )
+                    continue;
+                if ( differentPackageAndPrivate( ref_type ) )
+                    continue;
+            }
+            if ( ! typeIsPublic( type ) )
+                continue;
+
+            final String label = getNextLabel(); // non-static
+            /* if argument object is not of this type, skip the next code
+             * code block (and test next type) */
+            bcl.ifInstanceOfStmt( m_param0, type, label );
+
+            if ( type instanceof ArrayType )
+            {
+                final ArrayType atype = (ArrayType) type;
+                final Local size = bcl.local( IntType.v() );
+                bcl.assign(size, IntConstant.v(Constants.ArrayOffsetSize));
+                Local element_size = bcl.local(IntType.v());
+                OpenCLType ocl_type = new OpenCLType(atype.baseType);
+                if ( atype.numDimensions == 1 )
+                    bcl.assign(element_size, IntConstant.v(ocl_type.getSize()));
+                else
+                    bcl.assign(element_size, IntConstant.v(4));
+                Local object_to_write_from = bcl.cast(type, m_param0);
+                Local length = bcl.lengthof(object_to_write_from);
+                bcl.mult(element_size, length);
+                bcl.plus(size, element_size);
+                bcl.returnValue(size);
+            }
+            /* hardcode return size of type given by Soot
+             * @todo asser that they are the same as C sizeof types ??? */
+            else if ( type instanceof RefType )
+            {
+                final RefType rtype = (RefType) type;
+                bcl.returnValue( IntConstant.v( OpenCLScene.v().
+                        getOpenCLClass( rtype.getSootClass() ).getSize() ) );
+            }
+            bcl.label( label ); // set label (skip to here)
+        }
+        /* default return type 0. I don't think this should ever happen!
+         * Better somehow exception or assert? */
+        bcl.returnValue( IntConstant.v(0) );
+        bcl.endMethod();
     }
 
     private void makeGetSizeMethod( final BytecodeLanguage bcl )
@@ -112,60 +178,6 @@ public class VisitorGen extends AbstractVisitorGen
 
         bcl.returnValue(IntConstant.v(0));
         bcl.endMethod();
-    }
-
-    private void makeGetSizeMethodForType(Type type) {
-        if(type instanceof ArrayType == false &&
-             type instanceof RefType == false){
-            return;
-        }
-
-        if(m_getSizeMethodsMade.contains(type))
-            return;
-        m_getSizeMethodsMade.add(type);
-
-        if(type instanceof RefType){
-            RefType ref_type = (RefType) type;
-            SootClass soot_class = ref_type.getSootClass();
-            if(soot_class.getName().equals("java.lang.Object"))
-                return;
-            if(soot_class.isInterface()){
-                return;
-            }
-            if(differentPackageAndPrivate(ref_type)){
-                return;
-            }
-        }
-
-        if(typeIsPublic(type) == false)
-            return;
-
-        String label = getNextLabel();
-        m_bcl.top().ifInstanceOfStmt(m_param0, type, label);
-
-        if(type instanceof ArrayType){
-            ArrayType atype = (ArrayType) type;
-            Local size = m_bcl.top().local(IntType.v());
-            m_bcl.top().assign(size, IntConstant.v(Constants.ArrayOffsetSize));
-            Local element_size = m_bcl.top().local(IntType.v());
-            OpenCLType ocl_type = new OpenCLType(atype.baseType);
-            if(atype.numDimensions == 1)
-                m_bcl.top().assign(element_size, IntConstant.v(ocl_type.getSize()));
-            else
-                m_bcl.top().assign(element_size, IntConstant.v(4));
-            Local object_to_write_from = m_bcl.top().cast(type, m_param0);
-            Local length = m_bcl.top().lengthof(object_to_write_from);
-            m_bcl.top().mult(element_size, length);
-            m_bcl.top().plus(size, element_size);
-            m_bcl.top().returnValue(size);
-        }else if(type instanceof RefType) {
-            RefType rtype = (RefType) type;
-            OpenCLClass ocl_class = OpenCLScene.v().getOpenCLClass(rtype.getSootClass());
-            int size = ocl_class.getSize();
-            m_bcl.top().returnValue(IntConstant.v(size));
-        }
-        m_bcl.top().label(label);
-
     }
 
     private static void makeWriteToHeapMethod
