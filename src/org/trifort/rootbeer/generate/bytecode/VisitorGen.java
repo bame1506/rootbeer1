@@ -63,7 +63,7 @@ public class VisitorGen extends AbstractVisitorGen
         makeCtor();
         makeWriteStaticsToHeapMethod ( m_bcl.top()              );
         makeReadStaticsFromHeapMethod( m_bcl.top()              );
-        makeGetSizeMethod();
+        makeGetSizeMethod            ( m_bcl.top()              );
         makeGetLengthMethod();
         makeWriteToHeapMethod();
         makeReadFromHeapMethod();
@@ -91,31 +91,27 @@ public class VisitorGen extends AbstractVisitorGen
         m_bcl.top().endMethod();
     }
 
-    private void makeGetSizeMethod(){
+    private void makeGetSizeMethod( final BytecodeLanguage bcl )
+    {
         SootClass object_soot_class = Scene.v().getSootClass("java.lang.Object");
-        m_bcl.top().startMethod("getArrayLength", IntType.v(), object_soot_class.getType());
-        m_thisRef = m_bcl.top().refThis();
-        m_param0 = m_bcl.top().refParameter(0);
+        bcl.startMethod("getArrayLength", IntType.v(), object_soot_class.getType());
+        m_thisRef = bcl.refThis();
+        m_param0 = bcl.refParameter(0);
 
         List<Type> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefLikeTypes();
-        for(Type type : types){
-            makeGetLengthMethodForType(type);
+        for ( Type type : types )
+        {
+            if ( ! ( type instanceof ArrayType ) )
+                continue;
+
+            String label = getNextLabel(); // non-static
+            bcl.ifInstanceOfStmt( m_param0, type, label );
+            bcl.returnValue( bcl.lengthof( bcl.cast( type, m_param0 ) ) );
+            bcl.label( label );
         }
 
-        m_bcl.top().returnValue(IntConstant.v(0));
-        m_bcl.top().endMethod();
-    }
-
-    private void makeGetLengthMethodForType(Type type){
-        if(type instanceof ArrayType == false)
-            return;
-
-        String label = getNextLabel();
-        m_bcl.top().ifInstanceOfStmt(m_param0, type, label);
-        Local object_to_write_from = m_bcl.top().cast(type, m_param0);
-        Local length = m_bcl.top().lengthof(object_to_write_from);
-        m_bcl.top().returnValue(length);
-        m_bcl.top().label(label);
+        bcl.returnValue(IntConstant.v(0));
+        bcl.endMethod();
     }
 
     private void makeGetSizeMethodForType(Type type) {
