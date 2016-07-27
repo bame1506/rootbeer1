@@ -51,8 +51,8 @@ public class VisitorGen extends AbstractVisitorGen
 
     public void generate()
     {
-        m_bcl.push(new BytecodeLanguage());
-        makeSentinalCtors();
+        m_bcl.push( new BytecodeLanguage() );
+        makeSentinalCtors( m_sentinalCtorsCreated );
         makeSerializer();
         addGetSerializerMethod();
     }
@@ -222,60 +222,60 @@ public class VisitorGen extends AbstractVisitorGen
         m_bcl.top().endMethod();
     }
 
-    private void generateSentinalCtor(RefType ref_type) {
-        SootClass soot_class = ref_type.getSootClass();
-        if(m_sentinalCtorsCreated.contains(soot_class.getName()))
-            return;
-        m_sentinalCtorsCreated.add(soot_class.getName());
-
-        soot_class = Scene.v().getSootClass(soot_class.getName());
-        if(soot_class.isApplicationClass() == false)
-            return;
-
-        if(soot_class.declaresMethod("void <init>(org.trifort.rootbeer.runtime.Sentinal)")){
-            return;
-        }
-
-        SootClass parent_class = soot_class.getSuperclass();
-        parent_class = Scene.v().getSootClass(parent_class.getName());
-
-        BytecodeLanguage bcl = new BytecodeLanguage();
-        bcl.openClass(soot_class);
-        bcl.startMethod("<init>", VoidType.v(), RefType.v("org.trifort.rootbeer.runtime.Sentinal"));
-        Local thisref = bcl.refThis();
-
-        String parent_name = parent_class.getName();
-        if(parent_class.isApplicationClass() == false){
-            if(parent_class.declaresMethod("void <init>()")){
-                bcl.pushMethod(parent_name, "<init>", VoidType.v());
-                bcl.invokeMethodNoRet(thisref);
-            } else {
-                System.out.println("Library class "+parent_name+" on the GPU does not have a void constructor");
-                System.exit(-1);
-            }
-        } else {
-            bcl.pushMethod(parent_name, "<init>", VoidType.v(), RefType.v("org.trifort.rootbeer.runtime.Sentinal"));
-            bcl.invokeMethodNoRet(thisref, NullConstant.v());
-        }
-        bcl.returnVoid();
-        bcl.endMethod();
-    }
-
-    private void makeSentinalCtors() {
+    private static void makeSentinalCtors( final Set<String> sentinalCtorsCreated )
+    {
         List<RefType> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefTypes();
         //types are ordered from largest type number to smallest
         //reverse the order for this computation because the sentinal ctors
         //need the parent to first have the sential ctor made.
-        Collections.reverse(types);
-        for(RefType ref_type : types){
+        Collections.reverse( types );
+
+        for ( final RefType ref_type : types )
+        {
             AcceptableGpuTypes accept = new AcceptableGpuTypes();
-            if(accept.shouldGenerateCtor(ref_type.getClassName())){
-                generateSentinalCtor(ref_type);
+            if ( ! accept.shouldGenerateCtor( ref_type.getClassName() ) )
+                continue;
+
+            final String refClassName = ref_type.getSootClass().getName();
+            if ( sentinalCtorsCreated.contains( refClassName ) )
+                continue;
+            sentinalCtorsCreated.add( refClassName );
+
+            final SootClass soot_class = Scene.v().getSootClass( refClassName );
+            if ( ! soot_class.isApplicationClass() )
+                continue;
+
+            if ( soot_class.declaresMethod( "void <init>(org.trifort.rootbeer.runtime.Sentinal)" ) )
+                continue;
+
+            SootClass parent_class = soot_class.getSuperclass();
+            parent_class = Scene.v().getSootClass(parent_class.getName());
+
+            BytecodeLanguage bcl = new BytecodeLanguage();
+            bcl.openClass(soot_class);
+            bcl.startMethod("<init>", VoidType.v(), RefType.v("org.trifort.rootbeer.runtime.Sentinal"));
+            Local thisref = bcl.refThis();
+
+            String parent_name = parent_class.getName();
+            if ( ! parent_class.isApplicationClass() )
+            {
+                if ( parent_class.declaresMethod("void <init>()") )
+                {
+                    bcl.pushMethod(parent_name, "<init>", VoidType.v());
+                    bcl.invokeMethodNoRet(thisref);
+                } else {
+                    System.out.println("Library class "+parent_name+" on the GPU does not have a void constructor");
+                    System.exit(-1);
+                }
+            } else {
+                bcl.pushMethod(parent_name, "<init>", VoidType.v(), RefType.v("org.trifort.rootbeer.runtime.Sentinal"));
+                bcl.invokeMethodNoRet(thisref, NullConstant.v());
             }
+            bcl.returnVoid();
+            bcl.endMethod();
+
         }
     }
 
-    String getClassName() {
-        return m_className;
-    }
+    String getClassName() { return m_className; }
 }
