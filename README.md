@@ -1,6 +1,7 @@
 # About this Fork
 
-This fork adds several small bugfixes, quite some code comments, code reduction and also changes the code style of sighted files to something more similar to e.g. [imresh](https://github.com/ComputationalRadiationPhysics/imresh) i.e. braces on new line, 4 spaces instead of 2 indentation and alignment of similar and especially of boiler-plate code.
+This fork adds several small bugfixes, quite some code comments, code reduction and also changes the code style of sighted files to something more similar to e.g. [imresh](https://github.com/ComputationalRadiationPhysics/imresh) i.e. braces on new line, 4 spaces instead of 2 indentation and alignment of similar and especially of boiler-plate code. 
+The reason behind this is trying to understand and get a feel for the code in order to find a memory bug which appears when using Rootbeer in conjunction with Spark, see backtrace down below at [Known Bugs](#known-bugs).
 
 # Rootbeer
 
