@@ -542,107 +542,115 @@ public class CUDAContext implements Context
         final Stopwatch watch = new Stopwatch();
         watch.start();
 
-        /* no branching on m_usingHandles ? */
-        /* setAddress(0) doesn't change the heapEnd, meaning the resulting
-         * heapEnd will be the maximum of the last and the one after writing
-         * everything in this method */
-        m_objectMemory.clearHeapEndPtr();
-        m_handlesMemory.setAddress(0);
+        String output = "";
 
-        if ( debugging )
+        try
         {
-            System.out.println(
-                "[CUDAContext.java:writeBlocksList]\n" +
-                "|  m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
-                "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n"
-            );
+
+            /* no branching on m_usingHandles ? */
+            /* setAddress(0) doesn't change the heapEnd, meaning the resulting
+             * heapEnd will be the maximum of the last and the one after writing
+             * everything in this method */
+            m_objectMemory.clearHeapEndPtr();
+            m_handlesMemory.setAddress(0);
+
+            if ( debugging )
+            {
+                output +=
+                    "\n[CUDAContext.java:writeBlocksList]\n" +
+                    "|  m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
+                    "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n";
+            }
+
+            final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
+            serializer.writeStaticsToHeap();  // writes statics to m_objectMemory
+
+            if ( debugging )
+            {
+                output +=
+                    "\n[CUDAContext.java:writeBlocksList]" + "\n" +
+                    "| After writing statics to heap"    + "\n" +
+                    "|   m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
+                    "|   m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n";
+            }
+
+            /* this writes each kernel and their non-static members to object
+             * memory and saves the returned manual/relative pointer for the
+             * heap byte array to m_handlesMemory so that each kernel can be
+             * refound on GPU.
+             *    m_handlesMemory will increase by work.size() * 4 Bytes
+             *    m_objectMemory increases by work.size() * (sum of all members
+             *      kernel) + one-time members e.g. the array where the private
+             *      members point to
+             *
+             * Example Output for CountKernel:
+             *   [CUDAContext.java:writeBlocksList]
+             *   | Writing the first kernel needed : 196720
+             *   | Every consequent kernel needed  : 48
+             *   | => one-time kernel code needs   : 196672
+             * The one-time code is exactly work.size()*16 + 64. This seems to
+             * The kernel contains two long arrays of length work.size() (=12288)
+             * This means each array element seems to need twice the size Oo?
+             */
+            final long nPreFirstKernel = m_objectMemory.getPointer();
+            long nPostFirstKernel = -1;
+            for ( final Kernel kernel : work )
+            {
+                m_handlesMemory.writeRef( serializer.writeToHeap( kernel ) );
+                if ( nPostFirstKernel == -1 )
+                    nPostFirstKernel = m_objectMemory.getPointer();
+            }
+            final long nPostLastKernel = m_objectMemory.getPointer();
+
+            if ( debugging )
+            {
+                final long nBytesPerKernel = ( nPostLastKernel - nPostFirstKernel ) / ( work.size() - 1 );
+                output +=
+                    "\n[CUDAContext.java:writeBlocksList]\n" +
+                    "| Writing the first kernel needed : " + ( nPostFirstKernel - nPreFirstKernel ) + " B\n" +
+                    "| Every consequent kernel needed  : " + nBytesPerKernel + " B\n" +
+                    "| => one-time kernel code needs   : " +
+                    ( nPostFirstKernel - nPreFirstKernel - nBytesPerKernel ) + " B\n";
+                assert( ( nPostLastKernel - nPostFirstKernel ) % ( work.size() - 1 ) == 0 );
+            }
+
+            m_objectMemory.align16();
+
+            if ( debugging )
+            {
+                output +=
+                    "\n[CUDAContext.java:writeBlocksList]\n" +
+                    "| After align16 call:\n" +
+                    "|   m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
+                    "|   m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n";
+            }
+
+            if ( debugging && ! Configuration.getPrintMem() )
+            {
+                /* @todo For some reason the size returned by getSize is different
+                 * on each different compilation Oo ? But it stays the same on
+                 * different runs with the same binary. Is something like the time
+                 * encoded Oo? ??? */
+                output +=
+                    "\n[CUDAContext.java:writeBlocksList] After writing here " +
+                    "are the first 1024 Bytes of m_objectMemory (" +
+                    m_objectMemory.getSize() + " B = " +
+                    formatSize( m_objectMemory.getSize() ) + ") :\n" +
+                    BufferPrinter.toString( m_objectMemory , 0, 1024 ) +
+                    "\n[CUDAContext.java:writeBlocksList] and also the " +
+                    "first 1024 Bytes of m_handlesMemory (" + m_handlesMemory.getSize() + " B = " +
+                    formatSize( m_handlesMemory.getSize() ) + ") :\n" +
+                    BufferPrinter.toString( m_handlesMemory, 0, 1024 );
+            }
+
+            if ( Configuration.getPrintMem() )
+                BufferPrinter.print( m_objectMemory, 0, 256 );
+
         }
-
-        final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
-        serializer.writeStaticsToHeap();  // writes statics to m_objectMemory
-
-        if ( debugging )
+        finally
         {
-            System.out.println(
-                "[CUDAContext.java:writeBlocksList]" + "\n" +
-                "| After writing statics to heap"    + "\n" +
-                "|   m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
-                "|   m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n"
-            );
+            System.out.println( output );
         }
-
-        /* this writes each kernel and their non-static members to object
-         * memory and saves the returned manual/relative pointer for the
-         * heap byte array to m_handlesMemory so that each kernel can be
-         * refound on GPU.
-         *    m_handlesMemory will increase by work.size() * 4 Bytes
-         *    m_objectMemory increases by work.size() * (sum of all members
-         *      kernel) + one-time members e.g. the array where the private
-         *      members point to
-         *
-         * Example Output for CountKernel:
-         *   [CUDAContext.java:writeBlocksList]
-         *   | Writing the first kernel needed : 196720
-         *   | Every consequent kernel needed  : 48
-         *   | => one-time kernel code needs   : 196672
-         * The one-time code is exactly work.size()*16 + 64. This seems to
-         * The kernel contains two long arrays of length work.size() (=12288)
-         * This means each array element seems to need twice the size Oo?
-         */
-        final long nPreFirstKernel = m_objectMemory.getPointer();
-        long nPostFirstKernel = -1;
-        for ( final Kernel kernel : work )
-        {
-            m_handlesMemory.writeRef( serializer.writeToHeap( kernel ) );
-            if ( nPostFirstKernel == -1 )
-                nPostFirstKernel = m_objectMemory.getPointer();
-        }
-        final long nPostLastKernel = m_objectMemory.getPointer();
-
-        if ( debugging )
-        {
-            final long nBytesPerKernel = ( nPostLastKernel - nPostFirstKernel ) / ( work.size() - 1 );
-            System.out.println(
-                "[CUDAContext.java:writeBlocksList]\n" +
-                "| Writing the first kernel needed : " + ( nPostFirstKernel - nPreFirstKernel ) + " B\n" +
-                "| Every consequent kernel needed  : " + nBytesPerKernel + " B\n" +
-                "| => one-time kernel code needs   : " +
-                ( nPostFirstKernel - nPreFirstKernel - nBytesPerKernel ) + " B\n"
-            );
-            assert( ( nPostLastKernel - nPostFirstKernel ) % ( work.size() - 1 ) == 0 );
-        }
-
-        m_objectMemory.align16();
-
-        if ( debugging )
-        {
-            System.out.println(
-                "[CUDAContext.java:writeBlocksList]\n" +
-                "| After align16 call:\n" +
-                "|   m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
-                "|   m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n"
-            );
-        }
-
-        if ( debugging && ! Configuration.getPrintMem() )
-        {
-            /* @todo For some reason the size returned by getSize is different
-             * on each different compilation Oo ? But it stays the same on
-             * different runs with the same binary. Is something like the time
-             * encoded Oo? ??? */
-            System.out.println(
-                "[CUDAContext.java:writeBlocksList] After writing here " +
-                "are the first 1024 Bytes of m_objectMemory (" + m_objectMemory.getSize() + " B = " +
-                formatSize( m_objectMemory.getSize() ) + ") :" );
-            BufferPrinter.print( m_objectMemory, 0, 1024 );
-            System.out.println(
-                "[CUDAContext.java:writeBlocksList] and also the first 1024 Bytes of m_handlesMemory (" + m_handlesMemory.getSize() + " B = " +
-                formatSize( m_handlesMemory.getSize() ) + ") :" );
-            BufferPrinter.print( m_handlesMemory, 0, 1024 );
-        }
-
-        if ( Configuration.getPrintMem() )
-            BufferPrinter.print( m_objectMemory, 0, 256 );
 
         watch.stop();
         m_stats.setSerializationTime( watch.elapsedTimeMillis() );
@@ -656,88 +664,106 @@ public class CUDAContext implements Context
         final Stopwatch watch = new Stopwatch();
         watch.start();
 
-        m_objectMemory.setAddress(0);
-        m_handlesMemory.setAddress(0);
-        final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
+        long iKernel = 0;
+        long ref     = 0;
+        String output = "";
 
-        /* @todo shouldn't this only be done if exceptions are activated ???
-         * which would make it possble to merge it into the submethod */
-        m_exceptionsMemory.setAddress(0);
-        if ( Configuration.runtimeInstance().getExceptions() )
-            readBlocksGetAndCheckExceptions( serializer );
-
-        if ( debugging )
+        try
         {
-            System.out.println(
-                "[CUDAContext.java:readBlocksList]\n" +
-                "|  m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
-                "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n"
-            );
-        }
+            m_objectMemory.setAddress(0);
+            m_handlesMemory.setAddress(0);
+            final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
 
-        serializer.readStaticsFromHeap();
+            /* @todo shouldn't this only be done if exceptions are activated ???
+             * which would make it possble to merge it into the submethod */
+            m_exceptionsMemory.setAddress(0);
+            if ( Configuration.runtimeInstance().getExceptions() )
+                readBlocksGetAndCheckExceptions( serializer );
 
-        if ( debugging )
-        {
-            System.out.println(
-                "[CUDAContext.java:readBlocksList]\n" +
-                "|After reading statics from heap\n" +
-                "|  m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
-                "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n"
-            );
-        }
-
-        final long nPreFirstKernel = m_objectMemory.getPointer();
-        long nPostFirstKernel  = -1;
-        long nPostSecondKernel = -1;
-        for ( final Kernel kernel : work )
-        {
-            final long ref = m_handlesMemory.readRef();
-            // inverse: m_handlesMemory.writeRef( serializer.writeToHeap( kernel ) );
-            serializer.readFromHeap( kernel, true, ref );
-            if ( nPostSecondKernel == -1 && nPostFirstKernel != -1 ) // so only in second run
+            if ( debugging )
             {
-                System.out.println( "[CUDAContext.java:readBlocksList] read from ref " + ref + ", now pointer is at " + m_objectMemory.getPointer() );
-                nPostSecondKernel = ref;
+                output +=
+                    "\n[CUDAContext.java:readBlocksList]\n" +
+                    "|  m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
+                    "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n";
             }
-            if ( nPostFirstKernel == -1 )
-            {
-                System.out.println( "[CUDAContext.java:readBlocksList] read from ref " + ref + ", now pointer is at " + m_objectMemory.getPointer() );
-                nPostFirstKernel = ref; //m_objectMemory.getPointer();
-            }
-        }
-        final long nPostLastKernel = m_objectMemory.getPointer();
 
-        if ( debugging )
+            serializer.readStaticsFromHeap();
+
+            if ( debugging )
+            {
+                output +=
+                    "\n[CUDAContext.java:readBlocksList]\n" +
+                    "|After reading statics from heap\n" +
+                    "|  m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
+                    "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n";
+            }
+
+            final long nPreFirstKernel = m_objectMemory.getPointer();
+            long nPostFirstKernel  = -1;
+            long nPostSecondKernel = -1;
+            for ( final Kernel kernel : work )
+            {
+                ref = m_handlesMemory.readRef();
+                // inverse: m_handlesMemory.writeRef( serializer.writeToHeap( kernel ) );
+                serializer.readFromHeap( kernel, true, ref );
+                if ( debugging )
+                {
+                    if ( nPostSecondKernel == -1 && nPostFirstKernel != -1 ) // so only in second run
+                    {
+                        output += "[CUDAContext.java:readBlocksList] read from ref " +
+                            ref + ", now pointer is at " + m_objectMemory.getPointer() + "\n";
+                        nPostSecondKernel = ref;
+                    }
+                    else if ( nPostFirstKernel == -1 )
+                    {
+                        output += "[CUDAContext.java:readBlocksList] read from ref " +
+                            ref + ", now pointer is at " + m_objectMemory.getPointer() + "\n";
+                        nPostFirstKernel = ref; //m_objectMemory.getPointer();
+                    }
+                    else if ( iKernel % 40 == 0 )
+                        output += "\nLast read Kernel " + iKernel + " ";
+                    else
+                        output += ".";
+                    iKernel++;
+                }
+            }
+            final long nPostLastKernel = m_objectMemory.getPointer();
+
+            if ( debugging )
+            {
+                final long nBytesPerKernel = ( nPostLastKernel - nPostFirstKernel ) / ( work.size() - 1 );
+                output +=
+                    "\n[CUDAContext.java:readBlocksList]\n" +
+                    "| Reading the first  kernel from address : " + nPostFirstKernel  + "\n" +
+                    "| Reading the second kernel from address : " + nPostSecondKernel + "\n" +
+                    "| Every consequent kernel needed  : " + nBytesPerKernel + " B"   + "\n" +
+                    "| => one-time kernel code needs   : " +
+                    ( nPostFirstKernel - nPreFirstKernel - nBytesPerKernel) + " B";
+                /* memory dump */
+                if ( ! Configuration.getPrintMem() )
+                {
+                    output +=
+                        "\n[CUDAContext.java:readBlocksList] After reading here " +
+                        "are the first 1024 Bytes of m_objectMemory (" + m_objectMemory.getSize() + " B = " +
+                        formatSize( m_objectMemory.getSize() ) + ") :\n" +
+                        BufferPrinter.toString( m_objectMemory , 0, 1024 ) + "\n" +
+                        "\n[CUDAContext.java:readBlocksList] After reading here " +
+                        "are the first 1024 Bytes of m_handlesMemory (" + m_handlesMemory.getSize() + " B = " +
+                        formatSize( m_handlesMemory.getSize() ) + ") :\n" +
+                        BufferPrinter.toString( m_handlesMemory, 0, 1024 ) + "\n";
+                }
+            }
+
+            /* debugging output */
+            if ( Configuration.getPrintMem() )
+                BufferPrinter.print( m_objectMemory, 0, 256 );
+        }
+        finally
         {
-            final long nBytesPerKernel = ( nPostLastKernel - nPostFirstKernel ) / ( work.size() - 1 );
-            System.out.println(
-                "[CUDAContext.java:readBlocksList]\n" +
-                "| Reading the first  kernel from address : " + nPostFirstKernel  + "\n" +
-                "| Reading the second kernel from address : " + nPostSecondKernel + "\n" +
-                "| Every consequent kernel needed  : " + nBytesPerKernel + " B"   + "\n" +
-                "| => one-time kernel code needs   : " +
-                ( nPostFirstKernel - nPreFirstKernel - nBytesPerKernel) + " B"
-            );
-            /* memory dump */
-            if ( ! Configuration.getPrintMem() )
-            {
-                System.out.println(
-                    "[CUDAContext.java:readBlocksList] After writing here " +
-                    "are the first 1024 Bytes of m_objectMemory (" + m_objectMemory.getSize() + " B = " +
-                    formatSize( m_objectMemory.getSize() ) + ") :" );
-                BufferPrinter.print( m_objectMemory, 0, 1024 );
-                System.out.println(
-                    "[CUDAContext.java:readBlocksList] After writing here " +
-                    "are the first 1024 Bytes of m_handlesMemory (" + m_handlesMemory.getSize() + " B = " +
-                    formatSize( m_handlesMemory.getSize() ) + ") :" );
-                BufferPrinter.print( m_handlesMemory, 0, 1024 );
-            }
+            output += "!!! [CUDAContext.java:readBlocksList] Exception occured when trying to read kernel " + iKernel + " from heap (relative address / saved handle: " + ref + ")\n";
+            System.out.print( output );
         }
-
-        /* debugging output */
-        if ( Configuration.getPrintMem() )
-            BufferPrinter.print( m_objectMemory, 0, 256 );
 
         watch.stop();
         m_stats.setDeserializationTime( watch.elapsedTimeMillis() );
