@@ -40,6 +40,7 @@ import soot.jimple.StringConstant;
 import soot.options.Options;
 import soot.rbclassload.RootbeerClassLoader;
 
+
 public class VisitorWriteGen extends AbstractVisitorGen
 {
     private final Stack<Local>  m_CurrObj              ;
@@ -259,7 +260,8 @@ public class VisitorWriteGen extends AbstractVisitorGen
         bcl.returnVoid();
     }
 
-    private void makeWriteToHeapBodyForString(RefType type){
+    private void makeWriteToHeapBodyForString(RefType type)
+    {
         BytecodeLanguage bcl = m_bcl.top();
         BclMemory bcl_mem = new BclMemory(bcl, m_CurrentMem.top());
         int class_id = RootbeerClassLoader.v().getClassNumber(type.toString());
@@ -320,7 +322,8 @@ public class VisitorWriteGen extends AbstractVisitorGen
         m_CurrObj.pop();
     }
 
-    private void makeWriteToHeapBodyForRefType(RefType type){
+    private void makeWriteToHeapBodyForRefType(RefType type)
+    {
         BytecodeLanguage bcl = m_bcl.top();
         BclMemory bcl_mem = new BclMemory(bcl, m_CurrentMem.top());
         int class_id = RootbeerClassLoader.v().getClassNumber(type.toString());
@@ -375,7 +378,8 @@ public class VisitorWriteGen extends AbstractVisitorGen
         m_CurrObj.pop();
     }
 
-    private void writeFields(boolean ref_fields){
+    private void writeFields(boolean ref_fields)
+    {
         if(m_CurrClass.isApplicationClass()){
             attachWriter(m_CurrClass.getName(), ref_fields);
             callBaseClassWriter(m_CurrClass.getName(), ref_fields);
@@ -384,7 +388,8 @@ public class VisitorWriteGen extends AbstractVisitorGen
         }
     }
 
-    public void invokeWriteRefs(SootClass curr_class, Local mem_local) {
+    public void invokeWriteRefs(SootClass curr_class, Local mem_local)
+    {
         BytecodeLanguage bcl = m_bcl.top();
         if(curr_class.isApplicationClass()){
             SootClass mem = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Memory");
@@ -400,7 +405,8 @@ public class VisitorWriteGen extends AbstractVisitorGen
         m_ValuesWritten.clear();
     }
 
-    public void insertWriter(String class_name, boolean ref_fields){
+    public void insertWriter(String class_name, boolean ref_fields)
+    {
         m_ApplicationClass = false;
 
         boolean application_class = generatingCodeInApplicationClass();
@@ -422,7 +428,8 @@ public class VisitorWriteGen extends AbstractVisitorGen
         }
     }
 
-    private boolean generatingCodeInApplicationClass() {
+    private boolean generatingCodeInApplicationClass()
+    {
         BytecodeLanguage bcl = m_bcl.top();
         SootClass soot_class = bcl.getSootClass();
         RefType gc_type = (RefType) m_gcObjVisitor.top().getType();
@@ -434,7 +441,8 @@ public class VisitorWriteGen extends AbstractVisitorGen
         }
     }
 
-    private int sizeRefsArray(SootClass soot_class) {
+    private int sizeRefsArray(SootClass soot_class)
+    {
         int ret = 0;
         while(true){
             ret += getRefFields(soot_class).size();
@@ -447,8 +455,8 @@ public class VisitorWriteGen extends AbstractVisitorGen
 
     }
 
-    public void attachWriter(String class_name, boolean ref_fields){
-
+    public void attachWriter(String class_name, boolean ref_fields)
+    {
         String specialization;
 
         if(ref_fields){
@@ -531,7 +539,8 @@ public class VisitorWriteGen extends AbstractVisitorGen
         m_bcl.pop();
     }
 
-    public void doWriter(String class_name, boolean do_ref_fields, boolean is_application){
+    public void doWriter(String class_name, boolean do_ref_fields, boolean is_application)
+    {
 
         BytecodeLanguage bcl = m_bcl.top();
         SootClass soot_class = Scene.v().getSootClass(class_name);
@@ -562,7 +571,8 @@ public class VisitorWriteGen extends AbstractVisitorGen
         }
     }
 
-    private Local writeRefField(OpenCLField ref_field, Value copy_values){
+    private Local writeRefField(OpenCLField ref_field, Value copy_values)
+    {
         BytecodeLanguage bcl = m_bcl.top();
         SootField soot_field = ref_field.getSootField();
         SootClass obj = Scene.v().getSootClass("java.lang.Object");
@@ -579,7 +589,8 @@ public class VisitorWriteGen extends AbstractVisitorGen
         return bcl.invokeMethodRet(m_gcObjVisitor.top(), field_value, copy_values);
     }
 
-    private Local writeStaticRefField(OpenCLField ref_field, IntConstant copy_values) {
+    private Local writeStaticRefField(OpenCLField ref_field, IntConstant copy_values)
+    {
         SootField soot_field = ref_field.getSootField();
         BytecodeLanguage bcl = m_bcl.top();
 
@@ -590,7 +601,8 @@ public class VisitorWriteGen extends AbstractVisitorGen
         return bcl.invokeMethodRet(m_gcObjVisitor.top(), field_value, copy_values);
     }
 
-    private void writeNonRefField(OpenCLField non_ref_field){
+    private void writeNonRefField(OpenCLField non_ref_field)
+    {
         SootField soot_field = non_ref_field.getSootField();
         String function_name = "write"+getTypeString(soot_field);
         BytecodeLanguage bcl = m_bcl.top();

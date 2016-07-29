@@ -175,9 +175,9 @@ public abstract class Serializer
             }
         }
         long null_ptr_check = address >> 4;
-        if(null_ptr_check == -1){
+        if ( null_ptr_check == -1 )
             return null;
-        }
+
         //if(o == null){
         //    System.out.println("readFromHeap: null. addr: "+address);
         //} else {
@@ -185,7 +185,7 @@ public abstract class Serializer
         //}
         //BufferPrinter printer = new BufferPrinter();
         //printer.print(mMem, address-128, 256);
-        Object ret = doReadFromHeap(o, read_data, address);
+        Object ret = doReadFromHeap( o, read_data, address );
         //if(ret == null){
         //    System.out.println("doReadFromHeap: null. addr: "+address);
         //} else {
@@ -264,7 +264,13 @@ public abstract class Serializer
     public void writeStaticFloatField  (Class cls, String name, float   value){ writeStaticField(cls,name,value); }
     public void writeStaticDoubleField (Class cls, String name, double  value){ writeStaticField(cls,name,value); }
 
-    /* defined by VisitorWriteGenStatic.java using soot. I don't exactly see why it is necessary to use Soot to write these out */
+    /* defined by VisitorWriteGenStatic.java using soot.
+     * I don't exactly see why it is necessary to use Soot to write these out
+     * I guess because Soot is needed to analyze all members of a class and
+     * then write them out
+     * @todo do these methods change the internal pointer of mMem i.e.
+     *       m_ObjectMemory ???
+     */
     public abstract void   doWriteToHeap (Object o, boolean write_data, long ref, boolean read_only);
     public abstract Object doReadFromHeap(Object o, boolean read_data , long ref);
     public abstract void   doWriteStaticsToHeap();
