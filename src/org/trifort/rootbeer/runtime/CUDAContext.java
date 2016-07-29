@@ -89,8 +89,8 @@ public class CUDAContext implements Context
         m_gpuDevice            = device;
         m_memorySize           = -1;    /* automatically determine size */
 
-        final String arch      = System.getProperty("os.arch");
-        m_is32bit              = arch.equals("x86") || arch.equals("i386");
+        final String arch      = System.getProperty( "os.arch" );
+        m_is32bit              = arch.equals( "x86" ) || arch.equals( "i386" );
 
         m_usingUncheckedMemory = true;
         m_usingHandles         = false;
@@ -400,8 +400,6 @@ public class CUDAContext implements Context
                 {
                     case NATIVE_BUILD_STATE:
                     {
-                        if ( debugging )
-                            System.out.println( "[CUDAContext.java] execute NATIVE_BUILD_STATE" );
                         final boolean usingExceptions = Configuration.runtimeInstance().getExceptions();
                         nativeBuildState(
                             m_nativeContext                 ,
@@ -426,8 +424,6 @@ public class CUDAContext implements Context
                     }
                     case NATIVE_RUN:
                     {
-                        if ( debugging )
-                            System.out.println( "[CUDAContext.java] execute NATIVE_RUN" );
                         /* send Kernel members to GPU (serializing) */
                         writeBlocksTemplate();
                         runGpu();
@@ -438,8 +434,6 @@ public class CUDAContext implements Context
                     }
                     case NATIVE_RUN_LIST:
                     {
-                        if ( debugging )
-                            System.out.println( "[CUDAContext.java] execute NATIVE_RUN_LIST" );
                         writeBlocksList( gpuEvent.getKernelList() );
                         runGpu();
                         readBlocksList(  gpuEvent.getKernelList() );
@@ -557,8 +551,11 @@ public class CUDAContext implements Context
 
         if ( debugging )
         {
-            System.out.println( "[CUDAContext.java:writeBlocksList] m_objectMemory  current address: " + m_objectMemory.getPointer() );
-            System.out.println( "[CUDAContext.java:writeBlocksList] m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
+            System.out.println(
+                "[CUDAContext.java:writeBlocksList]\n" +
+                "|  m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
+                "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n"
+            );
         }
 
         final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
@@ -566,10 +563,12 @@ public class CUDAContext implements Context
 
         if ( debugging )
         {
-            System.out.println( "[CUDAContext.java:writeBlocksList]" );
-            System.out.println( "| After writing statics to heap" );
-            System.out.println( "|   m_objectMemory  current address: " + m_objectMemory.getPointer() );
-            System.out.println( "|   m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
+            System.out.println(
+                "[CUDAContext.java:writeBlocksList]" + "\n" +
+                "| After writing statics to heap"    + "\n" +
+                "|   m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
+                "|   m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n"
+            );
         }
 
         /* this writes each kernel and their non-static members to object
@@ -602,25 +601,27 @@ public class CUDAContext implements Context
 
         if ( debugging )
         {
-            System.out.println( "[CUDAContext.java:writeBlocksList]" );
-            System.out.println( "| Writing the first kernel needed : " +
-                ( nPostFirstKernel - nPreFirstKernel ) + " B" );
-            assert( ( nPostLastKernel - nPostFirstKernel ) % ( work.size() - 1 ) == 0 );
             final long nBytesPerKernel = ( nPostLastKernel - nPostFirstKernel ) / ( work.size() - 1 );
-            System.out.println( "| Every consequent kernel needed  : " +
-                nBytesPerKernel + " B" );
-            System.out.println( "| => one-time kernel code needs   : " +
-                ( nPostFirstKernel - nPreFirstKernel - nBytesPerKernel) + " B" );
+            System.out.println(
+                "[CUDAContext.java:writeBlocksList]\n" +
+                "| Writing the first kernel needed : " + ( nPostFirstKernel - nPreFirstKernel ) + " B\n" +
+                "| Every consequent kernel needed  : " + nBytesPerKernel + " B\n" +
+                "| => one-time kernel code needs   : " +
+                ( nPostFirstKernel - nPreFirstKernel - nBytesPerKernel ) + " B\n"
+            );
+            assert( ( nPostLastKernel - nPostFirstKernel ) % ( work.size() - 1 ) == 0 );
         }
 
         m_objectMemory.align16();
 
         if ( debugging )
         {
-            System.out.println( "[CUDAContext.java:writeBlocksList]" );
-            System.out.println( "| After align16 call:" );
-            System.out.println( "|   m_objectMemory  current address: " + m_objectMemory.getPointer() );
-            System.out.println( "|   m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
+            System.out.println(
+                "[CUDAContext.java:writeBlocksList]\n" +
+                "| After align16 call:\n" +
+                "|   m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
+                "|   m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n"
+            );
         }
 
         if ( debugging && ! Configuration.getPrintMem() )
@@ -667,19 +668,23 @@ public class CUDAContext implements Context
 
         if ( debugging )
         {
-            System.out.println( "[CUDAContext.java:readBlocksList]" );
-            System.out.println( "|  m_objectMemory  current address: " + m_objectMemory.getPointer() );
-            System.out.println( "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
+            System.out.println(
+                "[CUDAContext.java:readBlocksList]\n" +
+                "|  m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
+                "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n"
+            );
         }
 
         serializer.readStaticsFromHeap();
 
         if ( debugging )
         {
-            System.out.println( "[CUDAContext.java:readBlocksList]" );
-            System.out.println( "|After reading statics from heap" );
-            System.out.println( "|  m_objectMemory  current address: " + m_objectMemory.getPointer() );
-            System.out.println( "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
+            System.out.println(
+                "[CUDAContext.java:readBlocksList]\n" +
+                "|After reading statics from heap\n" +
+                "|  m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
+                "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n"
+            );
         }
 
         final long nPreFirstKernel = m_objectMemory.getPointer();
@@ -705,14 +710,15 @@ public class CUDAContext implements Context
 
         if ( debugging )
         {
-            System.out.println( "[CUDAContext.java:readBlocksList]" );
-            System.out.println( "| Reading the first  kernel from address : " + nPostFirstKernel );
-            System.out.println( "| Reading the second kernel from address : " + nPostSecondKernel );
             final long nBytesPerKernel = ( nPostLastKernel - nPostFirstKernel ) / ( work.size() - 1 );
-            System.out.println( "| Every consequent kernel needed  : " +
-                nBytesPerKernel + " B" );
-            System.out.println( "| => one-time kernel code needs   : " +
-                ( nPostFirstKernel - nPreFirstKernel - nBytesPerKernel) + " B" );
+            System.out.println(
+                "[CUDAContext.java:readBlocksList]\n" +
+                "| Reading the first  kernel from address : " + nPostFirstKernel  + "\n" +
+                "| Reading the second kernel from address : " + nPostSecondKernel + "\n" +
+                "| Every consequent kernel needed  : " + nBytesPerKernel + " B"   + "\n" +
+                "| => one-time kernel code needs   : " +
+                ( nPostFirstKernel - nPreFirstKernel - nBytesPerKernel) + " B"
+            );
             /* memory dump */
             if ( ! Configuration.getPrintMem() )
             {

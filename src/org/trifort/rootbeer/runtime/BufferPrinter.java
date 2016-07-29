@@ -36,21 +36,22 @@ public class BufferPrinter
         final int nBytesPerGroup =  4;
         final int addressPadding = ( "" + ( start_ptr + length ) ).length();
 
+        String output = "";
         /* make ArrayList of Strings. Each String corresponding to one line,
          * e.g.: 00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00 */
         for ( int iByte = 1; iByte <= length; ++iByte )
         {
             /* print address at beginning of line */
             if ( (iByte-1) % nBytesPerLine == 0 )
-                System.out.print( String.format( "%0" + addressPadding + "d : ",
-                                                 start_ptr + iByte - 1 ) );
+                output += String.format( "%0" + addressPadding + "d : ", start_ptr + iByte - 1 );
 
-            System.out.print( String.format( "%02x", mem.readByte() ) + " " );
+            output += String.format( "%02x", mem.readByte() ) + " ";
             if ( iByte % nBytesPerLine == 0 )
-                System.out.println();
+                output += "\n";
             else if ( iByte % nBytesPerGroup == 0 )
-                System.out.print( " " );
+                output += " ";
         }
+        System.out.println( output );
 
         /* restore old address */
         mem.setAddress( pointerBackup );
