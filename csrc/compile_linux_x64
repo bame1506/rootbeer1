@@ -10,6 +10,7 @@ compileSource() {
             -I'/usr/lib/jvm/default-java/include/'       \
             -I'/usr/lib/jvm/default-java/include/linux'  \
             -I"$CUDA_INC"                                \
+            -Wall -Wextra -Wno-unused-parameter \
             "org/trifort/rootbeer/runtime/$1.c"
             # -DNDEBUG
         shift
