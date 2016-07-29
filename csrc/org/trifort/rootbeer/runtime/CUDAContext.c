@@ -369,6 +369,7 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
 
     unsigned long long hostMLocal[3];
     hostMLocal[0] = s->gpu_object_mem;
+    assert( s->cpu_object_mem_size % 16 == 0 ); // shouldn't this be the case? But it seems like it isn't
     hostMLocal[1] = s->cpu_object_mem_size / 16;    /* WHAT is up with this bitshift ? equiv to div 16 */
     hostMLocal[2] = s->gpu_class_mem;
     /* equality would be more clean programming, but it just isn't, and if
@@ -419,6 +420,12 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
         //    __PRINTOUT( "% 8d ", ((long*)s->cpu_handles_mem)[i] );
         //    ++i;
         //}
+
+        /* make backup of handle memory */
+        void * handlesSentToGpu = malloc( s->cpu_handles_mem_size );
+        //memcpy( s->cpu_handles_mem, handlesSentToGpu, s->cpu_handles_mem_size );
+        void * objectsSentToGpu = malloc( s->cpu_object_mem_size );
+        //memcpy( s->cpu_object_mem , objectsSentToGpu, s->cpu_object_mem_size  );
 
         #undef __PRINTI
         #undef __PRINTP
@@ -495,6 +502,43 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
 
     #ifndef NDEBUG
         __PRINTOUT( "+-------- Handles after GPU call (red means they changed !!!):\n" );
+        int i = 0;
+        while ( (i+1) * sizeof(long) <= (unsigned long) s->cpu_handles_mem_size && i < 0 )
+        {
+            if ( i % 8 == 0 )
+                __PRINTOUT( "\n" );
+            if ( ((long*)s->cpu_handles_mem)[i] == ((long*)handlesSentToGpu)[i] )
+            {
+                __PRINTOUT( "%9li  ", ((long*)s->cpu_handles_mem)[i] );
+            }
+            else
+            {
+                __PRINTOUT( ">%7li< ", ((long*)s->cpu_handles_mem)[i] );
+                         //((long*)handlesSentToGpu)[i] );
+            }
+            ++i;
+        }
+        free( handlesSentToGpu );
+
+
+        i = 0;
+        while ( (i+1) * sizeof(long) <= (unsigned long) s->cpu_object_mem_size && i < 0 )
+        {
+            if ( i % 8 == 0 )
+                __PRINTOUT( "\n" );
+            if ( ((long*)s->cpu_object_mem)[i] == ((long*)objectsSentToGpu)[i] )
+            {
+                __PRINTOUT( "%9li  ", ((long*)s->cpu_object_mem)[i] );
+            }
+            else
+            {
+                __PRINTOUT( ">%7li< ", ((long*)s->cpu_object_mem)[i] );
+                         //((long*)objectsSentToGpu)[i] );
+            }
+            ++i;
+        }
+        free( objectsSentToGpu );
+
 
         printf( "%s", output );
         free( output );
