@@ -403,6 +403,8 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
     CE( cuMemcpyHtoD( deviceGlobalFreePointer, s->info_space     , sizeof( *(s->info_space) ) ) )
     CE( cuMemcpyHtoD( deviceMLocal           , hostMLocal        , sizeof( hostMLocal )       ) )
     CE( cuMemcpyHtoD( s->gpu_object_mem      , s->cpu_object_mem , s->cpu_object_mem_size     ) )
+    /* @todo I don't think the handle-memory should be allowed change,
+     * so why copy it back to host except for debugging ?? */
     CE( cuMemcpyHtoD( s->gpu_handles_mem     , s->cpu_handles_mem, s->cpu_handles_mem_size    ) )
     CE( cuMemcpyHtoD( s->gpu_class_mem       , s->cpu_class_mem  , s->cpu_class_mem_size      ) )
     CE( cuMemcpyHtoD( s->gpu_heap_end        , &(heap_end_int)   , sizeof( heap_end_int )     ) )

@@ -51,7 +51,6 @@ public class CUDAContext implements Context
 
     /* Performance metrics / debug variables */
     private final StatsRow               m_stats               ;
-    private final Stopwatch              m_readBlocksStopwatch ; /**<- device->host memcpy timer */
 
     private final ExecutorService        m_exec                ;
     private final Disruptor   <GpuEvent> m_disruptor           ;
@@ -99,11 +98,9 @@ public class CUDAContext implements Context
         m_cacheConfig          = CacheConfig.PREFER_NONE;
 
         m_stats                = new StatsRow();
-        m_readBlocksStopwatch  = new Stopwatch();
     }
 
-    @Override
-    public void close()
+    @Override public void close()
     {
         m_disruptor.shutdown();
         m_exec.shutdown();
@@ -126,16 +123,14 @@ public class CUDAContext implements Context
     @Override public void setUsingHandles( boolean      value        ){ m_usingHandles         = value;        }
     @Override public void useCheckedMemory()                          { m_usingUncheckedMemory = false;        }
 
-    @Override
-    public void setKernel( final Kernel kernelTemplate )
+    @Override public void setKernel( final Kernel kernelTemplate )
     {
         m_kernelTemplate = kernelTemplate;
         m_compiledKernel = (CompiledKernel) kernelTemplate;
     }
 
     /* Just a method which emulates default arguments */
-    @Override
-    public void setThreadConfig
+    @Override public void setThreadConfig
     (
         final int threadCountX,
         final int blockCountX ,
@@ -145,8 +140,7 @@ public class CUDAContext implements Context
         setThreadConfig( threadCountX, 1, 1, blockCountX, 1, numThreads );
     }
     /* Just a method which emulates default arguments */
-    @Override
-    public void setThreadConfig
+    @Override public void setThreadConfig
     (
         final int threadCountX,
         final int threadCountY,
@@ -158,8 +152,7 @@ public class CUDAContext implements Context
         setThreadConfig( threadCountX, threadCountY, 1, blockCountX, blockCountY, numThreads );
     }
     /* simple accessor function for setting the associated thread configuration */
-    @Override
-    public void setThreadConfig
+    @Override public void setThreadConfig
     (
         final int threadCountX,
         final int threadCountY,
@@ -177,8 +170,7 @@ public class CUDAContext implements Context
 
     /* Seems to load cubin file and allocates memory for member 'compiledKernel',
      * therefore 'setKernel' must be called prior to this! */
-    @Override
-    public void buildState()
+    @Override public void buildState()
     {
         String  filename;
         int     size  = 0;
@@ -342,11 +334,8 @@ public class CUDAContext implements Context
         m_memorySize = neededMemory;
     }
 
-  @Override
-  public void run()
+  @Override public void run()
   {
-    if ( debugging )
-        System.out.println( "[CUDAContext.java:run(void)] calling runAsync" );
       GpuFuture future = runAsync();
       future.take();
   }
@@ -356,8 +345,7 @@ public class CUDAContext implements Context
    * Normally Rootbeer.java:run will be used and that only works with a
    * list of kernels
    */
-  @Override
-  public GpuFuture runAsync()
+  @Override public GpuFuture runAsync()
   {
       final long seq = m_ringBuffer.next();
       GpuEvent gpuEvent = m_ringBuffer.get(seq);
@@ -370,13 +358,10 @@ public class CUDAContext implements Context
     /**
      * Launches a kernel asynchronously
      */
-    @Override
-    public GpuFuture runAsync( final List<Kernel> work )
+    @Override public GpuFuture runAsync( final List<Kernel> work )
     {
-        if ( debugging )
-            System.out.println( "[CUDAContext.java:runAsync] Putting NATIVE_RUN_LIST into queue" );
         final long seq = m_ringBuffer.next();
-        GpuEvent gpuEvent = m_ringBuffer.get( seq );
+        final GpuEvent gpuEvent = m_ringBuffer.get( seq );
             gpuEvent.setKernelList( work );
             gpuEvent.setValue( GpuEventCommand.NATIVE_RUN_LIST );
         gpuEvent.getFuture().reset();
@@ -384,12 +369,11 @@ public class CUDAContext implements Context
         return gpuEvent.getFuture();
     }
 
-    @Override
-    public void run( final List<Kernel> work )
+    @Override public void run( final List<Kernel> work )
     {
         if ( debugging )
             System.out.println( "[CUDAContext.java:run(List<Kernel>)] calling runAsync" );
-        GpuFuture future = runAsync(work);
+        GpuFuture future = runAsync( work );
         future.take();
     }
 
@@ -496,18 +480,39 @@ public class CUDAContext implements Context
         final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
         serializer.writeStaticsToHeap(); // writes statics to m_objectMemory
 
-        final long handle = serializer.writeToHeap( m_compiledKernel );
-        m_handlesMemory.writeRef(handle);
+        m_handlesMemory.writeRef( serializer.writeToHeap( m_compiledKernel ) );
         m_objectMemory.align16();
 
         if ( Configuration.getPrintMem() )
-        {
-            final BufferPrinter printer = new BufferPrinter();
-            printer.print( m_objectMemory, 0, 256 );
-        }
+            BufferPrinter.print( m_objectMemory, 0, 256 );
 
         watch.stop();
         m_stats.setSerializationTime( watch.elapsedTimeMillis() );
+    }
+
+    private void readBlocksTemplate()
+    {
+        final Stopwatch watch = new Stopwatch();
+        watch.start();
+
+        m_objectMemory.setAddress(0);
+        m_handlesMemory.setAddress(0);
+        final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
+
+        /* @todo shouldn't this only be done if exceptions are activated ???
+         * which would make it possble to merge it into the submethod */
+        m_exceptionsMemory.setAddress(0);
+        if ( Configuration.runtimeInstance().getExceptions() )
+            readBlocksGetAndCheckExceptions( serializer );
+
+        serializer.readFromHeap( m_compiledKernel, true, m_handlesMemory.readRef() );
+
+        /* Debug output of heap m_objectMemory */
+        if ( Configuration.getPrintMem() )
+            BufferPrinter.print( m_objectMemory, 0, 256 );
+
+        watch.stop();
+        m_stats.setDeserializationTime( watch.elapsedTimeMillis() );
     }
 
     /**
@@ -561,8 +566,10 @@ public class CUDAContext implements Context
 
         if ( debugging )
         {
-            System.out.println( "[CUDAContext.java:writeBlocksList] m_objectMemory  current address: " + m_objectMemory.getPointer() );
-            System.out.println( "[CUDAContext.java:writeBlocksList] m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
+            System.out.println( "[CUDAContext.java:writeBlocksList]" );
+            System.out.println( "| After writing statics to heap" );
+            System.out.println( "|   m_objectMemory  current address: " + m_objectMemory.getPointer() );
+            System.out.println( "|   m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
         }
 
         /* this writes each kernel and their non-static members to object
@@ -570,26 +577,50 @@ public class CUDAContext implements Context
          * heap byte array to m_handlesMemory so that each kernel can be
          * refound on GPU.
          *    m_handlesMemory will increase by work.size() * 4 Bytes
-         *    m_objectMemory increases by work.size()+1 * (sum of all members
-         *      kernel)
-         *    @todo I can't explain where the +1 comes from ...
+         *    m_objectMemory increases by work.size() * (sum of all members
+         *      kernel) + one-time members e.g. the array where the private
+         *      members point to
+         *
+         * Example Output for CountKernel:
+         *   [CUDAContext.java:writeBlocksList]
+         *   | Writing the first kernel needed : 196720
+         *   | Every consequent kernel needed  : 48
+         *   | => one-time kernel code needs   : 196672
+         * The one-time code is exactly work.size()*16 + 64. This seems to
+         * The kernel contains two long arrays of length work.size() (=12288)
+         * This means each array element seems to need twice the size Oo?
          */
+        final long nPreFirstKernel = m_objectMemory.getPointer();
+        long nPostFirstKernel = -1;
         for ( final Kernel kernel : work )
+        {
             m_handlesMemory.writeRef( serializer.writeToHeap( kernel ) );
+            if ( nPostFirstKernel == -1 )
+                nPostFirstKernel = m_objectMemory.getPointer();
+        }
+        final long nPostLastKernel = m_objectMemory.getPointer();
 
         if ( debugging )
         {
-            System.out.println( "[CUDAContext.java:writeBlocksList] work.size                      : " + work.size() );
-            System.out.println( "[CUDAContext.java:writeBlocksList] m_objectMemory  current address: " + m_objectMemory.getPointer() );
-            System.out.println( "[CUDAContext.java:writeBlocksList] m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
+            System.out.println( "[CUDAContext.java:writeBlocksList]" );
+            System.out.println( "| Writing the first kernel needed : " +
+                ( nPostFirstKernel - nPreFirstKernel ) + " B" );
+            assert( ( nPostLastKernel - nPostFirstKernel ) % ( work.size() - 1 ) == 0 );
+            final long nBytesPerKernel = ( nPostLastKernel - nPostFirstKernel ) / ( work.size() - 1 );
+            System.out.println( "| Every consequent kernel needed  : " +
+                nBytesPerKernel + " B" );
+            System.out.println( "| => one-time kernel code needs   : " +
+                ( nPostFirstKernel - nPreFirstKernel - nBytesPerKernel) + " B" );
         }
 
         m_objectMemory.align16();
 
         if ( debugging )
         {
-            System.out.println( "[CUDAContext.java:writeBlocksList] m_objectMemory  current address: " + m_objectMemory.getPointer() );
-            System.out.println( "[CUDAContext.java:writeBlocksList] m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
+            System.out.println( "[CUDAContext.java:writeBlocksList]" );
+            System.out.println( "| After align16 call:" );
+            System.out.println( "|   m_objectMemory  current address: " + m_objectMemory.getPointer() );
+            System.out.println( "|   m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
         }
 
         if ( debugging && ! Configuration.getPrintMem() )
@@ -600,16 +631,152 @@ public class CUDAContext implements Context
              * encoded Oo? ??? */
             System.out.println(
                 "[CUDAContext.java:writeBlocksList] After writing here " +
-                "are the first 256 Bytes of m_objectMemory (" + m_objectMemory.getSize() + " B = " +
+                "are the first 1024 Bytes of m_objectMemory (" + m_objectMemory.getSize() + " B = " +
                 formatSize( m_objectMemory.getSize() ) + ") :" );
-            new BufferPrinter().print( m_objectMemory, 0, 1024 );
+            BufferPrinter.print( m_objectMemory, 0, 1024 );
+            System.out.println(
+                "[CUDAContext.java:writeBlocksList] and also the first 1024 Bytes of m_handlesMemory (" + m_handlesMemory.getSize() + " B = " +
+                formatSize( m_handlesMemory.getSize() ) + ") :" );
+            BufferPrinter.print( m_handlesMemory, 0, 1024 );
         }
 
         if ( Configuration.getPrintMem() )
-            new BufferPrinter().print( m_objectMemory, 0, 256 );
+            BufferPrinter.print( m_objectMemory, 0, 256 );
 
         watch.stop();
         m_stats.setSerializationTime( watch.elapsedTimeMillis() );
+    }
+
+    /**
+     * This function should do the exact inverse of writeBlocksList !
+     */
+    public void readBlocksList( final List<Kernel> work )
+    {
+        final Stopwatch watch = new Stopwatch();
+        watch.start();
+
+        m_objectMemory.setAddress(0);
+        m_handlesMemory.setAddress(0);
+        final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
+
+        /* @todo shouldn't this only be done if exceptions are activated ???
+         * which would make it possble to merge it into the submethod */
+        m_exceptionsMemory.setAddress(0);
+        if ( Configuration.runtimeInstance().getExceptions() )
+            readBlocksGetAndCheckExceptions( serializer );
+
+        if ( debugging )
+        {
+            System.out.println( "[CUDAContext.java:readBlocksList]" );
+            System.out.println( "|  m_objectMemory  current address: " + m_objectMemory.getPointer() );
+            System.out.println( "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
+        }
+
+        serializer.readStaticsFromHeap();
+
+        if ( debugging )
+        {
+            System.out.println( "[CUDAContext.java:readBlocksList]" );
+            System.out.println( "|After reading statics from heap" );
+            System.out.println( "|  m_objectMemory  current address: " + m_objectMemory.getPointer() );
+            System.out.println( "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" );
+        }
+
+        final long nPreFirstKernel = m_objectMemory.getPointer();
+        long nPostFirstKernel  = -1;
+        long nPostSecondKernel = -1;
+        for ( final Kernel kernel : work )
+        {
+            final long ref = m_handlesMemory.readRef();
+            // inverse: m_handlesMemory.writeRef( serializer.writeToHeap( kernel ) );
+            serializer.readFromHeap( kernel, true, ref );
+            if ( nPostSecondKernel == -1 && nPostFirstKernel != -1 ) // so only in second run
+            {
+                System.out.println( "[CUDAContext.java:readBlocksList] read from ref " + ref + ", now pointer is at " + m_objectMemory.getPointer() );
+                nPostSecondKernel = ref;
+            }
+            if ( nPostFirstKernel == -1 )
+            {
+                System.out.println( "[CUDAContext.java:readBlocksList] read from ref " + ref + ", now pointer is at " + m_objectMemory.getPointer() );
+                nPostFirstKernel = ref; //m_objectMemory.getPointer();
+            }
+        }
+        final long nPostLastKernel = m_objectMemory.getPointer();
+
+        if ( debugging )
+        {
+            System.out.println( "[CUDAContext.java:readBlocksList]" );
+            System.out.println( "| Reading the first  kernel from address : " + nPostFirstKernel );
+            System.out.println( "| Reading the second kernel from address : " + nPostSecondKernel );
+            final long nBytesPerKernel = ( nPostLastKernel - nPostFirstKernel ) / ( work.size() - 1 );
+            System.out.println( "| Every consequent kernel needed  : " +
+                nBytesPerKernel + " B" );
+            System.out.println( "| => one-time kernel code needs   : " +
+                ( nPostFirstKernel - nPreFirstKernel - nBytesPerKernel) + " B" );
+            /* memory dump */
+            if ( ! Configuration.getPrintMem() )
+            {
+                System.out.println(
+                    "[CUDAContext.java:readBlocksList] After writing here " +
+                    "are the first 1024 Bytes of m_objectMemory (" + m_objectMemory.getSize() + " B = " +
+                    formatSize( m_objectMemory.getSize() ) + ") :" );
+                BufferPrinter.print( m_objectMemory, 0, 1024 );
+                System.out.println(
+                    "[CUDAContext.java:readBlocksList] After writing here " +
+                    "are the first 1024 Bytes of m_handlesMemory (" + m_handlesMemory.getSize() + " B = " +
+                    formatSize( m_handlesMemory.getSize() ) + ") :" );
+                BufferPrinter.print( m_handlesMemory, 0, 1024 );
+            }
+        }
+
+        /* debugging output */
+        if ( Configuration.getPrintMem() )
+            BufferPrinter.print( m_objectMemory, 0, 256 );
+
+        watch.stop();
+        m_stats.setDeserializationTime( watch.elapsedTimeMillis() );
+    }
+
+    private void readBlocksGetAndCheckExceptions( final Serializer serializer )
+    {
+        /* for each thread in the kernel get its corresponding exception
+         * and evaluate i.e. throw it, if necessary */
+        for( long i = 0; i < m_threadConfig.getNumThreads(); ++i )
+        {
+            final long ref = m_exceptionsMemory.readRef();
+            if ( ref != 0 )
+            {
+                final long ref_num = ref >> 4; /* = ref / 16 (?) */
+                if ( ref_num == m_compiledKernel.getNullPointerNumber() ) {
+                    throw new NullPointerException( "Null pointer exception while running on GPU" );
+                } else if ( ref_num == m_compiledKernel.getOutOfMemoryNumber() ) {
+                    throw new OutOfMemoryError( "Out of memory error while running on GPU" );
+                }
+
+                /* won't this setting of m_objectMemory confuse the reading
+                 * of further elements ? I guess it doesn't matter, because
+                 * in any case an exception is thrown and the logic in here is
+                 * exited */
+                m_objectMemory.setAddress(ref);
+                final Object except = serializer.readFromHeap(null, true, ref);
+                if ( except instanceof Error )
+                {
+                    Error except_th = (Error) except;
+                    throw except_th;
+                }
+                else if ( except instanceof GpuException )
+                {
+                    GpuException gpu_except = (GpuException) except;
+                    throw new ArrayIndexOutOfBoundsException(
+                        "[CUDAContext.java]\n" +
+                        "array_index  : " + gpu_except.m_arrayIndex  + "\n" +
+                        "array_length : " + gpu_except.m_arrayLength + "\n" +
+                        "array        : " + gpu_except.m_array       + "\n"
+                    );
+                } else
+                    throw new RuntimeException( (Throwable) except );
+            }
+        }
     }
 
     /**
@@ -622,101 +789,13 @@ public class CUDAContext implements Context
 
         final Stopwatch watch = new Stopwatch();
         watch.start();
+
             cudaRun( m_nativeContext, m_objectMemory, !m_usingHandles ? 1 : 0, m_stats );
+
         watch.stop();
         m_stats.setExecutionTime( watch.elapsedTimeMillis() );
 
         m_requiredMemorySize = m_objectMemory.getHeapEndPtr();
-    }
-
-    private void readBlocksSetup( final Serializer serializer )
-    {
-        m_readBlocksStopwatch.start();
-
-        m_objectMemory.setAddress(0);
-        m_exceptionsMemory.setAddress(0);
-
-        if ( Configuration.runtimeInstance().getExceptions() )
-        {
-            /* for each thread in the kernel get its corresponding exception
-             * and evaluate i.e. throw it, if necessary */
-            for( long i = 0; i < m_threadConfig.getNumThreads(); ++i )
-            {
-                final long ref = m_exceptionsMemory.readRef();
-                if ( ref != 0 )
-                {
-                    final long ref_num = ref >> 4; /* = ref / 16 (?) */
-                    if ( ref_num == m_compiledKernel.getNullPointerNumber() ) {
-                        throw new NullPointerException("Null pointer exception while running on GPU");
-                    } else if ( ref_num == m_compiledKernel.getOutOfMemoryNumber() ) {
-                        throw new OutOfMemoryError("Out of memory error while running on GPU");
-                    }
-
-                    m_objectMemory.setAddress(ref);
-                    final Object except = serializer.readFromHeap(null, true, ref);
-                    if ( except instanceof Error )
-                    {
-                        Error except_th = (Error) except;
-                        throw except_th;
-                    }
-                    else if ( except instanceof GpuException )
-                    {
-                        GpuException gpu_except = (GpuException) except;
-                        throw new ArrayIndexOutOfBoundsException(
-                            "[CUDAContext.java]\n" +
-                            "array_index  : " + gpu_except.m_arrayIndex  + "\n" +
-                            "array_length : " + gpu_except.m_arrayLength + "\n" +
-                            "array        : " + gpu_except.m_array       + "\n"
-                        );
-                    } else {
-                        throw new RuntimeException( (Throwable) except );
-                    }
-                }
-            }
-        }
-
-        serializer.readStaticsFromHeap();
-    }
-
-    private void readBlocksTemplate()
-    {
-        final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
-        readBlocksSetup(serializer);
-        m_handlesMemory.setAddress(0);
-
-        final long handle = m_handlesMemory.readRef();
-        serializer.readFromHeap( m_compiledKernel, true, handle );
-
-        if ( Configuration.getPrintMem() )
-        {
-            final BufferPrinter printer = new BufferPrinter();
-            printer.print(m_objectMemory, 0, 256);
-        }
-        /* the start seems to be in readBlocksSetup ??? */
-        m_readBlocksStopwatch.stop();
-        m_stats.setDeserializationTime( m_readBlocksStopwatch.elapsedTimeMillis() );
-    }
-
-    public void readBlocksList( final List<Kernel> kernelList )
-    {
-        final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
-        readBlocksSetup(serializer);
-        m_handlesMemory.setAddress(0);
-
-        for ( Kernel kernel : kernelList )
-        {
-            final long ref = m_handlesMemory.readRef();
-            serializer.readFromHeap( kernel, true, ref );
-        }
-
-        if ( Configuration.getPrintMem() )
-        {
-            final BufferPrinter printer = new BufferPrinter();
-            printer.print( m_objectMemory, 0, 256 );
-        }
-        /* the start seems to be in readBlocksSetup ??? */
-        m_readBlocksStopwatch.stop();
-        m_stats.setDeserializationTime( m_readBlocksStopwatch.elapsedTimeMillis() );
     }
 
     /************** Declarations which will be implemented using **************

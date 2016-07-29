@@ -21,7 +21,7 @@ import org.trifort.rootbeer.generate.bytecode.Constants;
 public class FixedMemory implements Memory
 {
     /**
-     * start address of memroy chunk.
+     * start address of memory chunk.
      * This address isn't changed except for malloc and free
      */
     protected final long       m_address        ;
@@ -39,9 +39,8 @@ public class FixedMemory implements Memory
     public FixedMemory( long size )
     {
         m_address = malloc(size);
-        if( m_address == 0 /* null pointer */ ) {
-            throw new RuntimeException("cannot allocate memory of size: "+size);
-        }
+        if( m_address == 0 /* null pointer */ )
+            throw new RuntimeException( "cannot allocate memory of size: " + size );
         m_size            = size;
         m_instancePointer = new MemPointer("instance_mem");
         m_staticPointer   = new MemPointer("static_mem");
@@ -49,21 +48,27 @@ public class FixedMemory implements Memory
         m_integerList     = new ArrayList<List<Long>>();
     }
 
-    protected long currPointer(){ return m_currentPointer.m_pointer;}
-
     /* Why the Bitshift !!!??? */
     @Override public long readRef ()
     {
         long ret = readInt();
-        ret = ret << 4;
+        ret = ret * 16;
         return ret;
     }
+    /* write a reference (i.e. pointer) and compress it by loosing the last
+     * 4 bits, i.e. assume the pointer points to 16 Byte aligned location */
     @Override public void writeRef (long value)
     {
-        value = value >> 4;
+        if ( value % 16 != 0 )
+            throw new IllegalArgumentException( "The reference to be stored (" + value + ") is not aligned to 16 Byte and therefore can't be stored with compression!" );
+        value = value / 16;
         writeInt( (int) value );
     }
 
+    /**
+     * These methods read and write from current pointer while automatically
+     * incrementing said pointer
+     */
     /* I miss the preprocessor. Or maybe use templates to shorten this
      * boiler plate code ?
      * Best to deactivate line-wrap here for undestanding :(
@@ -73,34 +78,34 @@ public class FixedMemory implements Memory
      *       does readArray take m_address+currPointer where read does
      *       take them separately?
      */
-    @Override public byte    readByte   () { byte    ret = doReadByte   (currPointer(), m_address); incrementAddress(1); return ret; }
-    @Override public boolean readBoolean() { boolean ret = doReadBoolean(currPointer(), m_address); incrementAddress(1); return ret; }
-    @Override public short   readShort  () { short   ret = doReadShort  (currPointer(), m_address); incrementAddress(2); return ret; }
-    @Override public int     readInt    () { int     ret = doReadInt    (currPointer(), m_address); incrementAddress(4); return ret; }
-    @Override public float   readFloat  () { float   ret = doReadFloat  (currPointer(), m_address); incrementAddress(4); return ret; }
-    @Override public double  readDouble () { double  ret = doReadDouble (currPointer(), m_address); incrementAddress(8); return ret; }
-    @Override public long    readLong   () { long    ret = doReadLong   (currPointer(), m_address); incrementAddress(8); return ret; }
-    @Override public void writeByte   (byte    value) { doWriteByte   (currPointer(), value, m_address); incrementAddress(1); }
-    @Override public void writeBoolean(boolean value) { doWriteBoolean(currPointer(), value, m_address); incrementAddress(1); }
-    @Override public void writeShort  (short   value) { doWriteShort  (currPointer(), value, m_address); incrementAddress(2); }
-    @Override public void writeInt    (int     value) { doWriteInt    (currPointer(), value, m_address); incrementAddress(4); }
-    @Override public void writeFloat  (float   value) { doWriteFloat  (currPointer(), value, m_address); incrementAddress(4); }
-    @Override public void writeDouble (double  value) { doWriteDouble (currPointer(), value, m_address); incrementAddress(8); }
-    @Override public void writeLong   (long    value) { doWriteLong   (currPointer(), value, m_address); incrementAddress(8); }
-    @Override public void readArray (byte   [] array){ doReadByteArray    (array, m_address+currPointer(), 0, array.length); }
-    @Override public void readArray (boolean[] array){ doReadBooleanArray (array, m_address+currPointer(), 0, array.length); }
-    @Override public void readArray (short  [] array){ doReadShortArray   (array, m_address+currPointer(), 0, array.length); }
-    @Override public void readArray (int    [] array){ doReadIntArray     (array, m_address+currPointer(), 0, array.length); }
-    @Override public void readArray (float  [] array){ doReadFloatArray   (array, m_address+currPointer(), 0, array.length); }
-    @Override public void readArray (double [] array){ doReadDoubleArray  (array, m_address+currPointer(), 0, array.length); }
-    @Override public void readArray (long   [] array){ doReadLongArray    (array, m_address+currPointer(), 0, array.length); }
-    @Override public void writeArray(byte   [] array){ doWriteByteArray   (array, m_address+currPointer(), 0, array.length); }
-    @Override public void writeArray(boolean[] array){ doWriteBooleanArray(array, m_address+currPointer(), 0, array.length); }
-    @Override public void writeArray(short  [] array){ doWriteShortArray  (array, m_address+currPointer(), 0, array.length); }
-    @Override public void writeArray(int    [] array){ doWriteIntArray    (array, m_address+currPointer(), 0, array.length); }
-    @Override public void writeArray(float  [] array){ doWriteFloatArray  (array, m_address+currPointer(), 0, array.length); }
-    @Override public void writeArray(double [] array){ doWriteDoubleArray (array, m_address+currPointer(), 0, array.length); }
-    @Override public void writeArray(long   [] array){ doWriteLongArray   (array, m_address+currPointer(), 0, array.length); }
+    @Override public byte    readByte   () { byte    ret = doReadByte   (getPointer(), m_address); incrementAddress(1); return ret; }
+    @Override public boolean readBoolean() { boolean ret = doReadBoolean(getPointer(), m_address); incrementAddress(1); return ret; }
+    @Override public short   readShort  () { short   ret = doReadShort  (getPointer(), m_address); incrementAddress(2); return ret; }
+    @Override public int     readInt    () { int     ret = doReadInt    (getPointer(), m_address); incrementAddress(4); return ret; }
+    @Override public float   readFloat  () { float   ret = doReadFloat  (getPointer(), m_address); incrementAddress(4); return ret; }
+    @Override public double  readDouble () { double  ret = doReadDouble (getPointer(), m_address); incrementAddress(8); return ret; }
+    @Override public long    readLong   () { long    ret = doReadLong   (getPointer(), m_address); incrementAddress(8); return ret; }
+    @Override public void writeByte   (byte    v) { doWriteByte   (getPointer(), v, m_address); incrementAddress(1); }
+    @Override public void writeBoolean(boolean v) { doWriteBoolean(getPointer(), v, m_address); incrementAddress(1); }
+    @Override public void writeShort  (short   v) { doWriteShort  (getPointer(), v, m_address); incrementAddress(2); }
+    @Override public void writeInt    (int     v) { doWriteInt    (getPointer(), v, m_address); incrementAddress(4); }
+    @Override public void writeFloat  (float   v) { doWriteFloat  (getPointer(), v, m_address); incrementAddress(4); }
+    @Override public void writeDouble (double  v) { doWriteDouble (getPointer(), v, m_address); incrementAddress(8); }
+    @Override public void writeLong   (long    v) { doWriteLong   (getPointer(), v, m_address); incrementAddress(8); }
+    @Override public void readArray (byte   [] a){ doReadByteArray    (a, m_address + getPointer(), 0, a.length); }
+    @Override public void readArray (boolean[] a){ doReadBooleanArray (a, m_address + getPointer(), 0, a.length); }
+    @Override public void readArray (short  [] a){ doReadShortArray   (a, m_address + getPointer(), 0, a.length); }
+    @Override public void readArray (int    [] a){ doReadIntArray     (a, m_address + getPointer(), 0, a.length); }
+    @Override public void readArray (float  [] a){ doReadFloatArray   (a, m_address + getPointer(), 0, a.length); }
+    @Override public void readArray (double [] a){ doReadDoubleArray  (a, m_address + getPointer(), 0, a.length); }
+    @Override public void readArray (long   [] a){ doReadLongArray    (a, m_address + getPointer(), 0, a.length); }
+    @Override public void writeArray(byte   [] a){ doWriteByteArray   (a, m_address + getPointer(), 0, a.length); }
+    @Override public void writeArray(boolean[] a){ doWriteBooleanArray(a, m_address + getPointer(), 0, a.length); }
+    @Override public void writeArray(short  [] a){ doWriteShortArray  (a, m_address + getPointer(), 0, a.length); }
+    @Override public void writeArray(int    [] a){ doWriteIntArray    (a, m_address + getPointer(), 0, a.length); }
+    @Override public void writeArray(float  [] a){ doWriteFloatArray  (a, m_address + getPointer(), 0, a.length); }
+    @Override public void writeArray(double [] a){ doWriteDoubleArray (a, m_address + getPointer(), 0, a.length); }
+    @Override public void writeArray(long   [] a){ doWriteLongArray   (a, m_address + getPointer(), 0, a.length); }
 
     /* why does readChar wrap readInt Oo ???
      * https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html
@@ -113,20 +118,26 @@ public class FixedMemory implements Memory
     @Override public char readChar() { int value = readInt(); char ret = (char) value; return ret; }
     @Override public void writeChar(char value){ writeInt(value); }
 
-    public native void doReadByteArray    (byte   [] array, long addr, int start, int len);
-    public native void doReadBooleanArray (boolean[] array, long addr, int start, int len);
-    public native void doReadShortArray   (short  [] array, long addr, int start, int len);
-    public native void doReadIntArray     (int    [] array, long addr, int start, int len);
-    public native void doReadFloatArray   (float  [] array, long addr, int start, int len);
-    public native void doReadDoubleArray  (double [] array, long addr, int start, int len);
-    public native void doReadLongArray    (long   [] array, long addr, int start, int len);
-    public native void doWriteByteArray   (byte   [] array, long addr, int start, int len);
-    public native void doWriteBooleanArray(boolean[] array, long addr, int start, int len);
-    public native void doWriteShortArray  (short  [] array, long addr, int start, int len);
-    public native void doWriteIntArray    (int    [] array, long addr, int start, int len);
-    public native void doWriteFloatArray  (float  [] array, long addr, int start, int len);
-    public native void doWriteDoubleArray (double [] array, long addr, int start, int len);
-    public native void doWriteLongArray   (long   [] array, long addr, int start, int len);
+    /**
+     * These are raw accessors which take e.g. the pointer returned by
+     * getPointer as address. Except for the arrays, they take
+     * getAddress + getPointer, meaning an absolute pointer!
+     * @todo unify interface !!!
+     */
+    private native void doReadByteArray    (byte   [] array, long addr, int start, int len);
+    private native void doReadBooleanArray (boolean[] array, long addr, int start, int len);
+    private native void doReadShortArray   (short  [] array, long addr, int start, int len);
+    private native void doReadIntArray     (int    [] array, long addr, int start, int len);
+    private native void doReadFloatArray   (float  [] array, long addr, int start, int len);
+    private native void doReadDoubleArray  (double [] array, long addr, int start, int len);
+    private native void doReadLongArray    (long   [] array, long addr, int start, int len);
+    private native void doWriteByteArray   (byte   [] array, long addr, int start, int len);
+    private native void doWriteBooleanArray(boolean[] array, long addr, int start, int len);
+    private native void doWriteShortArray  (short  [] array, long addr, int start, int len);
+    private native void doWriteIntArray    (int    [] array, long addr, int start, int len);
+    private native void doWriteFloatArray  (float  [] array, long addr, int start, int len);
+    private native void doWriteDoubleArray (double [] array, long addr, int start, int len);
+    private native void doWriteLongArray   (long   [] array, long addr, int start, int len);
 
     public native byte    doReadByte      (long ptr, long cpu_base);
     public native boolean doReadBoolean   (long ptr, long cpu_base);
@@ -147,6 +158,8 @@ public class FixedMemory implements Memory
     private native void free(long address);
     @Override public long getHeapEndPtr  (){ return m_currentPointer.m_heapEnd ; }
     @Override public long getSize        (){ return m_size                     ; }
+    /* note that this pointer was created using C, so I'm not sure if Java can
+     * dereference it correctly. That's why it is only used in CUDAContext.c */
     @Override public long getAddress     (){ return m_address                  ; }
     @Override public long getPointer     (){ return m_currentPointer.m_pointer ; }
     @Override public void clearHeapEndPtr(){ m_currentPointer.clearHeapEndPtr(); }
@@ -166,11 +179,10 @@ public class FixedMemory implements Memory
     @Override public void align(){ m_currentPointer.align(); } /* unused, but maybe still necessary, because it seems, that BclMemory should normal have been an implementation to the same Memory.java interface as this one ...?? */
     @Override public void close(){ free(m_address); }
 
-    @Override
-    public void readIntArray(int[] array, int size) {
-      for(int i = 0; i < size; ++i){
-        array[i] = readInt();
-      }
+    @Override public void readIntArray( int[] array, int size )
+    {
+        for ( int i = 0; i < size; ++i )
+            array[i] = readInt();
     }
 
     public void startIntegerList(){
