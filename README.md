@@ -891,22 +891,64 @@ Starting with the main java-file the dependency structure can be viewed with [in
  4. entry/RootbeerCompiler.setupSoot
  5. entry/RootbeerCompiler.compileForKernels
     1. compiler/Transform2.run
-    1. generate/bytecode/GenerateForKernel.makeClass
-    1. generate/bytecode/GenerateForKernel.makeGpuBody
+    2. generate/bytecode/GenerateForKernel.makeClass
+    3. generate/bytecode/GenerateForKernel.makeGpuBody
        1. generate/opencl/OpenCLScene.getCudaCode
-       1. generate/opencl/OpenCLScene.makeSourceCode
-       1. generate/opencl/OpenCLScene.methodBodiesString
-       1. generate/opencl/tweaks/CudaTweaks.compileProgram
-       1. deadmethods/DeadMethods.parseString
-       1. deadmethods/DeadMethods.getResult
-       1. deadmethods/LiveMethodDetector.parse
-       1. generate/opencl/tweaks/ParallelCompile.compile
-       1. generate/opencl/tweaks/ParallelCompile.run
-       1. generate/opencl/tweaks/ParallelCompileJob.compile
+       2. generate/opencl/OpenCLScene.makeSourceCode
+       3. generate/opencl/OpenCLScene.methodBodiesString
+       4. generate/opencl/tweaks/CudaTweaks.compileProgram
+       5. deadmethods/DeadMethods.parseString
+       6. deadmethods/DeadMethods.getResult
+       7. deadmethods/LiveMethodDetector.parse
+       8. generate/opencl/tweaks/ParallelCompile.compile
+       9. generate/opencl/tweaks/ParallelCompile.run
+       0. generate/opencl/tweaks/ParallelCompileJob.compile
        1. generate/opencl/tweaks/ParallelCompileJob.getResult
- 1. writeJimpleFile
- 1. writeClassFile
- 1. makeOutJar
+ 6. writeJimpleFile
+ 7. writeClassFile
+ 8. makeOutJar
+ 
+### Kernel Run Sequence
+ 
+ 1. runtime/Rootbeer.Rootbeer
+ 2. runtime/Kernel.Kernel
+ 3. runtime/GpuDevice.createContext
+    1. runtime/CUDAContext.CUDAContext
+    2. runtime/CUDAContext.c:allocateNativeContext
+    2. runtime/CUDAContext.setMemorySize
+ 4. runtime/CUDAContext.c:initializeDriver
+ 5. runtime/CUDAContext.setThreadConfig
+ 5. runtime/CUDAContext.setKernel
+ 5. runtime/CUDAContext.buildState
+    1. runtime/CUDAContext.readCubinFile
+    2. runtime/FixedMemory.FixedMemory
+    3. runtime/CUDAContext.GpuEventHandler.onEvent:NATIVE_BUILD_STATE
+    4. runtime/CUDAContext.c:nativeBuildState
+       1. cuDeviceGet, cuCtxCreate, cuModuleLoadFatBinary
+       2. runtime/FixedMemory.getAddress
+       3. runtime/FixedMemory.getSize
+       4. cuMemAlloc, cuParamSet*, cuFuncSetBlockShape
+ 5. runtime/CUDAContext.run
+    1. runtime/CUDAContext.runAsync
+    2. runtime/GpuEvent.setKernelList
+    3. runtime/GpuEvent.setValue
+    4. runtime/CUDAContext.GpuEventHandler.onEvent:NATIVE_RUN_LIST
+       1. runtime/CUDAContext.writeBlocksList
+          1. runtime/Serializer.doWriteStaticsToHeap
+             Soot generated method, not yet fully understood
+             See generate/bytecode/VisitorWriteGenStatic:makeMethod
+          2. runtime/Serializer.doWriteToHeap
+             See generate/bytecode/VisitorWriteGen:makeWriteToHeapMethod
+       1. runtime/CUDAContext.runGpu
+          1. runtime/CUDAContext.c:cudaRun
+          2. cuModuleGetGlobal, cuMemcpyHtoD, cuLaunchGrid, cuMemcpyDtoH
+       1. runtime/CUDAContext.readBlocksList
+          1. runtime/Serializer.doReadStaticsFromHeap
+          1. runtime/FixedMemory.readRef
+          1. runtime/Serializer.readFromHeap
+    6. runtime/GpuFuture.take
+ 5. runtime/CUDAContext.close
+
 
 ### Libraries / Dependencies
 
