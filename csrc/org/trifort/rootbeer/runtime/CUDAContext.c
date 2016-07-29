@@ -25,8 +25,8 @@
     }                                                               \
 }
 
-//#define __PRINTOUT(...) sprintf( &output[ strlen( output ) ],  __VA_ARGS__ )
-#define __PRINTOUT(...) printf( __VA_ARGS__ )
+//#define __PRINTOUT(...) sprintf( &output[ strlen( output ) ],  __VA_ARGS__ );
+#define __PRINTOUT(...) printf( __VA_ARGS__ );
 
 /* One reason for using the CUDA driver api is that nvcc isn't needed,
  * instead this can be compiled with gcc! */
@@ -357,7 +357,11 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
     jlong heap_end_long;
     heap_end_long = (*env)->CallLongMethod( env, object_mem, get_heap_end_method );
     #ifndef NDEBUG
-        printf( "[cudaRun] heap_end_long = %lu\n", heap_end_long );
+        unsigned int nMaxBytesOutput = 16*1024*1024;
+        char * output = malloc( nMaxBytesOutput );
+        output[0] = '\0';
+
+        __PRINTOUT( "[cudaRun] heap_end_long = %lu\n", heap_end_long );
     #endif
     jint heap_end_int = (jint)( heap_end_long / 16 ); // same as div 16
     assert( ( (jlong) heap_end_int ) * 16 == heap_end_long );
@@ -365,12 +369,13 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
 
     unsigned long long hostMLocal[3];
     hostMLocal[0] = s->gpu_object_mem;
-    hostMLocal[1] = s->cpu_object_mem_size / 16;    /* WHAT is up with this bitshift ? equvi to div 16 */
+    hostMLocal[1] = s->cpu_object_mem_size / 16;    /* WHAT is up with this bitshift ? equiv to div 16 */
     hostMLocal[2] = s->gpu_class_mem;
     /* equality would be more clean programming, but it just isn't, and if
      * the hostMLocal version is smaller no harm is done, as that size is used
      * for the rootbeer garbage collector. */
-    assert( hostMLocal[1] * 16 <= s->cpu_object_mem_size );
+    assert( s->cpu_object_mem_size >= 0 );
+    assert( hostMLocal[1] * 16 <= (unsigned long long) s->cpu_object_mem_size );
 
     /* Get address and size of global_free_pointer which is defined in
      * src/org/trifort/rootbeer/generate/opencl/CudaKernel.c
@@ -392,16 +397,28 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
     /* debug output, trying to understand rootbeer */
     #ifndef NDEBUG
         #define __PRINTI( NAME ) \
-            printf( "| %32s = % 10i\n", #NAME, NAME );
-        printf( "+-------------- [nativeBuildState] --------------\n" );
+            __PRINTOUT( "| %32s = % 10i\n", #NAME, NAME );
+        __PRINTOUT( "+-------------- [nativeBuildState] --------------\n" );
         __PRINTI( heap_end_int )
 
-        #define __PRINTP( PTR, SIZE ) \
-            printf( "| %32s = %p (size: % 10lu B = % 10i KiB)\n", #PTR, PTR, SIZE, SIZE / 1024 );
+        #define __PRINTP( PTR, SIZE )                                   \
+            __PRINTOUT( "| %32s = %p (size: %10lu B = %10lu KiB)\n",    \
+                        #PTR, PTR, SIZE, SIZE / 1024 );
 
-        __PRINTP( deviceGlobalFreePointer, nBytesDeviceGlobalFreePointer )
-        __PRINTP( deviceMLocal           , nBytesDeviceMLocal            )
-        printf( "|\n" );
+        __PRINTP( (void*) deviceGlobalFreePointer, nBytesDeviceGlobalFreePointer )
+        __PRINTP( (void*) deviceMLocal           , nBytesDeviceMLocal            )
+        __PRINTOUT( "|\n" );
+
+        //__PRINTOUT( "+-------- Handles to send to GPU:\n" ):
+        //int i = 0;
+        //while ( (i+1) * sizeof(long) <= s->cpu_handles_mem_size )
+        //{
+        //    if ( i % 8 == 0 )
+        //        __PRINTOUT( "\n" );
+        //
+        //    __PRINTOUT( "% 8d ", ((long*)s->cpu_handles_mem)[i] );
+        //    ++i;
+        //}
 
         #undef __PRINTI
         #undef __PRINTP
@@ -414,8 +431,6 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
     CE( cuMemcpyHtoD( deviceGlobalFreePointer, s->info_space     , sizeof( *(s->info_space) ) ) )
     CE( cuMemcpyHtoD( deviceMLocal           , hostMLocal        , sizeof( hostMLocal )       ) )
     CE( cuMemcpyHtoD( s->gpu_object_mem      , s->cpu_object_mem , s->cpu_object_mem_size     ) )
-    /* @todo I don't think the handle-memory should be allowed change,
-     * so why copy it back to host except for debugging ?? */
     CE( cuMemcpyHtoD( s->gpu_handles_mem     , s->cpu_handles_mem, s->cpu_handles_mem_size    ) )
     CE( cuMemcpyHtoD( s->gpu_class_mem       , s->cpu_class_mem  , s->cpu_class_mem_size      ) )
     CE( cuMemcpyHtoD( s->gpu_heap_end        , &(heap_end_int)   , sizeof( heap_end_int )     ) )
@@ -477,6 +492,13 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
         stopwatchTimeMS( &(s->execGpuRun            ) ),
         stopwatchTimeMS( &(s->execMemcopyFromDevice ) )
     );
+
+    #ifndef NDEBUG
+        __PRINTOUT( "+-------- Handles after GPU call (red means they changed !!!):\n" );
+
+        printf( "%s", output );
+        free( output );
+    #endif
 }
 
 #undef CE
