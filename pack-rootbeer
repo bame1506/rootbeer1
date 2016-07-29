@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if command -v 'zipmerge' 2>&1 1>/dev/null; then
-    echo '\nPack: Rootbeer.jar'
+    echo -e '\nPack: Rootbeer.jar'
     if [ -f Rootbeer.jar ]; then
         rm Rootbeer.jar
     fi
