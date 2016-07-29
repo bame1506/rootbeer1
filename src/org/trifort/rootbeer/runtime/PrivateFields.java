@@ -7,8 +7,13 @@
 
 package org.trifort.rootbeer.runtime;
 
+
 import java.lang.reflect.Field;
 
+
+/**
+ * Used by VisitorGen
+ */
 public class PrivateFields {
 
   public byte readByte(Object obj, String name, String cls_name){

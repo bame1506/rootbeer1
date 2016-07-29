@@ -7,6 +7,7 @@
 
 package org.trifort.rootbeer.runtime;
 
-public interface Kernel {
-  void gpuMethod();
+public interface Kernel
+{
+    void gpuMethod();
 }

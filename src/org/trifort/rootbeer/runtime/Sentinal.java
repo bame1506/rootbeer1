@@ -7,7 +7,13 @@
 
 package org.trifort.rootbeer.runtime;
 
-public class Sentinal {
 
-  //intentinally left blank
+/**
+ * This class is danymically constructed using Soot in *Visitor*Gen*.java
+ * It seems to only be used in src/org/trifort/rootbeer/entry/RootbeerDfs.java
+ *   queue.add(new HierarchySignature("<org.trifort.rootbeer.runtime.Sentinal: void <init>()>"));
+ */
+public class Sentinal
+{
+    //intentinally left blank
 }
