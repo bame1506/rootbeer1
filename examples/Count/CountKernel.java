@@ -2,8 +2,14 @@
 import org.trifort.rootbeer.runtime.Kernel;
 import org.trifort.rootbeer.runtime.RootbeerGpu;
 
+
 public class CountKernel implements Kernel
 {
+    /* each ref and long needs 4 Bytes, but for some reason.
+     * The kernel seems to need 48 Bytes i.e. 16 bytes per member
+     * Is it aligned after each variable ??
+     * @see CUDAContext.java:writeBlocksList
+     */
     private long[] mnHitsA;
     private long[] mnHitsB;
     private long   mnDiceRolls;

@@ -30,8 +30,10 @@ public class Count
         List<Kernel> tasks = new ArrayList<Kernel>();
         for ( int i = 0; i < nKernels; ++i )
         {
-            nHitsA[i] = 0;
-            nHitsB[i] = 0;
+            /* Note that nHitsA[i] + nHitsB[i] should be 0 for the test
+             * after the kernel run */
+            nHitsA[i] =  i;
+            nHitsB[i] = -i;
             tasks.add( new CountKernel( nHitsA, nHitsB, nRollsPerThreads ) );
         }
 
