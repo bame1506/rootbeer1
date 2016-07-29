@@ -297,9 +297,11 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_nativeBuild
 
     /* debug output, trying to understand rootbeer */
     #ifndef NDEBUG
-        #define __PRINTI( NAME ) \
-            printf( "| %32s = % 10i\n", #NAME, NAME );
-        printf( "+-------------- [nativeBuildState] --------------\n" );
+        char * output = malloc( 1024*1024 );
+        output[0] = '\0';
+
+        __PRINTOUT( "+-------------- [nativeBuildState] --------------\n" );
+        #define __PRINTI( NAME ) __PRINTOUT( "| %32s = %10i\n", #NAME, NAME );
         __PRINTI( rCubinLength  )
         __PRINTI( rThreadCountX )
         __PRINTI( rThreadCountY )
@@ -310,24 +312,28 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_nativeBuild
         __PRINTI( rCacheConfig  )
         __PRINTI( rDeviceIndex  )
         __PRINTI( s->using_kernel_templates_offset )
-        printf( "|\n" );
+        __PRINTOUT( "|\n" );
 
-        #define __PRINTP( PTR, SIZE ) \
-            printf( "| %32s = %p (size: % 10lu B = % 10i KiB)\n", #PTR, PTR, SIZE, SIZE / 1024 );
+        #define __PRINTP( PTR, SIZE )                                   \
+            __PRINTOUT( "| %32s = %p (size: %10lu B = %10lu KiB)\n",    \
+                        #PTR, PTR, SIZE, SIZE / 1024 );
 
-        __PRINTP( s->cpu_object_mem    , s->cpu_object_mem_size     )
-        __PRINTP( s->cpu_handles_mem   , s->cpu_handles_mem_size    )
-        __PRINTP( s->cpu_exceptions_mem, s->cpu_exceptions_mem_size )
-        __PRINTP( s->cpu_class_mem     , s->cpu_class_mem_size      )
-        printf( "|\n" );
+        __PRINTP( (void*) s->cpu_object_mem    , (unsigned long) s->cpu_object_mem_size     )
+        __PRINTP( (void*) s->cpu_handles_mem   , (unsigned long) s->cpu_handles_mem_size    )
+        __PRINTP( (void*) s->cpu_exceptions_mem, (unsigned long) s->cpu_exceptions_mem_size )
+        __PRINTP( (void*) s->cpu_class_mem     , (unsigned long) s->cpu_class_mem_size      )
+        __PRINTOUT( "|\n" );
 
-        __PRINTP( s->gpu_info_space    , sizeof( *(s->info_space) ) )
-        __PRINTP( s->gpu_object_mem    , s->cpu_object_mem_size     )
-        __PRINTP( s->gpu_handles_mem   , s->cpu_handles_mem_size    )
-        __PRINTP( s->gpu_class_mem     , s->cpu_class_mem_size      )
-        __PRINTP( s->gpu_heap_end      , sizeof( jint )             )
-        __PRINTP( s->gpu_exceptions_mem, sizeof( jint )             )
-        printf( "|\n" );
+        __PRINTP( (void*) s->gpu_info_space    , sizeof( *(s->info_space) )              )
+        __PRINTP( (void*) s->gpu_object_mem    , (unsigned long) s->cpu_object_mem_size  )
+        __PRINTP( (void*) s->gpu_handles_mem   , (unsigned long) s->cpu_handles_mem_size )
+        __PRINTP( (void*) s->gpu_class_mem     , (unsigned long) s->cpu_class_mem_size   )
+        __PRINTP( (void*) s->gpu_heap_end      , sizeof( jint )                          )
+        __PRINTP( (void*) s->gpu_exceptions_mem, sizeof( jint )                          )
+        __PRINTOUT( "|\n" );
+
+        printf( "%s", output );
+        free( output );
 
         #undef __PRINTI
         #undef __PRINTP
