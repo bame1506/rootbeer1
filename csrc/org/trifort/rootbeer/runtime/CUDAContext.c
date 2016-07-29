@@ -3,6 +3,7 @@
 #include <cuda.h>
 #include <stdio.h>      // printf, sprintf
 #include <stdlib.h>     // malloc, free
+#include <string.h>     // strlen
 #include <stddef.h>     // NULL
 #include <assert.h>
 
@@ -23,6 +24,9 @@
         return;                                                     \
     }                                                               \
 }
+
+//#define __PRINTOUT(...) sprintf( &output[ strlen( output ) ],  __VA_ARGS__ )
+#define __PRINTOUT(...) printf( __VA_ARGS__ )
 
 /* One reason for using the CUDA driver api is that nvcc isn't needed,
  * instead this can be compiled with gcc! */
@@ -100,18 +104,18 @@ void throw_cuda_error_exception
     {
         case CUDA_ERROR_OUT_OF_MEMORY:
         {
-            sprintf(msg, "CUDA_ERROR_OUT_OF_MEMORY: %.900s",message);
+            sprintf( msg, "CUDA_ERROR_OUT_OF_MEMORY: %.900s",message );
             break;
         }
         case CUDA_ERROR_NO_BINARY_FOR_GPU:
         {
             cuDeviceGetName(name,1024,device);
             cuDeviceComputeCapability(&a, &b, device);
-            sprintf(msg, "No binary for gpu. %.900s Selected %s (%d.%d). 2.0 compatibility required.", message, name, a, b);
+            sprintf( msg, "No binary for gpu. %.900s Selected %s (%d.%d). 2.0 compatibility required.", message, name, a, b );
             break;
         }
         default:
-            sprintf(msg, "ERROR STATUS:%i : %.900s", error, message);
+            sprintf( msg, "ERROR STATUS:%i : %.900s", error, message );
     }
 
     fid = (*env)->GetFieldID(env,exp, "cudaError_enum", "I");
@@ -282,7 +286,8 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_nativeBuild
     setNextParam( &(s->gpu_exceptions_mem), sizeof(CUdeviceptr) )
     CE( cuParamSeti( s->function, offset, rNumThreads) ); offset += sizeof(int);
     /* The last kernel parameter is set by cudaRun, remember only the offset! */
-    assert( offset == nBytesTotalParameters - sizeof(int) );
+    assert( offset >= 0 );
+    assert( (unsigned int) offset == nBytesTotalParameters - sizeof(int) );
     s->using_kernel_templates_offset = offset;
 
     CE( cuFuncSetBlockShape( s->function, rThreadCountX,
