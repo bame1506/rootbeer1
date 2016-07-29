@@ -163,7 +163,8 @@ public class VisitorWriteGenStatic extends AbstractVisitorGen
         m_bcl.pop();
     }
 
-    private void doWriter(SootClass soot_class, List<SootClass> children){
+    private void doWriter(SootClass soot_class, List<SootClass> children)
+    {
         BytecodeLanguage bcl = m_bcl.top();
         Local memory = m_currMem.top();
         Local gc_visit = m_gcObjVisitor.top();
@@ -206,36 +207,30 @@ public class VisitorWriteGenStatic extends AbstractVisitorGen
             }
         }
 
-        for(SootClass child : children){
-            if(soot_class.isApplicationClass()){
+        for ( final SootClass child : children )
+        {
+            if ( soot_class.isApplicationClass() )
                 attachAndCallWriter(child, new ArrayList<SootClass>());
-            } else {
-                doWriter(child, new ArrayList<SootClass>());
-            }
+            else
+                doWriter( child, new ArrayList<SootClass>() );
         }
     }
 
-    private boolean reachesJavaLangClass(){
-        List<RefType> ref_types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefTypes();
-        RefType java_lang_class = RefType.v("java.lang.Class");
-        return ref_types.contains(java_lang_class);
+    private static boolean reachesJavaLangClass()
+    {
+        return RootbeerClassLoader.v().getDfsInfo().getOrderedRefTypes().
+               contains( RefType.v( "java.lang.Class" ) );
     }
 
-    private void writeType(Type type) {
-        if(reachesJavaLangClass() == false){
+    private void writeType( final Type type )
+    {
+        if ( ! reachesJavaLangClass() )
             return;
-        }
-        int number = OpenCLScene.v().getClassConstantNumbers().get(type);
-        Local gc_visit = m_gcObjVisitor.top();
-        Local class_obj = null;
 
-        if(type instanceof ArrayType){
-            ArrayType array_type = (ArrayType) type;
-            class_obj = m_bcl.top().classConstant(type);
-        } else {
-            RefType ref_type = (RefType) type;
-            class_obj = m_bcl.top().classConstant(type);
-        }
+        final int number = OpenCLScene.v().getClassConstantNumbers().get(type);
+        final Local gc_visit = m_gcObjVisitor.top();
+
+        Local class_obj = m_bcl.top().classConstant( type );
 
         //getName has to be called to load the name variable
         SootClass str_cls = Scene.v().getSootClass("java.lang.String");
