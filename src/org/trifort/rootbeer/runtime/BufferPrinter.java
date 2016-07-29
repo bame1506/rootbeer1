@@ -21,7 +21,7 @@ public class BufferPrinter
     /**
      * Prints a hexdump of the memory 16 values per line to stdout
      */
-    public static void print( final Memory mem, long start_ptr, long length )
+    public static String toString( final Memory mem, long start_ptr, long length )
     {
         /* backup old mem pointer */
         if ( start_ptr < 0 )
@@ -51,9 +51,15 @@ public class BufferPrinter
             else if ( iByte % nBytesPerGroup == 0 )
                 output += " ";
         }
-        System.out.println( output );
 
         /* restore old address */
         mem.setAddress( pointerBackup );
+
+        return output;
+    }
+
+    public static void print( final Memory mem, long start_ptr, long length )
+    {
+        System.out.println( toString( mem, start_ptr, length ) );
     }
 }
