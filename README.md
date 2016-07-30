@@ -907,7 +907,8 @@ Starting with the main java-file the dependency structure can be viewed with [in
  6. writeJimpleFile
  7. writeClassFile
  8. makeOutJar
- 
+
+
 ### Kernel Run Sequence
  
  1. runtime/Rootbeer.Rootbeer
@@ -1063,6 +1064,92 @@ Some classes do have main functions for testing purposes. Start them e.g. with
     java -classpath build/classes/ org.trifort.rootbeer.runtime.BlockShaper
 
 Note that the second argument may not be different because of the `package` keyword at the top of this file. Instead adjust the classpath if necessary!
+
+
+#### Compression of References (`/ 16`, `* 16` vs. `>> 4`, `<< 4`)
+
+At many places, especially in `Serializer.java`, `generate/opencl/*.c`, `FixedMemory.java` and many others bitshifts were used.
+After a while I came to the the understanding that those compressed offsets for the manually managed heap and in order to save space the least 4 bits were deleted and the resulting number then cast to int to save space.
+
+There are so many problems with this approach. At first it only bugged me because of the complexity, because it could have easily been written like: "address /= nBytesAlignment" and then be clear and the alignment could be saved at one place (or maybe two for the C source files) also.
+
+But there are also no checks if value might be too large to cast to int which happens for `INT_MAX*16` i.e. after 32GB. A limitation not mentioned anywhere.
+
+The bigger problem is how null pointers are treated. A null pointer is defined in `Serializer.java` to return a relative address `-1`. This negative value gets alos bitshifted back and forth, being problematic as that depends on how negative numbers are encoded and or how those bitshifts interact with those (in C++ shifting negative numbers is different from unsigned bitshifts).
+
+Also bitshift left and right is not reversible as this simple experiment shows:
+
+    /*
+    javac refcompress.java && java refcompress
+    */
+    class refcompress
+    {
+        private static void testCompressLong( long l )
+        {
+            long l2 = l >> 4;
+            int  i  = (int) l2;
+            long l3 = i;
+            long l4 = l3 << 4;
+            System.out.println( "l  = " + l  );
+            System.out.println( "l2 = " + l2 );
+            System.out.println( "i  = " + i  );
+            System.out.println( "l3 = " + l3 );
+            System.out.println( "l4 = " + l4 );
+            System.out.println();
+        }
+
+        public static void main( String[] args )
+        {
+            testCompressLong( -1 );
+            testCompressLong( 64 );
+        }
+    }
+
+
+Output:
+
+ > l  = -1
+ > l2 = -1
+ > i  = -1
+ > l3 = -1
+ > l4 = -16
+ > 
+ > l  = 64
+ > l2 = 4
+ > i  = 4
+ > l3 = 4
+ > l4 = 64
+
+This is a problem e.g. in `Serializer.java`
+All the output of that example suggests that `-1` is encoded as `0xFFFF FFFF FFFF FFFF` for long and `0xFFFF FFFF` for int. I.e. counting backwards from `LONG_MAX`. Resulting in `0xFFFF FFFF FFFF FFF0 = -16` after the bitshift back.
+
+    find rootbeer1 -name '*.java' -o -name '*.c' | xargs -I{} grep --color -H -n '[*/][^a-zA-Z0-9]*16' '{}'
+    find rootbeer1 -name '*.java' -o -name '*.c' | xargs -I{} grep --color -H -n '\(<<\|>>\)[^a-zA-Z0-9]*4' '{}'
+    
+Mixing bitshifting with `/` and `*` is only possible with positive numbers!
+
+
+#### Making Rootbeer Thread-Safe
+
+Singletons in Rootbeer `'grep' -r '\.v[ \t]*([ \t]*)' src/ | sed -r 's|.*[^0-9A-Za-z]([0-9A-Za-z]*)[ \t]*\.v[ \t]*\([ \t]*\).*|\1|' | sort | uniq | xargs -I{} find src/ -name '{}.java'`:
+
+  - generate/opencl/NameMangling.java
+  - generate/opencl/OpenCLScene.java
+  - generate/bytecode/RegisterNamer.java
+  - configuration/RootbeerPaths.java
+  - generate/opencl/tweaks/Tweaks.java
+  - Jimple
+  - NameMangling
+  - Options
+  - Printer
+  - RootbeerClassLoader
+  - StringNumbers
+
+ => Many of the found singletons in the `generate`-folder and therefore hopefully only used when compiling, except RootbeerPaths, but that shouldn't be critical or lead to the observerd exception.
+ 
+ I don't know if all of the used libraries are thread-safe, e.g. com.lmac.disruptor
+
+Watch out for non-final [static variables](http://stackoverflow.com/questions/8432327/static-variables-and-multithreading-in-java)! `'grep' -rn 'static' csrc/ src/ > statics.log` and then clean output for static methods and finale static member variables.
 
 
 ### Memory
