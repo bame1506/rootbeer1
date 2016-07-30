@@ -57,11 +57,9 @@ public abstract class Serializer
     public int[] getClassRefArray()
     {
         int max_type = 0;
-        for(int num : m_classRefToTypeNumber.values()){
-            if(num > max_type){
-                max_type = num;
-            }
-        }
+        for ( final int num : m_classRefToTypeNumber.values() )
+            if ( num > max_type ) max_type = num;
+
         int[] ret = new int[max_type+1];
         for(long value : m_classRefToTypeNumber.keySet()){
             int pos = m_classRefToTypeNumber.get(value);
@@ -110,26 +108,6 @@ public abstract class Serializer
         }
     }
 
-    public Object writeCacheFetch( final long ref )
-    {
-        /* in the context of multithreading execute this block atomically
-         * in order to avoid race conditions.
-         * E.g. avoid changes to mReverseWriteToGpuCache between containsKey
-         * and get.
-         * @todo so why is synchronized called with a lock on mWriteToGpuCache
-         *       instead of mReverseWriteToGpuCache ??? ???
-         *       In the end might not matter, as we just can abuse a random
-         *       object as a lock. The same lock would be used in both method
-         *       invocations
-         */
-        synchronized ( mWriteToGpuCache )
-        {
-            if ( mReverseWriteToGpuCache.containsKey( ref ) )
-                return mReverseWriteToGpuCache.get( ref );
-            return null;
-        }
-    }
-
     public long writeToHeap( Object o, boolean write_data )
     {
         if ( o == null )
@@ -156,8 +134,13 @@ public abstract class Serializer
         return result.m_Ref;
     }
 
+    /**
+     * A call to this is generated in generate/bytecode/VisitorReadGen.java
+     */
     protected Object checkCache( final long address, final Object item )
     {
+        /* synchronized: in the context of multithreading execute this block
+         * atomically in order to avoid race conditions. */
         synchronized( mReadFromGpuCache )
         {
             if ( mReadFromGpuCache.containsKey( address ) )
@@ -168,6 +151,12 @@ public abstract class Serializer
         }
     }
 
+    /**
+     * @param[in] o I think this is only needed for the type, not the actual
+     *              object which most likely will be null anyways?
+     *              @todo I'm not sure, but I think the object is unchanged
+     *              by this method
+     */
     public Object readFromHeap
     (
         final Object  o,
@@ -175,6 +164,20 @@ public abstract class Serializer
         final long    address
     )
     {
+        /* Note that the address is assumed to have gone through writeRef
+         * followed by readRef. As those functions for some reason store
+         * the actual address in increments of 16, the address will actually
+         * be:
+         *   address = ( originalAddress / 16 ) * 16  => -1 -> 0
+         *   address = ( originalAddress >> 4 ) << 4  => -1 -> -16
+         * As I didn't know of this damn check I sometimes changed the bitshift
+         * to / 16 and * 16. But that is not fully reversible. E.g. for -1.
+         * That's why a bitshift was used. But the other way around I DID
+         * add checks, e.g.: if ( value % 16 != 0 ) throw Exception;
+         *                   else value /= 16;
+         * @todo The check down below might actually work, but only if
+         * null_ptr_check is cast to int! else it should be compared with -16!
+         */
         long null_ptr_check = address >> 4;
         if ( null_ptr_check == -1 )
             return null;
