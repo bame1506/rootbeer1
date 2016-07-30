@@ -1,20 +1,24 @@
 #ifndef ROOTBEER_STOPWATCH_H
 #define ROOTBEER_STOPWATCH_H
 
-#if (defined linux || defined __APPLE_CC__)
+#if defined linux || defined __linux || defined __APPLE_CC__ || defined __APPLE__ || defined __MACOSX__
 #   include <sys/time.h>
-#else
+#elif defined _WIN32 || defined __WIN32__
 #   include <Windows.h>
+#else
+#   pragma error "Unknown Operating System!"
 #endif
 
 struct stopwatch
 {
-#if (defined linux || defined __APPLE_CC__)
+#if defined linux || defined __linux || defined __APPLE_CC__ || defined __APPLE__ || defined __MACOSX__
     struct timeval startTime;
     long long time;
-#else
+#elif defined _WIN32 || defined __WIN32__
     long long startTime;
     long long stopTime;
+#else
+#   pragma error "Unknown Operating System!"
 #endif
 };
 
