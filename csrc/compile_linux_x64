@@ -1,16 +1,20 @@
 #!/bin/sh
 
-if [ -z "$CUDA_INC" ]; then
-    CUDA_INC=/usr/local/cuda/include/
+if [ -z "$CUDA_INC" ] || [ ! -d "$CUDA_INC" ]; then
+    CUDA_INC=$(dirname $(which nvcc))/../include
+    if [ ! -d "$CUDA_INC" ]; then
+        CUDA_INC=/usr/local/cuda/include
+    fi
+    # The old version mixed -I/usr/local/cuda-5.5/include/ and /usr/local/cuda/include/
 fi
 
 compileSource() {
     while [ $# -gt 1 ]; do
-        gcc -fPIC -g -c -o "$1.o"                        \
+        gcc -m64 -fPIC -g -c -o "$1.o"                   \
             -I'/usr/lib/jvm/default-java/include/'       \
             -I'/usr/lib/jvm/default-java/include/linux'  \
             -I"$CUDA_INC"                                \
-            -Wall -Wextra -Wno-unused-parameter \
+            -Wall -Wextra -Wno-unused-parameter -std=c99 \
             "org/trifort/rootbeer/runtime/$1.c"
             # -DNDEBUG
         shift
