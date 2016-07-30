@@ -596,6 +596,27 @@ public class CUDAContext implements Context
             long nPostFirstKernel = -1;
             for ( final Kernel kernel : work )
             {
+                /* the bug to rule them all at some runs also appears here in
+                 * form of a NullPointerException in the writeToHeap method,
+                 * which writes to m_objectMemory. Note that CheckedFixedMemory
+                 * was used, so such things should normally be found by that ...
+                 *
+                 * java.lang.NullPointerException
+                 *   at org.trifort.rootbeer.runtime.Serializer.checkWriteCache(Serializer.java:97)
+                 *   at org.trifort.rootbeer.runtime.Serializer.writeToHeap(Serializer.java:134)
+                 *   at MonteCarloPiKernel.org_trifort_writeToHeapRefFields_MonteCarloPiKernel0(Jasmin)
+                 *   at MonteCarloPiKernelSerializer.doWriteToHeap(Jasmin)
+                 *   at org.trifort.rootbeer.runtime.Serializer.writeToHeap(Serializer.java:144)
+                 *   at org.trifort.rootbeer.runtime.Serializer.writeToHeap(Serializer.java:47)
+                 *   at org.trifort.rootbeer.runtime.CUDAContext.writeBlocksList(CUDAContext.java:599)
+                 *   at org.trifort.rootbeer.runtime.CUDAContext.access$1400(CUDAContext.java:28)
+                 *   at org.trifort.rootbeer.runtime.CUDAContext$GpuEventHandler.onEvent(CUDAContext.java:437)
+                 *   at org.trifort.rootbeer.runtime.CUDAContext$GpuEventHandler.onEvent(CUDAContext.java:387)
+                 *   at com.lmax.disruptor.BatchEventProcessor.run(BatchEventProcessor.java:128)
+                 *   at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+                 *   at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+                 *   at java.lang.Thread.run(Thread.java:724)
+                 */
                 m_handlesMemory.writeRef( serializer.writeToHeap( kernel ) );
                 if ( nPostFirstKernel == -1 )
                     nPostFirstKernel = m_objectMemory.getPointer();
