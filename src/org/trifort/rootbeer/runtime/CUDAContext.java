@@ -670,7 +670,7 @@ public class CUDAContext implements Context
 
         try
         {
-            m_objectMemory.setAddress(0);
+            m_objectMemory .setAddress(0);
             m_handlesMemory.setAddress(0);
             final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
 
@@ -685,7 +685,11 @@ public class CUDAContext implements Context
                 output +=
                     "\n[CUDAContext.java:readBlocksList]\n" +
                     "|  m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
-                    "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n";
+                    "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n" +
+                    "|  m_objectMemory  size           : " + m_objectMemory .getSize() +
+                    " B = " + formatSize( m_objectMemory .getSize() ) + "\n" +
+                    "|  m_handlesMemory size           : " + m_handlesMemory.getSize() +
+                    " B = " + formatSize( m_handlesMemory.getSize() ) + "\n";
             }
 
             serializer.readStaticsFromHeap();
@@ -707,6 +711,7 @@ public class CUDAContext implements Context
                 ref = m_handlesMemory.readRef();
                 // inverse: m_handlesMemory.writeRef( serializer.writeToHeap( kernel ) );
                 serializer.readFromHeap( kernel, true, ref );
+
                 if ( debugging )
                 {
                     if ( nPostSecondKernel == -1 && nPostFirstKernel != -1 ) // so only in second run
@@ -722,7 +727,11 @@ public class CUDAContext implements Context
                         nPostFirstKernel = ref; //m_objectMemory.getPointer();
                     }
                     else if ( iKernel % 40 == 0 )
-                        output += "\nLast read Kernel " + iKernel + " ";
+                    {
+                        output += "\nLast read Kernel " + iKernel +
+                            " from heap ref " + ref + " (handle pointer " +
+                            m_handlesMemory.getPointer() + ") ";
+                    }
                     else
                         output += ".";
                     iKernel++;
@@ -761,7 +770,63 @@ public class CUDAContext implements Context
         }
         finally
         {
-            output += "!!! [CUDAContext.java:readBlocksList] Exception occured when trying to read kernel " + iKernel + " from heap (relative address / saved handle: " + ref + ")\n";
+            output += "\n!!! [CUDAContext.java:readBlocksList] " +
+                "Exception occured when trying to read kernel " + iKernel +
+                " from heap (relative address / saved handle: " + ref + ")\n" +
+                "m_objectMemory at that address and before and after:\n" +
+                BufferPrinter.toString( m_objectMemory, ref-256, 2*256) + "\n";
+            /**
+             *  private long[] mnHits;
+             *  private long[] mnIterations;
+             *  private int    miLinearThreadId;
+             *  private long   mRandomSeed;
+             *  private long   mnDiceRolls;
+             *
+             * Sample Output:
+             *
+             * !!! [CUDAContext.java:readBlocksList] Exception occured when
+             * trying to read kernel 167 from heap (relative address /
+             * saved handle: 862896)
+             *
+             *  862768 : 02 00 00 00  ca 0c 00 00  40 00 00 00  00 00 00 00
+             *  862784 : ff ff ff ff  00 00 00 00  00 00 00 00  00 00 00 00
+             *  862800 : 4b 6a 00 00  4d 9e 00 00  fc b7 f6 9d  d8 89 65 00
+             *  862816 : b2 13 00 00  00 00 00 00  a5 00 00 00  00 00 00 00
+             *           48 Bytes of data which is the same in all kernels
+             *          +---------------------------------------------------+
+             *  862832 :|02           ca 0c        40                       |
+             *  862848 :|ff ff ff ff              __________________________+
+             *  862864 :|4b 6a        4d 9e      | d4 41 94 76  62 27 66
+             *          +------------------------+ very probably mRandomSeed
+             *          ( note how the highest byte i.e. 66 or 65 or 68 grows
+             *            only very slowly (and surely lineraly) )
+             *  862880 : b2 13                     a6
+             *           +----------------------+  +----------------------+
+             *    13b1 = ceil( 134217728 / 26624 )  = 166 (miLinearThreadId)
+             *        (mnDiceRolls) (64 Bit)
+             *
+             *  862896 : 02           ca 0c        40
+             *  862912 : ff ff ff ff
+             *  862928 : 4b 6a        4d 9e        ac cb 31 4f  ec c4 66
+             *  862944 : b2 13                     a7
+             *
+             *  863024 : 02 00 00 00  ca 0c 00 00  40 00 00 00  00 00 00 00
+             *  863040 : ff ff ff ff  00 00 00 00  00 00 00 00  00 00 00 00
+             *  863056 : 4b 6a 00 00  4d 9e 00 00  5c df 6c 00  00 00 68 00
+             *  863072 : b2 13 00 00  00 00 00 00  a9 00 00 00  00 00 00 00
+             *
+             * [MonteCarloPi.scala:calc] iterations actually done : 134217728
+
+             *  @todo The data after 862896 looks perfectly normal to me !!!
+             *  I don't understand why suddenly the exception occurs:
+             *
+             *  MonteCarloPiKernel cannot be cast to [J
+             *    at MonteCarloPiKernel.org_trifort_readFromHeapRefFields_MonteCarloPiKernel0(Jasmin)
+             *    at MonteCarloPiKernelSerializer.doReadFromHeap(Jasmin)
+             *    at org.trifort.rootbeer.runtime.Serializer.readFromHeap(Serializer.java:188)
+             *    at org.trifort.rootbeer.runtime.CUDAContext.readBlocksList(CUDAContext.java:713)
+             *    ...
+             */
             System.out.print( output );
         }
 
