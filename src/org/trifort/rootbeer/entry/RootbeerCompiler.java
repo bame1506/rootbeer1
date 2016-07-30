@@ -52,16 +52,16 @@ import soot.util.JasminOutputStream;
 
 public class RootbeerCompiler
 {
-    final static boolean debugging = true;  /* activates some debug output */
-    private String       m_provider            ;
-    private boolean      m_enableClassRemapping;
+    private final static boolean debugging = true;  /* activates some debug output */
+    private       String       m_provider            ;
+    private       boolean      m_enableClassRemapping;
     /* functional returning true for classes which Rootbeer shall parse
      * i.e. Kernel implementations with gpuMethod */
-    private MethodTester m_entryDetector       ;
+    private       MethodTester m_entryDetector       ;
     /* These will be included automatically for classes implementing the Kernel interface */
-    private Set<String>  m_runtimePackages     ;
-    private boolean      m_packFatJar          ;
-    private String       m_JarWithoutRootbeer  ;
+    private final Set<String>  m_runtimePackages     ;
+    private       boolean      m_packFatJar          ;
+    private final String       m_JarWithoutRootbeer  ;
 
     public RootbeerCompiler()
     {
@@ -85,13 +85,13 @@ public class RootbeerCompiler
                                      "org.trifort.rootbeer.util."         ,
                                      "org.trifort.rootbeer.test."
                                  ) );
-        m_JarWithoutRootbeer   = RootbeerPaths.v().getOutputJarFolder() + File.separator;
-        JarEntryHelp.mkdir( m_JarWithoutRootbeer );
-        m_JarWithoutRootbeer  += "partial-ret.jar";
+        final String outFolder = RootbeerPaths.v().getOutputJarFolder() + File.separator;
+        JarEntryHelp.mkdir( outFolder );
+        m_JarWithoutRootbeer   = outFolder + "partial-ret.jar";
     }
 
     public void disableClassRemapping(){ m_enableClassRemapping = false; }
-    public void dontPackFatJar       (){ m_packFatJar = false          ; }
+    public void dontPackFatJar       (){ m_packFatJar           = false; }
 
     /**
      * Sets default options and loads selected classes and methods
@@ -159,7 +159,7 @@ public class RootbeerCompiler
         RootbeerClassLoader.v().addDontFollowClassTester( ignore_packages );
 
         final ListClassTester keep_packages = new ListClassTester();
-        for ( String runtime_class : m_runtimePackages )
+        for ( final String runtime_class : m_runtimePackages )
             keep_packages.addPackage( runtime_class );
         RootbeerClassLoader.v().addToSignaturesClassTester(keep_packages);
 
@@ -332,7 +332,7 @@ public class RootbeerCompiler
 
             final String class_name = soot_class.getName();
             boolean write = true;
-            for ( String runtime_class : m_runtimePackages )
+            for ( final String runtime_class : m_runtimePackages )
             {
                 if ( class_name.startsWith( runtime_class ) )
                 {
@@ -362,6 +362,18 @@ public class RootbeerCompiler
         pack( outname );
     }
 
+    /**
+     * Packs or copies the jar containing all dynamically compiled classes
+     * E.g. zipinfo ~/.rootbeer/.../partial-ret.jar
+     *   META-INF/
+     *   META-INF/MANIFEST.MF
+     *   sun/security/provider/PolicyParser.class
+     *   java/lang/Integer$IntegerCache.class
+     *   org/trifort/rootbeer/runtime/config.txt
+     *   MonteCarloPiKernel.class
+     *   MonteCarloPiKernelSerializer.class
+     *   MonteCarloPiKernelSerializer-64.cubin
+     */
     public void pack( final String outjar_name ) throws Exception
     {
         if ( m_packFatJar )
