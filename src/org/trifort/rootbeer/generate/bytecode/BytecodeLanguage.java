@@ -308,7 +308,7 @@ public class BytecodeLanguage
             //method.    let's just try both and use whatever works.
             try {
                 invoke_expr = m_jimple.newVirtualInvokeExpr( base, method.makeRef(), args_list );
-            } catch(RuntimeException ex){
+            } catch ( RuntimeException ex ){
                 invoke_expr = m_jimple.newInterfaceInvokeExpr( base, method.makeRef(), args_list );
             }
         }

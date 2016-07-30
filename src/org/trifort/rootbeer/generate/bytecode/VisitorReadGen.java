@@ -612,14 +612,9 @@ public class VisitorReadGen extends AbstractVisitorGen
         return ret;
     }
 
-    public void attachReader(String class_name, boolean ref_fields){
-        String specialization;
-
-        if(ref_fields){
-            specialization = "RefFields";
-        } else {
-            specialization = "NonRefFields";
-        }
+    public void attachReader( final String class_name, final boolean ref_fields )
+    {
+        String specialization = ref_fields ? "RefFields" : "NonRefFields";
         specialization += JavaNameToOpenCL.convert(class_name);
         specialization += OpenCLScene.v().getIdent();
         String visited_name = class_name + specialization;
@@ -640,19 +635,22 @@ public class VisitorReadGen extends AbstractVisitorGen
         m_bcl.push(bcl);
         bcl.openClass(class_name);
         SootClass mem = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Memory");
-        bcl.startMethod("org_trifort_readFromHeap"+specialization, VoidType.v(), mem.getType(), gc_obj_visit.getType());
-        m_objSerializing.push(bcl.refThis());
-        m_currMem.push(bcl.refParameter(0));
-        m_gcObjVisitor.push(bcl.refParameter(1));
+        /* this is where that weird ClassCastException occurs, i.e. for
+         * specialization == RefFields */
+        bcl.startMethod( "org_trifort_readFromHeap" + specialization,
+            VoidType.v() /*return*/, mem.getType(), gc_obj_visit.getType() );
+        m_objSerializing.push( bcl.refThis() );
+        m_currMem.push( bcl.refParameter(0) );
+        m_gcObjVisitor.push( bcl.refParameter(1) );
 
-        doReader(class_name, ref_fields);
+        doReader( class_name, ref_fields );
 
-        if(parent.getName().equals("java.lang.Object") == false){
-            if(parent.isApplicationClass()){
-                callBaseClassReader(parent.getName(), ref_fields);
-            } else {
+        if ( ! parent.getName().equals( "java.lang.Object" ) )
+        {
+            if ( parent.isApplicationClass() )
+                callBaseClassReader( parent.getName(), ref_fields );
+            else
                 insertReader(parent.getName(), ref_fields);
-            }
         }
 
         bcl.returnVoid();
@@ -664,7 +662,8 @@ public class VisitorReadGen extends AbstractVisitorGen
         m_bcl.pop();
     }
 
-    public void insertReader(String class_name, boolean ref_fields){
+    public void insertReader(String class_name, boolean ref_fields)
+    {
         doReader(class_name, ref_fields);
 
         SootClass curr_class = Scene.v().getSootClass(class_name);
@@ -683,16 +682,19 @@ public class VisitorReadGen extends AbstractVisitorGen
         }
     }
 
-    public void doReader(String class_name, boolean do_ref_fields){
-        BytecodeLanguage bcl = m_bcl.top();
-        BclMemory bcl_mem = new BclMemory(bcl, m_currMem.top());
-        SootClass soot_class = Scene.v().getSootClass(class_name);
+    public void doReader( final String class_name, final boolean do_ref_fields )
+    {
+        final BytecodeLanguage bcl = m_bcl.top();
+        final BclMemory bcl_mem    = new BclMemory( bcl, m_currMem.top() );
+        final SootClass soot_class = Scene.v().getSootClass( class_name );
 
         //read all the ref fields
         int inc_size = 0;
-        if(do_ref_fields){
+        if ( do_ref_fields )
+        {
             List<OpenCLField> ref_fields = getRefFields(soot_class);
-            for(OpenCLField ref_field : ref_fields){
+            for ( final OpenCLField ref_field : ref_fields )
+            {
                 //increment the address to get to this location
                 bcl_mem.incrementAddress(inc_size);
                 inc_size = 0;
@@ -701,41 +703,41 @@ public class VisitorReadGen extends AbstractVisitorGen
                 readRefField(ref_field);
             }
 
-            if(inc_size > 0){
+            if ( inc_size > 0 )
                 bcl_mem.incrementAddress(inc_size);
-            }
-        } else {
+        }
+        else
+        {
             List<OpenCLField> non_ref_fields = getNonRefFields(soot_class);
-            for(OpenCLField non_ref_field : non_ref_fields){
+            for ( OpenCLField non_ref_field : non_ref_fields )
+            {
                 //increment the address to get to this location
-                if(inc_size > 0){
+                if ( inc_size > 0 )
+                {
                     bcl_mem.incrementAddress(inc_size);
                     inc_size = 0;
                 }
                 //read the field
                 readNonRefField(non_ref_field);
             }
-            if(inc_size > 0){
+            if ( inc_size > 0 )
                 bcl_mem.incrementAddress(inc_size);
-            }
         }
         bcl_mem.align();
     }
 
-    public void callBaseClassReader(String class_name, boolean ref_types) {
-        String specialization;
-        if(ref_types){
-            specialization = "RefFields";
-        } else {
-            specialization = "NonRefFields";
-        }
+    public void callBaseClassReader( String class_name, boolean ref_types )
+    {
+         String specialization = ref_types ? "RefFields" : "NonRefFields";
         specialization += JavaNameToOpenCL.convert(class_name);
         specialization += OpenCLScene.v().getIdent();
-        SootClass mem = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Memory");
-        BytecodeLanguage bcl = m_bcl.top();
-        Local gc_obj_visit = m_gcObjVisitor.top();
-        bcl.pushMethod(class_name, "org_trifort_readFromHeap"+specialization, VoidType.v(), mem.getType(), gc_obj_visit.getType());
-        bcl.invokeMethodNoRet(m_objSerializing.top(), m_currMem.top(), gc_obj_visit);
+        final SootClass        mem = Scene.v().getSootClass( "org.trifort.rootbeer.runtime.Memory" );
+        final BytecodeLanguage bcl = m_bcl.top();
+        final Local   gc_obj_visit = m_gcObjVisitor.top();
+        /* this is where that weird ClassCastException occurs, i.e. for
+         * specialization == RefFields */
+        bcl.pushMethod( class_name, "org_trifort_readFromHeap" + specialization, VoidType.v(), mem.getType(), gc_obj_visit.getType() );
+        bcl.invokeMethodNoRet( m_objSerializing.top(), m_currMem.top(), gc_obj_visit );
     }
 
 }

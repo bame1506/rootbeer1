@@ -157,39 +157,48 @@ public class AbstractVisitorGen
         Local original_field_value;
         if ( ! soot_class.isApplicationClass() )
         {
-            if(ref_field.isInstance()){
+            if ( ref_field.isInstance() )
+            {
                 bcl.pushMethod(gc_obj_visit, "readField", obj_class.getType(), obj_class.getType(), string.getType());
                 original_field_value = bcl.invokeMethodRet(gc_obj_visit, m_objSerializing.top(), StringConstant.v(soot_field.getName()));
-            } else {
+            }
+            else
+            {
                 bcl.pushMethod(gc_obj_visit, "readStaticField", obj_class.getType(), class_class.getType(), string.getType());
                 Local cls = bcl.classConstant(soot_field.getDeclaringClass().getType());
                 original_field_value = bcl.invokeMethodRet(gc_obj_visit, cls, StringConstant.v(soot_field.getName()));
             }
-        } else {
-            if(ref_field.isInstance()){
-                original_field_value = bcl.refInstanceField(m_objSerializing.top(), ref_field.getName());
-            } else {
-                original_field_value = bcl.refStaticField(soot_class.getType(), ref_field.getName());
-            }
+        }
+        else
+        {
+            if ( ref_field.isInstance() )
+                original_field_value = bcl.refInstanceField( m_objSerializing.top(), ref_field.getName() );
+            else
+                original_field_value = bcl.refStaticField( soot_class.getType(), ref_field.getName() );
         }
         bcl.pushMethod(gc_obj_visit, "readFromHeap", obj_class.getType(), obj_class.getType(), BooleanType.v(), LongType.v());
         int should_read = 1;
-        Local ret_obj = bcl.invokeMethodRet(gc_obj_visit, original_field_value, IntConstant.v(should_read), ref);
+        Local ret_obj = bcl.invokeMethodRet( gc_obj_visit, original_field_value, IntConstant.v(should_read), ref );
 
         Type type = soot_field.getType();
-        Local ret = bcl.cast(type, ret_obj);
+        /* @todo I think this could be the cast which throws the ClassCastException !!! */
+        Local ret = bcl.cast( type, ret_obj );
 
         if ( ! soot_class.isApplicationClass() )
         {
-            if(ref_field.isInstance()){
+            if ( ref_field.isInstance() )
+            {
                 bcl.pushMethod(gc_obj_visit, "writeField", VoidType.v(), obj_class.getType(), string.getType(), obj_class.getType());
                 bcl.invokeMethodNoRet(gc_obj_visit, m_objSerializing.top(), StringConstant.v(soot_field.getName()), ret);
-            } else {
+            }
+            else
+            {
                 bcl.pushMethod(gc_obj_visit, "writeStaticField", VoidType.v(), class_class.getType(), string.getType(), obj_class.getType());
                 Local cls = bcl.classConstant(soot_field.getDeclaringClass().getType());
                 bcl.invokeMethodNoRet(gc_obj_visit, cls, StringConstant.v(soot_field.getName()), ret);
             }
-        } else
+        }
+        else
         {
             if ( ref_field.isInstance() )
                 bcl.setInstanceField(soot_field, m_objSerializing.top(), ret);
