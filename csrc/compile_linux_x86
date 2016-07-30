@@ -1,9 +1,29 @@
 #!/bin/sh
 
-gcc -m32 -fPIC -g -c -I/usr/lib/jvm/default-java/include/ -I/usr/lib/jvm/default-java/include/linux -I/usr/local/cuda-5.5/include/ org/trifort/rootbeer/runtime/FixedMemory.c -o FixedMemory.o
+if [ -z "$CUDA_INC" ] || [ ! -d "$CUDA_INC" ]; then
+    CUDA_INC=$(dirname $(which nvcc))/../include
+    if [ ! -d "$CUDA_INC" ]; then
+        CUDA_INC=/usr/local/cuda/include
+    fi
+    # The old version mixed -I/usr/local/cuda-5.5/include/ and /usr/local/cuda/include/
+fi
+
+compileSource() {
+    while [ $# -gt 1 ]; do
+        gcc -m32 -fPIC -g -c -o "$1.o"                   \
+            -I'/usr/lib/jvm/default-java/include/'       \
+            -I'/usr/lib/jvm/default-java/include/linux'  \
+            -I"$CUDA_INC"                                \
+            -Wall -Wextra -Wno-unused-parameter -std=c99 \
+            "org/trifort/rootbeer/runtime/$1.c"
+            # -DNDEBUG
+        shift
+    done
+}
+compileSource FixedMemory CUDARuntime CUDAContext Stopwatch
+
 gcc -m32 -shared -Wl,-soname,rootbeer -o rootbeer_x86.so.1 FixedMemory.o -lc
 
-gcc -m32 -fPIC -g -c -I/usr/lib/jvm/default-java/include/ -I/usr/lib/jvm/default-java/include/linux -I/usr/local/cuda-5.5/include/ org/trifort/rootbeer/runtime/CUDARuntime.c -o CUDARuntime.o
-gcc -m32 -fPIC -g -c -I/usr/lib/jvm/default-java/include/ -I/usr/lib/jvm/default-java/include/linux -I/usr/local/cuda-5.5/include/ org/trifort/rootbeer/runtime/CUDAContext.c -o CUDAContext.o
-gcc -m32 -fPIC -g -c -I/usr/lib/jvm/default-java/include/ -I/usr/lib/jvm/default-java/include/linux -I/usr/local/cuda/include/ org/trifort/rootbeer/runtime/Stopwatch.c -o Stopwatch.o
-gcc -L/usr/lib32/nvidia-current/ -m32 -shared -Wl,-soname,rootbeer_cuda -o rootbeer_cuda_x86.so.1 CUDARuntime.o CUDAContext.o Stopwatch.o -lc -lcuda
+gcc -shared -L'/usr/lib32/nvidia-current/'                   \
+    -m32 -Wl,-soname,rootbeer_cuda -o rootbeer_cuda_x86.so.1 \
+    CUDARuntime.o CUDAContext.o Stopwatch.o -lc -lcuda
