@@ -668,8 +668,7 @@ public class CUDAContext implements Context
         long ref     = 0;
         String output = "";
 
-        try
-        {
+        try {
             m_objectMemory .setAddress(0);
             m_handlesMemory.setAddress(0);
             final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
@@ -763,18 +762,15 @@ public class CUDAContext implements Context
                         BufferPrinter.toString( m_handlesMemory, 0, 1024 ) + "\n";
                 }
             }
-
-            /* debugging output */
-            if ( Configuration.getPrintMem() )
-                BufferPrinter.print( m_objectMemory, 0, 256 );
         }
-        finally
+        catch ( Exception e )
         {
             output += "\n!!! [CUDAContext.java:readBlocksList] " +
                 "Exception occured when trying to read kernel " + iKernel +
-                " from heap (relative address / saved handle: " + ref + ")\n" +
+                " out of " + work.size() + " kernels " +
+                "from heap (relative address / saved handle: " + ref + ")\n" +
                 "m_objectMemory at that address and before and after:\n" +
-                BufferPrinter.toString( m_objectMemory, ref-256, 2*256) + "\n";
+                BufferPrinter.toString( m_objectMemory, Math.max( 0, ref-256 ), 2*256) + "\n";
             /**
              *  private long[] mnHits;
              *  private long[] mnIterations;
@@ -828,7 +824,13 @@ public class CUDAContext implements Context
              *    ...
              */
             System.out.print( output );
+            e.printStackTrace(); // don't throw exception, because Spark would restart then infinitely often
+            throw e;
         }
+
+        /* debugging output */
+        if ( Configuration.getPrintMem() )
+            BufferPrinter.print( m_objectMemory, 0, 256 );
 
         watch.stop();
         m_stats.setDeserializationTime( watch.elapsedTimeMillis() );
