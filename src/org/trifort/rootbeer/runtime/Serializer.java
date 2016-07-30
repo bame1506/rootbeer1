@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import org.trifort.rootbeer.generate.bytecode.Constants;
+
 
 public abstract class Serializer
 {
@@ -42,10 +44,10 @@ public abstract class Serializer
 
         mMem        = mem;
         mTextureMem = texture_mem;
-        mReadFromGpuCache.clear();
-        mWriteToGpuCache.clear();
+        mReadFromGpuCache      .clear();
+        mWriteToGpuCache       .clear();
         mReverseWriteToGpuCache.clear();
-        m_classRefToTypeNumber.clear();
+        m_classRefToTypeNumber .clear();
     }
 
     /* default argument: write_data = true */
@@ -60,10 +62,12 @@ public abstract class Serializer
         for ( final int num : m_classRefToTypeNumber.values() )
             if ( num > max_type ) max_type = num;
 
-        int[] ret = new int[max_type+1];
-        for(long value : m_classRefToTypeNumber.keySet()){
-            int pos = m_classRefToTypeNumber.get(value);
-            ret[pos] = (int) (value >> 4);
+        int[] ret = new int[ max_type+1 ];
+        for ( final long compressedAddress : m_classRefToTypeNumber.keySet() )
+        {
+            final int pos = m_classRefToTypeNumber.get( compressedAddress );
+            assert( pos < max_type + 1 );
+            ret[pos] = (int)( compressedAddress >> Constants.MallocAlignZeroBits );
         }
         return ret;
     }
@@ -178,7 +182,7 @@ public abstract class Serializer
          * @todo The check down below might actually work, but only if
          * null_ptr_check is cast to int! else it should be compared with -16!
          */
-        long null_ptr_check = address >> 4;
+        long null_ptr_check = address >> Constants.MallocAlignZeroBits;
         if ( null_ptr_check == -1 )
             return null;
 

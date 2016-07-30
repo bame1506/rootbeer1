@@ -12,6 +12,7 @@ import org.trifort.rootbeer.configuration.Configuration;
 import org.trifort.rootbeer.runtime.util.Stopwatch;
 import org.trifort.rootbeer.runtimegpu.GpuException;
 import org.trifort.rootbeer.util.ResourceReader;
+import org.trifort.rootbeer.generate.bytecode.Constants;
 
 /**
  * https://github.com/LMAX-Exchange/disruptor/wiki/Introduction
@@ -36,7 +37,17 @@ public class CUDAContext implements Context
     private long                         m_nativeContext       ;
     private long                         m_memorySize          ; /**<- bytes */
     private byte[]                       m_cubinFile           ;
+    /**
+     * One continuous large chunk of memory which needs to hold alle the
+     * kernels.
+     * If the garbage collector, i.e. dynamic allocations are to be used then
+     * this memory must be chosen large enough to hold all that!
+     */
     private Memory                       m_objectMemory        ;
+    /**
+     * Saves the relative offsets from the manually managed heap m_objectMemory
+     * where the stored kernels (i.e. their non-static members) can be found
+     */
     private Memory                       m_handlesMemory       ;
     private Memory                       m_textureMemory       ;
     private Memory                       m_exceptionsMemory    ;
@@ -117,6 +128,10 @@ public class CUDAContext implements Context
     @Override public GpuDevice getDevice   () { return m_gpuDevice;          }
     @Override public long getRequiredMemory() { return m_requiredMemorySize; }
     @Override public StatsRow getStats     () { return m_stats;              }
+
+    /* After setting any of these, buildState must be called !
+     * @todo might there be a hiccup else? E.g. some things used from built
+     * state and some other things used from the newly set members conflicing? */
     @Override public void setMemorySize  ( long         memorySize   ){ m_memorySize           = memorySize;   }
     @Override public void setCacheConfig ( CacheConfig  cacheConfig  ){ m_cacheConfig          = cacheConfig;  }
     @Override public void setThreadConfig( ThreadConfig threadConfig ){ m_threadConfig         = threadConfig; }
@@ -197,28 +212,33 @@ public class CUDAContext implements Context
 
         if ( m_usingUncheckedMemory )
         {
-            m_classMemory        = new FixedMemory(1024); /* why 1024 ??? */
-            m_exceptionsMemory   = new FixedMemory(getExceptionsMemSize(m_threadConfig));
-            m_textureMemory      = new FixedMemory(8);
+            m_classMemory        = new FixedMemory( 1024 ); /* why 1024 ??? (doesn't seem to be used at many places anyway) */
+            m_exceptionsMemory   = new FixedMemory( getExceptionsMemSize(m_threadConfig) );
+            m_textureMemory      = new FixedMemory( 8 );
             if ( m_usingHandles )
-                m_handlesMemory  = new FixedMemory(4*m_threadConfig.getNumThreads());
+                m_handlesMemory  = new FixedMemory( 4 * m_threadConfig.getNumThreads() );
             else
-                m_handlesMemory  = new FixedMemory(4);
+                m_handlesMemory  = new FixedMemory( 4 );
         }
         else
         {
             /* exactly same as FixedMemory block above */
-            m_classMemory        = new CheckedFixedMemory(1024);
-            m_exceptionsMemory   = new CheckedFixedMemory(getExceptionsMemSize(m_threadConfig));
-            m_textureMemory      = new CheckedFixedMemory(8);
+            m_classMemory        = new CheckedFixedMemory( 1024 );
+            m_exceptionsMemory   = new CheckedFixedMemory( getExceptionsMemSize( m_threadConfig ) );
+            m_textureMemory      = new CheckedFixedMemory( 8 );
             if ( m_usingHandles )
-                m_handlesMemory  = new CheckedFixedMemory(4*m_threadConfig.getNumThreads());
+                m_handlesMemory  = new CheckedFixedMemory( 4 * m_threadConfig.getNumThreads() );
             else
-                m_handlesMemory  = new CheckedFixedMemory(4);
+                m_handlesMemory  = new CheckedFixedMemory( 4 );
         }
-        /* findMemory size needs m_classMemory, m_textureMemory to be set! */
+        /* findMemorySize needs m_classMemory, m_textureMemory to be set! */
         if ( m_memorySize == -1 )
             findMemorySize( );
+        /* align size */
+        if ( m_memorySize % Constants.MallocAlignBytes != 0 )
+            m_memorySize += Constants.MallocAlignBytes -
+                            ( m_memorySize & Constants.MallocAlignBytes );
+
         if ( m_usingUncheckedMemory )
             m_objectMemory = new FixedMemory( m_memorySize );
         else
@@ -284,12 +304,13 @@ public class CUDAContext implements Context
          * in 16-fold memory needed. Exception size are assumed to be 4 bytes
          * and also assumed to be aligned (are they???) */
         /* absolutely fucking wrong everything in here ... */
-        final long neededMemory =
+        long neededMemory =
             m_cubinFile.length + Constants.MallocAlignBytes +
             m_exceptionsMemory.getSize() / 4 * Constants.MallocAlignBytes +
             m_classMemory.getSize() /* * Constants.MallocAlignBytes */ * m_threadConfig.getNumThreads() +
             m_handlesMemory.getSize() + 1024*1024 /* 1 MB buffer... this really needs some correct formula or better take -.- */;
-        // this is the external formula I cam up with:
+
+        // this is the external formula I came up with:
         //     createContext(
         //     ( work.size * 2 /* nIteration and nHits List */ * 8 /* sizeof(Long) */ +
         //       work.size * 4 /* sizeof(exception) ??? */ ) * 4 /* empirical factor */ +
@@ -334,26 +355,26 @@ public class CUDAContext implements Context
         m_memorySize = neededMemory;
     }
 
-  @Override public void run()
-  {
-      GpuFuture future = runAsync();
-      future.take();
-  }
+    @Override public void run()
+    {
+        GpuFuture future = runAsync();
+        future.take();
+    }
 
-  /**
-   * @todo Is this and run without a list actually being used?
-   * Normally Rootbeer.java:run will be used and that only works with a
-   * list of kernels
-   */
-  @Override public GpuFuture runAsync()
-  {
-      final long seq = m_ringBuffer.next();
-      GpuEvent gpuEvent = m_ringBuffer.get(seq);
-          gpuEvent.setValue(GpuEventCommand.NATIVE_RUN);
-      gpuEvent.getFuture().reset();
-      m_ringBuffer.publish(seq);
-      return gpuEvent.getFuture();
-  }
+    /**
+     * @todo Is this and run without a list actually being used?
+     * Normally Rootbeer.java:run will be used and that only works with a
+     * list of kernels
+     */
+    @Override public GpuFuture runAsync()
+    {
+        final long seq = m_ringBuffer.next();
+        GpuEvent gpuEvent = m_ringBuffer.get(seq);
+            gpuEvent.setValue(GpuEventCommand.NATIVE_RUN);
+        gpuEvent.getFuture().reset();
+        m_ringBuffer.publish(seq);
+        return gpuEvent.getFuture();
+    }
 
     /**
      * Launches a kernel asynchronously
@@ -866,7 +887,7 @@ public class CUDAContext implements Context
             final long ref = m_exceptionsMemory.readRef();
             if ( ref != 0 )
             {
-                final long ref_num = ref >> 4; /* = ref / 16 (?) */
+                final long ref_num = ref >> Constants.MallocAlignZeroBits;
                 if ( ref_num == m_compiledKernel.getNullPointerNumber() ) {
                     throw new NullPointerException( "Null pointer exception while running on GPU" );
                 } else if ( ref_num == m_compiledKernel.getOutOfMemoryNumber() ) {

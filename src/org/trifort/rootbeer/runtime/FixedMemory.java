@@ -48,21 +48,15 @@ public class FixedMemory implements Memory
         m_integerList     = new ArrayList<List<Long>>();
     }
 
-    /* Why the Bitshift !!!??? */
-    @Override public long readRef ()
+    @Override public long readRef () { return ( (long) readInt() ) << Constants.MallocAlignZeroBits; }
+    /* write a reference (i.e. pointer) and compress it by loosing the last bits */
+    @Override public void writeRef( long address )
     {
-        long ret = readInt();
-        ret = ret * 16;
-        return ret;
-    }
-    /* write a reference (i.e. pointer) and compress it by loosing the last
-     * 4 bits, i.e. assume the pointer points to 16 Byte aligned location */
-    @Override public void writeRef (long value)
-    {
-        if ( value % 16 != 0 )
-            throw new IllegalArgumentException( "The reference to be stored (" + value + ") is not aligned to 16 Byte and therefore can't be stored with compression!" );
-        value = value / 16;
-        writeInt( (int) value );
+        if ( ! ( address % Constants.MallocAlignBytes == 0 || address == -1 ) )
+            throw new IllegalArgumentException( "The reference to be stored (" + address + ") is not aligned to " + Constants.MallocAlignBytes + " Byte and therefore can't be stored with compression!" );
+        if ( address < -1 )
+            throw new IllegalArgumentException( "No negative addresses (" + address + ") allowed!" );
+        writeInt( (int) ( address >> Constants.MallocAlignZeroBits ));
     }
 
     /**
@@ -185,37 +179,41 @@ public class FixedMemory implements Memory
             array[i] = readInt();
     }
 
-    public void startIntegerList(){
+    public void startIntegerList()
+    {
         m_integerList.add(new ArrayList<Long>());
         pushAddress();
     }
 
-    public void addIntegerToList(long value){
+    public void addIntegerToList(long value)
+    {
         List<Long> top = m_integerList.get(m_integerList.size()-1);
         top.add(value);
     }
 
-    public void endIntegerList(){
+    public void endIntegerList()
+    {
         popAddress();
         List<Long> top = m_integerList.get(m_integerList.size()-1);
-        for(Long curr : top){
+        for ( final Long curr : top )
             writeRef(curr);
-        }
         m_integerList.remove(m_integerList.size()-1);
     }
 
-    public void finishReading(){
+    public void finishReading()
+    {
         long ptr = m_currentPointer.m_pointer;
 
         int mod = (int) (ptr % Constants.MallocAlignBytes);
-        if(mod != 0){
+        if ( mod != 0 )
             ptr += (Constants.MallocAlignBytes - mod);
-        }
         setPointer(ptr);
     }
 
-    @Override
-    public void align16()
+    /**
+     * @todo alignment function should use Constants.MallocAlignBytes
+     */
+    @Override public void align16()
     {
         m_instancePointer.align16();
         m_staticPointer.align16();
@@ -364,10 +362,10 @@ public class FixedMemory implements Memory
          */
         public void align16()
         {
+            assert( Constants.MallocAlignBytes == 16 );
             final long mod = m_heapEnd % Constants.MallocAlignBytes;
-            if ( mod != 0 ) {
+            if ( mod != 0 )
                 m_heapEnd += (Constants.MallocAlignBytes - mod);
-            }
         }
     }
 }
