@@ -35,6 +35,11 @@ public abstract class Serializer
 
     public Serializer( final Memory mem, final Memory texture_mem )
     {
+        if ( mem == null )
+            throw new IllegalArgumentException( "[Serializer.java] Argument 'mem' = null is not allowed!" );
+        if ( texture_mem == null )
+            throw new IllegalArgumentException( "[Serializer.java] Argument 'texture_mem' = null is not allowed!" );
+
         mMem        = mem;
         mTextureMem = texture_mem;
         mReadFromGpuCache.clear();
@@ -69,7 +74,8 @@ public abstract class Serializer
     {
         public long m_Ref;
         public boolean m_NeedToWrite;
-        public WriteCacheResult(long ref, boolean need_to_write){
+        public WriteCacheResult( long ref, boolean need_to_write )
+        {
             m_Ref = ref;
             m_NeedToWrite = need_to_write;
         }
@@ -118,8 +124,8 @@ public abstract class Serializer
          */
         synchronized ( mWriteToGpuCache )
         {
-            if ( mReverseWriteToGpuCache.containsKey(ref) )
-                return mReverseWriteToGpuCache.get(ref);
+            if ( mReverseWriteToGpuCache.containsKey( ref ) )
+                return mReverseWriteToGpuCache.get( ref );
             return null;
         }
     }
@@ -127,15 +133,18 @@ public abstract class Serializer
     public long writeToHeap( Object o, boolean write_data )
     {
         if ( o == null )
-            return -1;
-        final int size = doGetSize(o);
-        boolean read_only = false;
-        WriteCacheResult result;
-        result = checkWriteCache(o, size, read_only, mMem);
+            throw new IllegalArgumentException( "[Serializer.java:writeToHeap] Argument 'o' = null is not allowed!" );
 
-        if(result.m_NeedToWrite == false){
+        /* not sure if this is a good idea, because calling functions only rarely check */
+        //if ( o == null )
+        //    return -1;
+
+        final int size = doGetSize(o);
+        final boolean read_only = false;
+        WriteCacheResult result = checkWriteCache(o, size, read_only, mMem);;
+
+        if ( ! result.m_NeedToWrite )
             return result.m_Ref;
-        }
         //if(o == null){
         //  System.out.println("writeToHeap: null at addr: "+result.m_Ref);
         //} else {
@@ -166,6 +175,10 @@ public abstract class Serializer
         final long    address
     )
     {
+        long null_ptr_check = address >> 4;
+        if ( null_ptr_check == -1 )
+            return null;
+
         synchronized ( mReadFromGpuCache )
         {
             if ( mReadFromGpuCache.containsKey(address) )
@@ -174,9 +187,6 @@ public abstract class Serializer
                 return ret;
             }
         }
-        long null_ptr_check = address >> 4;
-        if ( null_ptr_check == -1 )
-            return null;
 
         //if(o == null){
         //    System.out.println("readFromHeap: null. addr: "+address);
