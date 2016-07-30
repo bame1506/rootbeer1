@@ -444,12 +444,12 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
     if ( s->using_exceptions )
         CE( cuMemcpyHtoD( s->gpu_exceptions_mem, s->cpu_exceptions_mem, s->cpu_exceptions_mem_size ) )
 
-    stopwatchStop(&(s->execMemcopyToDevice));
+    stopwatchStop( &s->execMemcopyToDevice );
 
     /** launch **/
-    stopwatchStart(&(s->execGpuRun));
+    stopwatchStart( &s->execGpuRun );
 
-    CE( cuParamSeti ( s->function, s->using_kernel_templates_offset, using_kernel_templates) )
+    CE( cuParamSeti ( s->function, s->using_kernel_templates_offset, using_kernel_templates ) )
     CE( cuLaunchGrid( s->function, s->block_count_x, s->block_count_y) )
     CE( cuCtxSynchronize() )
 
@@ -501,54 +501,64 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
     );
 
     #ifndef NDEBUG
-        __PRINTOUT( "+-------- Handles after GPU call ('!' means they changed !):" );
-        int i = 0;
-        while ( (i+1) * sizeof(jint) <= (unsigned long) s->cpu_handles_mem_size )
         {
-            if ( i % 8 == 0 )
-                __PRINTOUT( "\n%6i : ", i );
-            if ( ((jint*)s->cpu_handles_mem)[i] == ((jint*)handlesSentToGpu)[i] )
+            __PRINTOUT( "+-------- Handles after GPU call ('!' means they changed !):" );
+            int i = 0;
+            while ( (i+1) * sizeof(jint) <= (unsigned long) s->cpu_handles_mem_size )
             {
-                __PRINTOUT( "%6i ", ((jint*)s->cpu_handles_mem)[i] );
+                if ( i % 8 == 0 )
+                    __PRINTOUT( "\n%6i : ", i );
+                if ( ((jint*)s->cpu_handles_mem)[i] == ((jint*)handlesSentToGpu)[i] )
+                {
+                    __PRINTOUT( "%6i ", ((jint*)s->cpu_handles_mem)[i] );
+                }
+                else
+                {
+                    __PRINTOUT( "!%i(%i) ", ((jint*)s->cpu_handles_mem)[i],
+                                            ((jint*)handlesSentToGpu  )[i] );
+                }
+                ++i;
             }
-            else
-            {
-                __PRINTOUT( "!%i(%i) ", ((jint*)s->cpu_handles_mem)[i],
-                                        ((jint*)handlesSentToGpu  )[i] );
-            }
-            ++i;
+            __PRINTOUT( "\n\n" );
         }
-        __PRINTOUT( "\n\n" );
+
+        for ( long i = 0; i < s->cpu_handles_mem_size; ++i )
+        {
+            assert( ( (char*) s->cpu_handles_mem )[i] ==
+                    ( (char*) handlesSentToGpu   )[i] &&
+                    "[CUDAContext.c] handles memory changed indicating a problem!" );
+        }
         free( handlesSentToGpu );
 
-        __PRINTOUT( "+-------- Object Memory after GPU call ('!' means they changed):" );
-        i = 0;
-        while ( (i+1) * sizeof(jint) <= (unsigned long) s->cpu_object_mem_size )
         {
-            /* also print the last 1024 jints */
-            if ( i == 1024 && s->cpu_object_mem_size / sizeof(jint) > 2048 )
+            __PRINTOUT( "+-------- Object Memory after GPU call ('!' means they changed):" );
+            int i = 0;
+            while ( (i+1) * sizeof(jint) <= (unsigned long) s->cpu_object_mem_size )
             {
-                i = s->cpu_object_mem_size / sizeof(jint) - 1024;
-                __PRINTOUT( "\n ... \n" );
-                continue;
-            }
+                /* also print the last 1024 jints */
+                if ( i == 1024 && s->cpu_object_mem_size / sizeof(jint) > 2048 )
+                {
+                    i = s->cpu_object_mem_size / sizeof(jint) - 1024;
+                    __PRINTOUT( "\n ... \n" );
+                    continue;
+                }
 
-            if ( i % 8 == 0 )
-                __PRINTOUT( "\n%5i : ", i );
-            if ( ((jint*)s->cpu_object_mem)[i] == ((jint*)objectsSentToGpu)[i] )
-            {
-                __PRINTOUT( "%6i ", ((jint*)s->cpu_object_mem)[i] );
+                if ( i % 8 == 0 )
+                    __PRINTOUT( "\n%5i : ", i );
+                if ( ((jint*)s->cpu_object_mem)[i] == ((jint*)objectsSentToGpu)[i] )
+                {
+                    __PRINTOUT( "%6i ", ((jint*)s->cpu_object_mem)[i] );
+                }
+                else
+                {
+                    __PRINTOUT( "!%i(%i) ", ((jint*)s->cpu_object_mem)[i],
+                                            ((jint*)objectsSentToGpu )[i] );
+                }
+                ++i;
             }
-            else
-            {
-                __PRINTOUT( "!%i(%i) ", ((jint*)s->cpu_object_mem)[i],
-                                        ((jint*)objectsSentToGpu )[i] );
-            }
-            ++i;
+            __PRINTOUT( "\n\n" );
         }
-        __PRINTOUT( "\n\n" );
         free( objectsSentToGpu );
-
 
         printf( "%s", output );
         free( output );
