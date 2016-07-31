@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 import org.trifort.rootbeer.configuration.Configuration;
 import org.trifort.rootbeer.configuration.RootbeerPaths;
@@ -63,8 +64,6 @@ public class GenerateForKernel
         m_codeSegment          = new MethodCodeSegment( method );
     }
 
-    public Type getType(){ return m_sootClass.getType(); }
-
     /**
      * compiles user defined gpuMethod and adds some other possibly needed
      * methods to the Kernel implementation
@@ -74,14 +73,14 @@ public class GenerateForKernel
         m_serializerClassName = m_codeSegment.getSootClass().getName() + "Serializer";
 
         makeGpuBody();
-        makeIsUsingGarbageCollectorBody();
-        makeIsReadOnly();
+        makeIsUsingGarbageCollectorBody( m_sootClass );
+        makeIsReadOnly( m_sootClass );
 
         String prefix = "";
         if ( Options.v().rbcl_remap_all() )
             prefix = Options.v().rbcl_remap_prefix();
-        makeExceptionMethod( "getNullPointerNumber", prefix+"java.lang.NullPointerException" );
-        makeExceptionMethod( "getOutOfMemoryNumber", prefix+"java.lang.OutOfMemoryError"     );
+        makeExceptionMethod( m_sootClass, "getNullPointerNumber", prefix+"java.lang.NullPointerException" );
+        makeExceptionMethod( m_sootClass, "getOutOfMemoryNumber", prefix+"java.lang.OutOfMemoryError"     );
 
         /**
          * these lines add routines like doWriteStaticsToHeap which serialize
@@ -100,10 +99,10 @@ public class GenerateForKernel
      * finds a new statement
      * @see rootbeer/generate/opencl/body/MethodJimpleValueSwitch.java
      */
-    private void makeIsUsingGarbageCollectorBody()
+    private static void makeIsUsingGarbageCollectorBody( final SootClass sootClass )
     {
         final BytecodeLanguage bcl = new BytecodeLanguage();
-        bcl.openClass( m_sootClass );
+        bcl.openClass( sootClass );
         bcl.startMethod( "isUsingGarbageCollector", BooleanType.v() );
         bcl.refThis();
         if ( OpenCLScene.v().getUsingGarbageCollector() )
@@ -122,10 +121,10 @@ public class GenerateForKernel
      *       method in his Kernel implementation ??? same for other startMethod
      *       calls like garbage collector
      */
-    private void makeIsReadOnly()
+    private static void makeIsReadOnly( final SootClass sootClass )
     {
         final BytecodeLanguage bcl = new BytecodeLanguage();
-        bcl.openClass( m_sootClass );
+        bcl.openClass( sootClass );
         bcl.startMethod( "isReadOnly", BooleanType.v() );
         bcl.refThis();
         /* the same as (@see rootbeer/generate/bytecode/ReadOnlyTypes.java):
@@ -144,55 +143,53 @@ public class GenerateForKernel
         bcl.endMethod();
     }
 
-    private void makeExceptionMethod
+    private static void makeExceptionMethod
     (
-        final String method_name,
-        final String cls_name
+        final SootClass sootClass  ,
+        final String    method_name,
+        final String    cls_name
     )
     {
         final SootClass soot_class = Scene.v().getSootClass(cls_name);
         final int number = RootbeerClassLoader.v().getClassNumber(soot_class);
 
         BytecodeLanguage bcl = new BytecodeLanguage();
-        bcl.openClass( m_sootClass );
+        bcl.openClass( sootClass );
         bcl.startMethod( method_name, IntType.v() );
         bcl.refThis();
         bcl.returnValue(IntConstant.v(number));
         bcl.endMethod();
     }
 
-    private void makeGetCodeMethodThatReturnsBytes(boolean m32, String filename)
+    private static void makeGetCodeMethodThatReturnsBytes( final SootClass sootClass, final boolean m32, final String filename )
     {
-        BytecodeLanguage bcl = new BytecodeLanguage();
-        bcl.openClass(m_sootClass);
-        SootClass string = Scene.v().getSootClass("java.lang.String");
-        bcl.startMethod("getCubin"    + (m32 ? "32" : "64"), string.getType());
-        Local thisref = bcl.refThis();
+        final BytecodeLanguage bcl = new BytecodeLanguage();
+        bcl.openClass( sootClass );
+        SootClass string = Scene.v().getSootClass( "java.lang.String" );
+        bcl.startMethod( "getCubin"    + ( m32 ? "32" : "64" ), string.getType() );
+        final Local thisref = bcl.refThis();
         bcl.returnValue(StringConstant.v(filename));
         bcl.endMethod();
     }
 
-    private void makeGetCubinSizeMethod(boolean m32, int length)
+    private static void makeGetCubinSizeMethod( final SootClass sootClass, final boolean m32, final int length )
     {
-        BytecodeLanguage bcl = new BytecodeLanguage();
-        bcl.openClass(m_sootClass);
-        bcl.startMethod("getCubin"+(m32 ? "32" : "64")+"Size", IntType.v());
-        Local thisref = bcl.refThis();
-        bcl.returnValue(IntConstant.v(length));
+        final BytecodeLanguage bcl = new BytecodeLanguage();
+        bcl.openClass( sootClass );
+        bcl.startMethod( "getCubin" + ( m32 ? "32" : "64" ) + "Size", IntType.v() );
+        final Local thisref = bcl.refThis();
+        bcl.returnValue( IntConstant.v( length ) );
         bcl.endMethod();
     }
 
-    private void makeGetCubinErrorMethod(boolean m32, boolean error)
+    private static void makeGetCubinErrorMethod( final SootClass sootClass, final boolean m32, final boolean error )
     {
-        BytecodeLanguage bcl = new BytecodeLanguage();
-        bcl.openClass(m_sootClass);
-        bcl.startMethod("getCubin"+(m32 ? "32" : "64")+"Error", BooleanType.v());
-        Local thisref = bcl.refThis();
-        int intError = 0;
-        if(error == true){
-            intError = 1;
-        }
-        bcl.returnValue(IntConstant.v(intError));
+        final BytecodeLanguage bcl = new BytecodeLanguage();
+        bcl.openClass( sootClass );
+        bcl.startMethod( "getCubin" + ( m32 ? "32" : "64" ) + "Error", BooleanType.v() );
+        final Local thisref = bcl.refThis();
+        final int intError = error ? 1 : 0;
+        bcl.returnValue( IntConstant.v( intError ) );
         bcl.endMethod();
     }
 
@@ -200,51 +197,49 @@ public class GenerateForKernel
      * This much code for a adding a simple method which just returns a string
      * It is amazing ...
      */
-    private void makeGetCodeMethodThatReturnsString
+    private static void makeGetCodeMethodThatReturnsString
     (
-        final String gpu_code,
-        final boolean unix
+        final Jimple     jimple   ,
+        final SootClass  sootClass,
+        final String     gpu_code ,
+        final boolean    unix
     )
     {
         //make the getCode method with the results of the opencl code generation
-        String name = "getCode";
-        if ( unix )
-            name += "Unix";
-        else
-            name += "Windows";
+        final String name = "getCode" + ( unix ? "Unix" : "Windows" );
 
         /* create a new method with no input parameters which returns a String */
         final SootMethod getCode = new SootMethod( name, new ArrayList<Type>(), RefType.v("java.lang.String"), Modifier.PUBLIC );
-        getCode.setDeclaringClass(m_sootClass);
-        m_sootClass.addMethod(getCode);
+        getCode.setDeclaringClass( sootClass );
+        sootClass.addMethod(getCode);
 
-        RootbeerClassLoader.v().addGeneratedMethod(getCode.getSignature());
+        RootbeerClassLoader.v().addGeneratedMethod( getCode.getSignature() );
 
-        JimpleBody body = m_jimple.newBody(getCode);
-        UnitAssembler assembler = new UnitAssembler();
+        final JimpleBody    body      = jimple.newBody( getCode );
+        final UnitAssembler assembler = new UnitAssembler();
 
         //create an instance of self
-        Local thislocal = m_jimple.newLocal("this0", m_sootClass.getType());
-        Unit thisid = m_jimple.newIdentityStmt(thislocal, m_jimple.newThisRef(m_sootClass.getType()));
+        Local thislocal = jimple.newLocal( "this0", sootClass.getType() );
+        Unit thisid = jimple.newIdentityStmt( thislocal, jimple.newThisRef( sootClass.getType() ) );
         assembler.add(thisid);
 
         //java string constants encoded in a class file have a maximum size of 65535...
         //$r1 = new java.lang.StringBuilder;
-        SootClass string_builder_soot_class = Scene.v().getSootClass("java.lang.StringBuilder");
-        Local r1 = m_jimple.newLocal("r1", string_builder_soot_class.getType());
-        Value r1_assign_rhs = m_jimple.newNewExpr(string_builder_soot_class.getType());
-        Unit r1_assign = m_jimple.newAssignStmt(r1, r1_assign_rhs);
+        SootClass string_builder_soot_class = Scene.v().getSootClass( "java.lang.StringBuilder" );
+        Local r1 = jimple.newLocal( "r1", string_builder_soot_class.getType() );
+        Value r1_assign_rhs = jimple.newNewExpr( string_builder_soot_class.getType() );
+        Unit r1_assign = jimple.newAssignStmt( r1, r1_assign_rhs );
         assembler.add(r1_assign);
 
         //specialinvoke $r1.<java.lang.StringBuilder: void <init>()>();
         SootMethod string_builder_ctor = string_builder_soot_class.getMethod("void <init>()");
-        Value r1_ctor = m_jimple.newSpecialInvokeExpr( r1, string_builder_ctor.makeRef(), new ArrayList<Value>() );
-        Unit r1_ctor_unit = m_jimple.newInvokeStmt(r1_ctor);
+        Value r1_ctor = jimple.newSpecialInvokeExpr( r1, string_builder_ctor.makeRef(), new ArrayList<Value>() );
+        Unit r1_ctor_unit = jimple.newInvokeStmt( r1_ctor );
         assembler.add(r1_ctor_unit);
 
         //r2 = $r1;
-        Local r2 = m_jimple.newLocal("r2", string_builder_soot_class.getType());
-        Unit r2_assign_r1 = m_jimple.newAssignStmt(r2, r1);
+        Local r2 = jimple.newLocal( "r2", string_builder_soot_class.getType() );
+        Unit r2_assign_r1 = jimple.newAssignStmt( r2, r1 );
         assembler.add(r2_assign_r1);
 
         SootClass string_class = Scene.v().getSootClass("java.lang.String");
@@ -255,27 +250,25 @@ public class GenerateForKernel
 
         for ( final String block : blocks )
         {
-            Value curr_string_constant = StringConstant.v(block);
-
-            final List<Value> args = new ArrayList<Value>();
-            args.add( curr_string_constant );
+            final List<Value> args = Arrays.asList( (Value) StringConstant.v( block ) );
             //virtualinvoke r2.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("gpu code");
-            Value invoke_expr = m_jimple.newVirtualInvokeExpr(r2, string_builder_append.makeRef(), args );
-            Unit invoke_stmt = m_jimple.newInvokeStmt(invoke_expr);
-            assembler.add(invoke_stmt);
+            assembler.add( jimple.newInvokeStmt(
+                jimple.newVirtualInvokeExpr( r2, string_builder_append.makeRef(), args )
+            ) );
         }
 
         //$r5 = virtualinvoke r2.<java.lang.StringBuilder: java.lang.String toString()>();
-        Local r5 = m_jimple.newLocal("r5", string_class.getType());
-        SootMethod to_string = string_builder_soot_class.getMethod("java.lang.String toString()");
-        Value r5_rhs = m_jimple.newVirtualInvokeExpr(r2, to_string.makeRef());
-        Unit r5_assign = m_jimple.newAssignStmt(r5, r5_rhs);
-        assembler.add(r5_assign);
+        final Local r5 = jimple.newLocal( "r5", string_class.getType() );
+        final SootMethod to_string = string_builder_soot_class.getMethod( "java.lang.String toString()" );
+        Unit r5_assign = jimple.newAssignStmt( r5,
+            jimple.newVirtualInvokeExpr( r2, to_string.makeRef() )
+        );
+        assembler.add( r5_assign );
 
-        assembler.add(m_jimple.newReturnStmt(r5));
+        assembler.add( jimple.newReturnStmt( r5 ) );
 
-        assembler.assemble(body);
-        getCode.setActiveBody(body);
+        assembler.assemble( body );
+        getCode.setActiveBody( body );
     }
 
     private void makeGpuBody() throws Exception
@@ -285,21 +278,24 @@ public class GenerateForKernel
         {
             CompileResult[] result = OpenCLScene.v().getCudaCode();
             for (CompileResult res : result) {
-                String suffix = res.is32Bit() ? "-32" : "-64";
-                if (res.getBinary() == null) {
-                    makeGetCodeMethodThatReturnsBytes(res.is32Bit(), cubinFilename(false, suffix) + ".error");
-                    makeGetCubinSizeMethod(res.is32Bit(), 0);
-                    makeGetCubinErrorMethod(res.is32Bit(), true);
-                } else {
+                final String suffix = res.is32Bit() ? "-32" : "-64";
+                if ( res.getBinary() == null )
+                {
+                    makeGetCodeMethodThatReturnsBytes( m_sootClass, res.is32Bit(), cubinFilename(false, suffix) + ".error" );
+                    makeGetCubinSizeMethod ( m_sootClass, res.is32Bit(), 0    );
+                    makeGetCubinErrorMethod( m_sootClass, res.is32Bit(), true );
+                }
+                else
+                {
                     byte[] bytes = res.getBinary();
                     writeBytesToFile(bytes, cubinFilename(true, suffix));
-                    makeGetCodeMethodThatReturnsBytes(res.is32Bit(), cubinFilename(false, suffix));
-                    makeGetCubinSizeMethod(res.is32Bit(), bytes.length);
-                    makeGetCubinErrorMethod(res.is32Bit(), false);
+                    makeGetCodeMethodThatReturnsBytes( m_sootClass, res.is32Bit(), cubinFilename(false, suffix) );
+                    makeGetCubinSizeMethod ( m_sootClass, res.is32Bit(), bytes.length );
+                    makeGetCubinErrorMethod( m_sootClass, res.is32Bit(), false );
                 }
             }
-            makeGetCodeMethodThatReturnsString("", true);
-            makeGetCodeMethodThatReturnsString("", false);
+            makeGetCodeMethodThatReturnsString( m_jimple, m_sootClass, "", true  );
+            makeGetCodeMethodThatReturnsString( m_jimple, m_sootClass, "", false );
         }
         else
         {
@@ -327,17 +323,17 @@ public class GenerateForKernel
             //jpp can't handle declspec very well
             code[1] = code[1].replace("void entry(char * gc_info_space,", "__declspec(dllexport)\nvoid entry(char * gc_info_space,");
 
-            makeGetCodeMethodThatReturnsString(code[0], true);
-            makeGetCodeMethodThatReturnsString(code[1], false);
-            makeGetCodeMethodThatReturnsBytes(true, "");
-            makeGetCodeMethodThatReturnsBytes(false, "");
+            makeGetCodeMethodThatReturnsString( m_jimple, m_sootClass, code[0], true  );
+            makeGetCodeMethodThatReturnsString( m_jimple, m_sootClass, code[1], false );
+            makeGetCodeMethodThatReturnsBytes( m_sootClass, true , "" );
+            makeGetCodeMethodThatReturnsBytes( m_sootClass, false, "" );
         }
     }
 
     private String cubinFilename(boolean use_class_folder, String suffix)
     {
         String class_name = File.separator +
-                        m_serializerClassName.replace(".", File.separator) +
+                        m_serializerClassName.replace( ".", File.separator ) +
                         suffix + ".cubin";
         if(use_class_folder)
             return RootbeerPaths.v().getOutputClassFolder() + class_name;
@@ -345,23 +341,25 @@ public class GenerateForKernel
             return class_name;
     }
 
-    private void writeBytesToFile(byte[] bytes, String filename)
+    private static void writeBytesToFile( final byte[] bytes, final String filename )
     {
-        try {
-            File file = new File(filename);
-            File parent = file.getParentFile();
-            parent.mkdirs();
-            OutputStream os = new FileOutputStream(filename);
-            os.write(bytes);
+        try
+        {
+            new File(filename).getParentFile().mkdirs();
+            final OutputStream os = new FileOutputStream(filename);
+            os.write( bytes );
             os.flush();
             os.close();
-        } catch(Exception ex){
+        }
+        catch( Exception ex )
+        {
             ex.printStackTrace();
         }
     }
 
     public SootField getField(String name, Type type) { return m_sootClass.getField(name, type); }
     public void addFirstIterationLocal(Local local) { m_firstIterationLocals.add(local); }
-    public String getRuntimeBasicBlockName() { return m_runtimeBasicBlockClassName; }
-    public String getSerializerName       () { return m_serializerClassName; }
+    public String getRuntimeBasicBlockName(){ return m_runtimeBasicBlockClassName; }
+    public String getSerializerName       (){ return m_serializerClassName       ; }
+    public Type   getType                 (){ return m_sootClass.getType()       ; }
 }
