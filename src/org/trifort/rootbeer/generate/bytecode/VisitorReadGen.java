@@ -309,29 +309,35 @@ public final class VisitorReadGen extends AbstractVisitorGen
         bcl.label(label);
     }
 
-    private void makeCtorReadFromHeapMethodForType(Type type, boolean doing_object,
-            Local class_number, Local ctor_used, String after_ctors_label)
+    private void makeCtorReadFromHeapMethodForType
+    (
+        final Type    type        ,
+        final boolean doing_object,
+        final Local   class_number,
+        final Local   ctor_used   ,
+        final String  after_ctors_label
+    )
     {
-        if(type instanceof ArrayType == false &&
-             type instanceof RefType == false){
+        if ( type instanceof ArrayType == false &&
+             type instanceof RefType   == false )
+        {
             return;
         }
 
-        if(m_ctorReadFromHeapMethodsMade.containsKey(type))
+        if ( m_ctorReadFromHeapMethodsMade.containsKey( type ) )
             return;
 
-        if(type instanceof RefType){
+        if ( type instanceof RefType )
+        {
             RefType ref_type = (RefType) type;
-            if(ref_type.getClassName().equals("java.lang.Object")){
-                if(!doing_object){
+            if ( ref_type.getClassName().equals("java.lang.Object") )
+            {
+                if ( ! doing_object )
                     return;
-                }
             }
-            SootClass soot_class = ref_type.getSootClass();
-            if(soot_class.isInterface()){
+            if ( ref_type.getSootClass().isInterface() )
                 return;
-            }
-            if ( differentPackageAndPrivate( m_thisRef, ref_type) )
+            if ( differentPackageAndPrivate( m_thisRef, ref_type ) )
                 return;
         }
 

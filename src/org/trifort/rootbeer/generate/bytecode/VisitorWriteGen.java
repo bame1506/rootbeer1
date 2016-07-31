@@ -136,38 +136,35 @@ public final class VisitorWriteGen extends AbstractVisitorGen
             return;
         }
 
-        if(mWriteToHeapMethodsMade.contains(type))
+        if ( mWriteToHeapMethodsMade.contains( type ) )
             return;
         mWriteToHeapMethodsMade.add(type);
 
-        if(type instanceof RefType){
-            RefType ref_type = (RefType) type;
-            SootClass soot_class = ref_type.getSootClass();
-            if(soot_class.getName().equals("java.lang.Object"))
+        if ( type instanceof RefType )
+        {
+            final RefType ref_type = (RefType) type;
+            final SootClass soot_class = ref_type.getSootClass();
+            if ( soot_class.getName().equals("java.lang.Object") )
                 return;
             if ( differentPackageAndPrivate( m_thisRef, ref_type ) )
                 return;
-            if(soot_class.isInterface()){
+            if ( soot_class.isInterface() )
                 return;
-            }
-            if(m_classesToIgnore.contains(ref_type.getSootClass().getName())){
+            if ( m_classesToIgnore.contains( ref_type.getSootClass().getName() ) )
                 return;
-            }
         }
 
-        if(typeIsPublic(type) == false)
+        if ( ! typeIsPublic( type ) )
             return;
 
-        String label = getNextLabel();
-        BytecodeLanguage bcl = m_bcl.peek();
-        bcl.ifInstanceOfStmt(m_Param0, type, label);
+        final String label = getNextLabel();
+        final BytecodeLanguage bcl = m_bcl.peek();
+        bcl.ifInstanceOfStmt( m_Param0, type, label );
 
-        if(type instanceof ArrayType){
+        if ( type instanceof ArrayType )
             makeWriteToHeapBodyForArrayType((ArrayType) type);
-        } else {
-            RefType ref_type = (RefType) type;
-            makeWriteToHeapBodyForRefType(ref_type);
-        }
+        else
+            makeWriteToHeapBodyForRefType( (RefType) type);
         bcl.label(label);
     }
 
