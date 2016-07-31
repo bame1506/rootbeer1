@@ -208,18 +208,30 @@ public final class VisitorGen extends AbstractVisitorGen
         new VisitorReadGenStatic( bcl ).makeMethod();
     }
 
+    /**
+     * Creates:
+     * public Serializer getSerializer( Memory memory, Memory texture_memory )
+     * {
+     *     return new Serializer( className, memory, texture_memory );
+     * }
+     * where className is calculated above to:
+     *    String className = m_runtimeBasicBlock.getName() + "Serializer";
+     *                                ^ SootClass
+     * Because of that SootClass.getName this method must be dynamically
+     * generated through reflection using Soot!
+     */
     private static void addGetSerializerMethod
     (
-        final BytecodeLanguage bcl,
-        final SootClass runtimeBasicBlock,
-        final String className
+        final BytecodeLanguage bcl              ,
+        final SootClass        runtimeBasicBlock,
+        final String           className
     )
     {
         bcl.openClass( runtimeBasicBlock );
-        final SootClass mem_cls = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Memory");
+        final Type mem_type = Scene.v().getSootClass( "org.trifort.rootbeer.runtime.Memory" ).getType();
         bcl.startMethod( "getSerializer",
             Scene.v().getSootClass( "org.trifort.rootbeer.runtime.Serializer" ).getType(),
-            mem_cls.getType(), mem_cls.getType()
+            mem_type, mem_type
         );
         final Local ret = bcl.newInstance( className, bcl.refParameter(0), bcl.refParameter(1) );
         bcl.returnValue(ret);

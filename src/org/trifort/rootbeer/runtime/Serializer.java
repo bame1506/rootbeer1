@@ -34,6 +34,21 @@ public abstract class Serializer
      * The only multithreading going on in rootbeer is that in CUDAContext.java
      * using the lmax disruptor, so maybe the original author didn't how to
      * run the new thread with arguments like this object?
+     *
+     * These are the locations where Serializer is somehow tried to get:
+     *   entry/RootbeerCompiler.java:181: follow_tester.addSignature( "<org.trifort.rootbeer.runtime.Serializer: void <init>(org.trifort.rootbeer.runtime.Memory,org.trifort.rootbeer.runtime.Memory)>");
+     *   generate/bytecode/GenerateForKernel.java:73: m_serializerClassName = m_codeSegment.getSootClass().getName() + "Serializer";
+     *   generate/bytecode/GenerateForKernel.java:363: public String getSerializerName       (){ return m_serializerClassName       ; }
+     *   generate/bytecode/VisitorGen.java:62:  bcl.makeClass( m_className, "org.trifort.rootbeer.runtime.Serializer" );
+     *   generate/bytecode/VisitorGen.java:220: bcl.startMethod( "getSerializer",
+     *   generate/bytecode/VisitorGen.java:233: bcl.pushMethod( "org.trifort.rootbeer.runtime.Serializer", "<init>", VoidType.v(), mem_cls.getType(), mem_cls.getType() );
+     * // getSerializer returns a new instance of Serializer, that is why the following members are static! Because what getSerializer actually should do, but is too difficult to do with Soot, is to return something like a singleton I think.
+     *   runtime/CUDAContext.java:495: final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
+     *   runtime/CUDAContext.java:515: final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
+     *   runtime/CUDAContext.java:586: final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
+     *   runtime/CUDAContext.java:716: final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
+     *   runtime/CompiledKernel.java:28: public Serializer getSerializer( Memory memory, Memory texture_memory );
+     *   runtime/nemu/NativeCpuDevice.java:61: Serializer serializer = heap.getSerializer();
      */
     private final static Map<Object, Long>  mWriteToGpuCache;
     private final static Map<Long, Object>  mReverseWriteToGpuCache;
@@ -63,6 +78,9 @@ public abstract class Serializer
         mReverseWriteToGpuCache.clear();
         m_classRefToTypeNumber .clear();
     }
+
+    public Memory getTextureMem(){ return mTextureMem; }
+    public Memory getObjectMem (){ return mMem       ; }
 
     /* default argument: write_data = true */
     public long writeToHeap( final Object o ) { return writeToHeap(o, true); }

@@ -445,19 +445,21 @@ public class CUDAContext implements Context
                     }
                     case NATIVE_RUN:
                     {
+                        final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
                         /* send Kernel members to GPU (serializing) */
-                        writeBlocksTemplate();
+                        writeBlocksTemplate( serializer );
                         runGpu();
                         /* get possibly changed Kernel members back from GPU */
-                        readBlocksTemplate();
+                        readBlocksTemplate ( serializer );
                         gpuEvent.getFuture().signal();
                         break;
                     }
                     case NATIVE_RUN_LIST:
                     {
-                        writeBlocksList( gpuEvent.getKernelList() );
+                        final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
+                        writeBlocksList( gpuEvent.getKernelList(), serializer );
                         runGpu();
-                        readBlocksList(  gpuEvent.getKernelList() );
+                        readBlocksList ( gpuEvent.getKernelList(), serializer );
                         gpuEvent.getFuture().signal();
                         break;
                     }
@@ -479,7 +481,7 @@ public class CUDAContext implements Context
     }
 
     /* @see writeBlocksList( List<Kernel> work ) */
-    private void writeBlocksTemplate()
+    private void writeBlocksTemplate( final Serializer serializer )
     {
         /* function body could be replaced with this:
          *     handlesMemory.setAddress(0);
@@ -489,30 +491,31 @@ public class CUDAContext implements Context
          */
         final Stopwatch watch = new Stopwatch();
         watch.start();
-        m_objectMemory.clearHeapEndPtr();
+
+        assert( serializer.getObjectMem() == m_objectMemory );
+        serializer.getObjectMem().clearHeapEndPtr();
         m_handlesMemory.setAddress(0);
 
-        final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
         serializer.writeStaticsToHeap(); // writes statics to m_objectMemory
 
         m_handlesMemory.writeRef( serializer.writeToHeap( m_compiledKernel ) );
-        m_objectMemory.align16();
+        serializer.getObjectMem().align16();
 
         if ( Configuration.getPrintMem() )
-            BufferPrinter.print( m_objectMemory, 0, 256 );
+            BufferPrinter.print( serializer.getObjectMem(), 0, 256 );
 
         watch.stop();
         m_stats.setSerializationTime( watch.elapsedTimeMillis() );
     }
 
-    private void readBlocksTemplate()
+    private void readBlocksTemplate( final Serializer serializer )
     {
         final Stopwatch watch = new Stopwatch();
         watch.start();
 
-        m_objectMemory.setAddress(0);
+        assert( serializer.getObjectMem() == m_objectMemory );
+        serializer.getObjectMem().setAddress(0);
         m_handlesMemory.setAddress(0);
-        final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
 
         /* @todo shouldn't this only be done if exceptions are activated ???
          * which would make it possble to merge it into the submethod */
@@ -524,7 +527,7 @@ public class CUDAContext implements Context
 
         /* Debug output of heap m_objectMemory */
         if ( Configuration.getPrintMem() )
-            BufferPrinter.print( m_objectMemory, 0, 256 );
+            BufferPrinter.print( serializer.getObjectMem(), 0, 256 );
 
         watch.stop();
         m_stats.setDeserializationTime( watch.elapsedTimeMillis() );
@@ -558,11 +561,12 @@ public class CUDAContext implements Context
      * i.e. a total of roughly 1 MB to send, may be negligible compared to
      * the device-to-host copy latency.
      */
-    private void writeBlocksList( final List<Kernel> work )
+    private void writeBlocksList( final List<Kernel> work, final Serializer serializer )
     {
         final Stopwatch watch = new Stopwatch();
         watch.start();
 
+        assert( serializer.getObjectMem() == m_objectMemory );
         String output = "";
 
         try
@@ -583,7 +587,6 @@ public class CUDAContext implements Context
                     "|  m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n";
             }
 
-            final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
             serializer.writeStaticsToHeap();  // writes statics to m_objectMemory
 
             if ( debugging )
@@ -701,11 +704,13 @@ public class CUDAContext implements Context
     /**
      * This function should do the exact inverse of writeBlocksList !
      */
-    public void readBlocksList( final List<Kernel> work )
+    public void readBlocksList( final List<Kernel> work, final Serializer serializer )
     {
         final Stopwatch watch = new Stopwatch();
         watch.start();
 
+        /* if it works, delete and replace m_objectMemory */
+        assert( serializer.getObjectMem() == m_objectMemory );
         long iKernel = 0;
         long ref     = 0;
         String output = "";
@@ -713,7 +718,6 @@ public class CUDAContext implements Context
         try {
             m_objectMemory .setAddress(0);
             m_handlesMemory.setAddress(0);
-            final Serializer serializer = m_compiledKernel.getSerializer( m_objectMemory, m_textureMemory );
 
             /* @todo shouldn't this only be done if exceptions are activated ???
              * which would make it possble to merge it into the submethod */
@@ -888,11 +892,10 @@ public class CUDAContext implements Context
             if ( ref != 0 )
             {
                 final long ref_num = ref >> Constants.MallocAlignZeroBits;
-                if ( ref_num == m_compiledKernel.getNullPointerNumber() ) {
+                if ( ref_num == m_compiledKernel.getNullPointerNumber() )
                     throw new NullPointerException( "Null pointer exception while running on GPU" );
-                } else if ( ref_num == m_compiledKernel.getOutOfMemoryNumber() ) {
+                else if ( ref_num == m_compiledKernel.getOutOfMemoryNumber() )
                     throw new OutOfMemoryError( "Out of memory error while running on GPU" );
-                }
 
                 /* won't this setting of m_objectMemory confuse the reading
                  * of further elements ? I guess it doesn't matter, because
