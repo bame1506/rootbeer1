@@ -50,22 +50,18 @@ public abstract class Serializer
      *   runtime/CompiledKernel.java:28: public Serializer getSerializer( Memory memory, Memory texture_memory );
      *   runtime/nemu/NativeCpuDevice.java:61: Serializer serializer = heap.getSerializer();
      */
-    private final static Map<Object, Long>  mWriteToGpuCache;
-    private final static Map<Long, Object>  mReverseWriteToGpuCache;
-    private final static Map<Long, Object>  mReadFromGpuCache;
-    private final static Map<Long, Integer> m_classRefToTypeNumber;
+    private final Map<Object, Long>  mWriteToGpuCache       ;
+    private final Map<Long, Object>  mReverseWriteToGpuCache;
+    private final Map<Long, Object>  mReadFromGpuCache      ;
+    private final Map<Long, Integer> m_classRefToTypeNumber ;
 
-    /* static initializer for static members */
-    static
+    public Serializer( final Memory mem, final Memory texture_mem )
     {
         mWriteToGpuCache        = new IdentityHashMap<Object, Long>();
         mReverseWriteToGpuCache = new HashMap<Long, Object >();
         mReadFromGpuCache       = new HashMap<Long, Object >();
         m_classRefToTypeNumber  = new HashMap<Long, Integer>();
-    }
 
-    public Serializer( final Memory mem, final Memory texture_mem )
-    {
         if ( mem == null )
             throw new IllegalArgumentException( "[Serializer.java] Argument 'mem' = null is not allowed!" );
         if ( texture_mem == null )
@@ -118,7 +114,7 @@ public abstract class Serializer
     /**
      * @see https://docs.oracle.com/javase/tutorial/essential/concurrency/syncmeth.html
      */
-    private static synchronized WriteCacheResult checkWriteCache
+    private synchronized WriteCacheResult checkWriteCache
     (
         final Object  o        ,
         final int     size     ,
