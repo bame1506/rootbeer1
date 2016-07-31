@@ -63,14 +63,13 @@ public class AbstractVisitorGen
         m_objSerializing  = new Stack<Local>();
     }
 
-    protected boolean differentPackageAndPrivate( final RefType ref_inspecting )
+    protected static boolean differentPackageAndPrivate( final Local thisRef, final RefType ref_inspecting )
     {
-        RefType ref_type = (RefType) m_thisRef.getType();
-        SootClass this_class = getClassForType(ref_type);
+        SootClass this_class = getClassForType( (RefType) thisRef.getType() );
         SootClass class_inspecting = getClassForType(ref_inspecting);
-        if(this_class.getPackageName().equals(class_inspecting.getPackageName()))
+        if ( this_class.getPackageName().equals( class_inspecting.getPackageName() ) )
             return false;
-        if(class_inspecting.isPublic() == false)
+        if ( ! class_inspecting.isPublic() )
             return true;
         return false;
     }

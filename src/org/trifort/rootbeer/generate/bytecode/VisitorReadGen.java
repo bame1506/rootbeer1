@@ -283,7 +283,7 @@ public final class VisitorReadGen extends AbstractVisitorGen
             SootClass soot_class = ref_type.getSootClass();
             if ( soot_class.isInterface() )
                 return;
-            if ( differentPackageAndPrivate(ref_type) )
+            if ( differentPackageAndPrivate( m_thisRef, ref_type ) )
                 return;
         }
 
@@ -331,9 +331,8 @@ public final class VisitorReadGen extends AbstractVisitorGen
             if(soot_class.isInterface()){
                 return;
             }
-            if(differentPackageAndPrivate(ref_type)){
+            if ( differentPackageAndPrivate( m_thisRef, ref_type) )
                 return;
-            }
         }
 
         String label = getNextLabel();

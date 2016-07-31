@@ -113,7 +113,7 @@ public final class VisitorGen extends AbstractVisitorGen
                     continue;
                 if ( soot_class.isInterface() )
                     continue;
-                if ( differentPackageAndPrivate( ref_type ) )
+                if ( differentPackageAndPrivate( m_thisRef, ref_type ) )
                     continue;
             }
             if ( ! typeIsPublic( type ) )

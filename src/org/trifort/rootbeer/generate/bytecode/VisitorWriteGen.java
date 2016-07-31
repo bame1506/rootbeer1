@@ -145,9 +145,8 @@ public final class VisitorWriteGen extends AbstractVisitorGen
             SootClass soot_class = ref_type.getSootClass();
             if(soot_class.getName().equals("java.lang.Object"))
                 return;
-            if(differentPackageAndPrivate(ref_type)){
+            if ( differentPackageAndPrivate( m_thisRef, ref_type ) )
                 return;
-            }
             if(soot_class.isInterface()){
                 return;
             }
