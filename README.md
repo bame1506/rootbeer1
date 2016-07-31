@@ -1,7 +1,12 @@
 # About this Fork
 
-This fork adds several small bugfixes, quite some code comments, code reduction and also changes the code style of sighted files to something more similar to e.g. [imresh](https://github.com/ComputationalRadiationPhysics/imresh) i.e. braces on new line, 4 spaces instead of 2 indentation and alignment of similar and especially of boiler-plate code. 
-The reason behind this is trying to understand and get a feel for the code in order to find a memory bug which appears when using Rootbeer in conjunction with Spark, see backtrace down below at [Known Bugs](#known-bugs).
+The main-objective of this fork is to make Rootbeer thread-safe in order to use it from Spark, see [Known Bugs](#known-bugs).
+It also adds some smaller bugfixes, because the original development seems to be halted (2016)
+
+In order to do that this fork adds quite some code comments, reduces and simplifies code and also changes the code style of sighted files to something more similar to e.g. [imresh](https://github.com/ComputationalRadiationPhysics/imresh) i.e. braces on new line, 4 spaces instead of 2 indentation and alignment of similar and especially of boiler-plate code. 
+
+The reason behind this is trying to understand and get a feel for the code.
+
 
 # Rootbeer
 
@@ -33,6 +38,7 @@ that for best occupancy you will want more threads and less shared memory. There
 between thread count, shared memory size and register count. All of these are configurable
 using Rootbeer.
 
+
 ## Programming
 <b>Kernel Interface:</b> Your code that will run on the GPU will implement the Kernel interface.
 You send data to the gpu by adding a field to the object implementing kernel. `gpuMethod` will access the data.
@@ -42,6 +48,7 @@ You send data to the gpu by adding a field to the object implementing kernel. `g
     public interface Kernel {
       void gpuMethod();
     }
+
 
 ### Simple Example:
 This simple example uses kernel lists and no thread config or context. Rootbeer will create a thread config and select the best device automatically. If you wish to use multiple GPUs you need to pass in a Context.
@@ -365,7 +372,7 @@ To compile a single jar with Rootbeer you can do:
 | `-noarraychecks`     | remove array out of bounds checks once you get your application to work |
 | `-nodoubles`         | you are telling rootbeer that there are no doubles and we can compile with older versions of CUDA |
 | `-norecursion`       | you are telling rootbeer that there are no recursions and we can compile with older versions of CUDA |
-| `-noexceptions`      | remove exception checking |
+| `-noexceptions`      | remove exception checking on GPUs. If not, then exceptions thrown on GPU will be serialized back to the host and then thrown from the Host |
 | `-nemu`              | use CPU emulator |
 | `-jemu`              | use CPU emulator |
 | `-keepmains`         | keep main methods |
@@ -688,6 +695,14 @@ GPU Consulting available for Rootbeer and CUDA. Please email pcpratts@trifort.or
         | nRuntime     = 39   
         | nNullPointer = 5
         | nNoError     = 46
+        
+    After making `Serializer.java` thread-safe:
+    
+        | nClassCast   = 0  
+        | nRuntime     = 0    
+        | nNullPointer = 0
+        | nNoError     = 200
+
 
 ### Authors
 
@@ -1178,7 +1193,7 @@ Singletons in Rootbeer `'grep' -r '\.v[ \t]*([ \t]*)' src/ | sed -r 's|.*[^0-9A-
   - RootbeerClassLoader
   - StringNumbers
 
- => Many of the found singletons in the `generate`-folder and therefore hopefully only used when compiling, except RootbeerPaths, but that shouldn't be critical or lead to the observerd exception.
+ => Many of the found singletons in the `generate`-folder and therefore hopefully only used when compiling, except RootbeerPaths, but that shouldn't be critical or lead to the observered exception.
  
 I don't know if all of the used libraries are thread-safe, e.g. com.lmac.disruptor
 
