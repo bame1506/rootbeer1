@@ -32,7 +32,7 @@ import soot.rbclassload.RootbeerClassLoader;
 import soot.rbclassload.StringToType;
 
 
-public class VisitorGen extends AbstractVisitorGen
+public final class VisitorGen extends AbstractVisitorGen
 {
     private       String      m_className           ;
             final SootClass   m_runtimeBasicBlock   ;

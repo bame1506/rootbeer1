@@ -9,8 +9,10 @@ package org.trifort.rootbeer.generate.bytecode;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
+import java.util.Collections;
 
 import org.trifort.rootbeer.generate.opencl.OpenCLClass;
 import org.trifort.rootbeer.generate.opencl.OpenCLScene;
@@ -44,7 +46,12 @@ public class AbstractVisitorGen
     protected final Stack<Local>            m_gcObjVisitor   ;
     protected final Stack<Local>            m_currMem        ;
     protected final Stack<Local>            m_objSerializing ;
-    protected final List<String>            m_classesToIgnore;
+    protected final static List<String>     m_classesToIgnore =
+        Collections.unmodifiableList( Arrays.asList(
+            "org.trifort.rootbeer.runtime.RootbeerGpu"    ,
+            "org.trifort.rootbeer.runtime.Sentinal"       ,
+            "org.trifort.rootbeer.runtimegpu.GpuException"
+        ) );
 
     public AbstractVisitorGen()
     {
@@ -54,13 +61,9 @@ public class AbstractVisitorGen
         m_currMem         = new Stack<Local>();
         m_currThisRef     = new Stack<Local>();
         m_objSerializing  = new Stack<Local>();
-        m_classesToIgnore = new ArrayList<String>();
-        m_classesToIgnore.add( "org.trifort.rootbeer.runtime.RootbeerGpu"     );
-        m_classesToIgnore.add( "org.trifort.rootbeer.runtime.Sentinal"        );
-        m_classesToIgnore.add( "org.trifort.rootbeer.runtimegpu.GpuException" );
     }
 
-    protected boolean differentPackageAndPrivate( RefType ref_inspecting )
+    protected boolean differentPackageAndPrivate( final RefType ref_inspecting )
     {
         RefType ref_type = (RefType) m_thisRef.getType();
         SootClass this_class = getClassForType(ref_type);
@@ -72,13 +75,15 @@ public class AbstractVisitorGen
         return false;
     }
 
-    protected static SootClass getClassForType(RefType ref_type){
+    protected static SootClass getClassForType( final RefType ref_type )
+    {
         SootClass soot_class = ref_type.getSootClass();
         soot_class = Scene.v().getSootClass(soot_class.getName());
         return soot_class;
     }
 
-    protected static String getTypeString(SootField soot_field){
+    protected static String getTypeString( final SootField soot_field )
+    {
         Type type = soot_field.getType();
         String name = type.toString();
         char[] name_array = name.toCharArray();
@@ -86,12 +91,14 @@ public class AbstractVisitorGen
         return new String(name_array);
     }
 
-    protected static List<OpenCLField> getNonRefFields(SootClass soot_class){
+    protected static List<OpenCLField> getNonRefFields( final SootClass soot_class )
+    {
         OpenCLClass ocl_class = OpenCLScene.v().getOpenCLClass(soot_class);
         return ocl_class.getInstanceNonRefFields();
     }
 
-    protected static List<OpenCLField> getRefFields(SootClass soot_class){
+    protected static List<OpenCLField> getRefFields( final SootClass soot_class )
+    {
         OpenCLClass ocl_class = OpenCLScene.v().getOpenCLClass(soot_class);
         if(ocl_class == null){
             System.out.println("ocl_class == null: "+soot_class.getName());
@@ -99,7 +106,8 @@ public class AbstractVisitorGen
         return ocl_class.getInstanceRefFields();
     }
 
-    protected static SootClass getGcVisitorClass(Local visitor){
+    protected static SootClass getGcVisitorClass( final Local visitor )
+    {
         RefType type = (RefType) visitor.getType();
         SootClass gc_visitor = Scene.v().getSootClass(type.getClassName());
         return gc_visitor;

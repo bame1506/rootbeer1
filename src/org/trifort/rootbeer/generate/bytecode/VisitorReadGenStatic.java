@@ -32,7 +32,7 @@ import soot.jimple.StringConstant;
 import soot.rbclassload.RootbeerClassLoader;
 
 
-public class VisitorReadGenStatic extends AbstractVisitorGen
+public final class VisitorReadGenStatic extends AbstractVisitorGen
 {
     private       Local         m_mem            ;
     private final Set<String>   m_attachedReaders;

@@ -41,7 +41,7 @@ import soot.options.Options                ;
 import soot.rbclassload.RootbeerClassLoader;
 
 
-public class VisitorWriteGen extends AbstractVisitorGen
+public final class VisitorWriteGen extends AbstractVisitorGen
 {
     private final Stack<Local>  m_CurrObj              ;
     private final Stack<Local>  m_CurrentMem           ;

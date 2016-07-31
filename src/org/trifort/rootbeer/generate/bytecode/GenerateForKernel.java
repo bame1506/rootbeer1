@@ -42,7 +42,7 @@ import soot.options.Options;
 import soot.rbclassload.RootbeerClassLoader;
 
 
-public class GenerateForKernel
+public final class GenerateForKernel
 {
     private final MethodCodeSegment m_codeSegment               ;
     /* the class in which gpuMethod resides in */
