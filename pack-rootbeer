@@ -7,6 +7,12 @@ if command -v 'zipmerge' 2>&1 1>/dev/null; then
     fi
     # Note: does not work for files with spaces in it
     time -p zipmerge Rootbeer.jar $(find lib -maxdepth 1 -type f) dist/Rootbeer1.jar
+    # Rootbeer.jar is for compiling and RootbeerRuntime.jar
+    # needs to be added to the compiled jar
+    cp Rootbeer.jar RootbeerRuntime.jar
+    zip --delete RootbeerRuntime.jar 'antlr/*' 'org/antlr/*' 'org/objectweb/*' 'org/xmlpull/*' 'test/*' 'android/*' 'org/apache/*' 'org/jf/*' 'com/google/*' 'org/hamcrest/*' 'com/thoughtworks/*' 'jasmin/*' 'jas/*' 'scm/*' 'polyglot/*' 'ppg/*' 'java_cup/*' 'soot/*' 'ds/tree/*' 'org/trifort/rootbeer/compiler/*' 'org/trifort/rootbeer/test/*' 'org/trifort/rootbeer/testcases/*' 'org/trifort/rootbeer/entry/*' 'org/trifort/rootbeer/generate/*' 'org/trifort/rootbeer/compressor/*' 'org/trifort/rootbeer/deadmethods/*' 2>&1 1>/dev/null
+    # What should remain is com/lmax and org/trifort/rootbeer/{configuration,runtime,runtimegou,util}
+    # 14M Rootbeer.jar -> 406K RootbeerRuntime.jar
 else
     time -p java -jar lib/pack.jar -mainjar dist/Rootbeer1.jar -directory lib -destjar Rootbeer.jar
 fi
