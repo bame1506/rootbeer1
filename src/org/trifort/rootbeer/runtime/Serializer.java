@@ -16,6 +16,10 @@ import java.util.Map;
 import org.trifort.rootbeer.generate.bytecode.Constants;
 
 
+/**
+ * Wrapper class which calls the Soot generated Serializer classes for
+ * writing Java Objects to byte arrays
+ */
 public abstract class Serializer
 {
     public final Memory mMem;

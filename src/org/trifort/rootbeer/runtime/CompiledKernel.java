@@ -8,7 +8,9 @@
 package org.trifort.rootbeer.runtime;
 
 
-/* @todo where are these implemented ??? */
+/**
+ * These methods are implemented generate/bytecode/GenerateForKernel.java
+ */
 public interface CompiledKernel
 {
     public String     getCodeUnix            ();
