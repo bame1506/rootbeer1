@@ -2,16 +2,16 @@
 package org.trifort.rootbeer.runtime;
 
 
-import java.util.List;
-import java.util.Arrays;
+import java.util.List                      ;
+import java.util.Arrays                    ;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.Executors      ;
+import java.util.concurrent.ThreadFactory  ;
 
 import org.trifort.rootbeer.configuration.Configuration;
-import org.trifort.rootbeer.runtime.util.Stopwatch;
-import org.trifort.rootbeer.runtimegpu.GpuException;
-import org.trifort.rootbeer.util.ResourceReader;
+import org.trifort.rootbeer.runtime.util.Stopwatch     ;
+import org.trifort.rootbeer.runtimegpu.GpuException    ;
+import org.trifort.rootbeer.util.ResourceReader        ;
 import org.trifort.rootbeer.generate.bytecode.Constants;
 
 /**
@@ -19,8 +19,8 @@ import org.trifort.rootbeer.generate.bytecode.Constants;
  * Library for passing event-messages to another thread which implements an
  * EventHandler (?) @see GpuEventHandler.
  */
-import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.RingBuffer;
+import com.lmax.disruptor.EventHandler ;
+import com.lmax.disruptor.RingBuffer   ;
 import com.lmax.disruptor.dsl.Disruptor;
 
 import org.trifort.rootbeer.generate.bytecode.Constants;
@@ -34,7 +34,7 @@ public class CUDAContext implements Context
     private final GpuDevice              m_gpuDevice           ;
     private final boolean                m_is32bit             ;
 
-    private long                         m_nativeContext       ;
+    private final long                   m_nativeContext       ;
     private long                         m_memorySize          ; /**<- bytes */
     private byte[]                       m_cubinFile           ;
     /**
@@ -59,6 +59,7 @@ public class CUDAContext implements Context
     private Kernel                       m_kernelTemplate      ; /**<- ??? difference between this and compiledKernel? */
     private CompiledKernel               m_compiledKernel      ;
     private boolean                      m_usingHandles        ;
+    private final boolean                m_usingExceptions     ;
 
     /* Performance metrics / debug variables */
     private final StatsRow               m_stats               ;
@@ -109,6 +110,7 @@ public class CUDAContext implements Context
         m_cacheConfig          = CacheConfig.PREFER_NONE;
 
         m_stats                = new StatsRow();
+        m_usingExceptions      = new Configuration( true ).getExceptions();
     }
 
     @Override public void close()
@@ -257,11 +259,10 @@ public class CUDAContext implements Context
     private long getExceptionsMemSize( ThreadConfig thread_config )
     {
         /* 4L seems a bit magic number to me, it seems to be sizeof( Exception ) */
-        if ( Configuration.runtimeInstance().getExceptions() ) {
+        if ( m_usingExceptions )
             return 4L * thread_config.getNumThreads();
-        } else {
+        else
             return 4;
-        }
     }
 
     /**
@@ -421,7 +422,6 @@ public class CUDAContext implements Context
                 {
                     case NATIVE_BUILD_STATE:
                     {
-                        final boolean usingExceptions = Configuration.runtimeInstance().getExceptions();
                         nativeBuildState(
                             m_nativeContext                 ,
                             m_gpuDevice.getDeviceId()       ,
@@ -437,7 +437,7 @@ public class CUDAContext implements Context
                             m_handlesMemory                 ,
                             m_exceptionsMemory              ,
                             m_classMemory                   ,
-                            usingExceptions ? 1 : 0         ,
+                            m_usingExceptions ? 1 : 0       ,
                             m_cacheConfig.ordinal()
                         );
                         gpuEvent.getFuture().signal();
@@ -501,9 +501,6 @@ public class CUDAContext implements Context
         m_handlesMemory.writeRef( serializer.writeToHeap( m_compiledKernel ) );
         serializer.getObjectMem().align16();
 
-        if ( Configuration.getPrintMem() )
-            BufferPrinter.print( serializer.getObjectMem(), 0, 256 );
-
         watch.stop();
         m_stats.setSerializationTime( watch.elapsedTimeMillis() );
     }
@@ -520,14 +517,10 @@ public class CUDAContext implements Context
         /* @todo shouldn't this only be done if exceptions are activated ???
          * which would make it possble to merge it into the submethod */
         m_exceptionsMemory.setAddress(0);
-        if ( Configuration.runtimeInstance().getExceptions() )
+        if ( m_usingExceptions )
             readBlocksGetAndCheckExceptions( serializer );
 
         serializer.readFromHeap( m_compiledKernel, true, m_handlesMemory.readRef() );
-
-        /* Debug output of heap m_objectMemory */
-        if ( Configuration.getPrintMem() )
-            BufferPrinter.print( serializer.getObjectMem(), 0, 256 );
 
         watch.stop();
         m_stats.setDeserializationTime( watch.elapsedTimeMillis() );
@@ -668,10 +661,7 @@ public class CUDAContext implements Context
                     "| After align16 call:\n" +
                     "|   m_objectMemory  current address: " + m_objectMemory .getPointer() + "\n" +
                     "|   m_handlesMemory current address: " + m_handlesMemory.getPointer() + "\n";
-            }
 
-            if ( debugging && ! Configuration.getPrintMem() )
-            {
                 /* @todo For some reason the size returned by getSize is different
                  * on each different compilation Oo ? But it stays the same on
                  * different runs with the same binary. Is something like the time
@@ -687,10 +677,6 @@ public class CUDAContext implements Context
                     formatSize( m_handlesMemory.getSize() ) + ") :\n" +
                     BufferPrinter.toString( m_handlesMemory, 0, 1024 );
             }
-
-            if ( Configuration.getPrintMem() )
-                BufferPrinter.print( m_objectMemory, 0, 256 );
-
         }
         finally
         {
@@ -722,7 +708,7 @@ public class CUDAContext implements Context
             /* @todo shouldn't this only be done if exceptions are activated ???
              * which would make it possble to merge it into the submethod */
             m_exceptionsMemory.setAddress(0);
-            if ( Configuration.runtimeInstance().getExceptions() )
+            if ( m_usingExceptions )
                 readBlocksGetAndCheckExceptions( serializer );
 
             if ( debugging )
@@ -795,18 +781,15 @@ public class CUDAContext implements Context
                     "| => one-time kernel code needs   : " +
                     ( nPostFirstKernel - nPreFirstKernel - nBytesPerKernel) + " B";
                 /* memory dump */
-                if ( ! Configuration.getPrintMem() )
-                {
-                    output +=
-                        "\n[CUDAContext.java:readBlocksList] After reading here " +
-                        "are the first 1024 Bytes of m_objectMemory (" + m_objectMemory.getSize() + " B = " +
-                        formatSize( m_objectMemory.getSize() ) + ") :\n" +
-                        BufferPrinter.toString( m_objectMemory , 0, 1024 ) + "\n" +
-                        "\n[CUDAContext.java:readBlocksList] After reading here " +
-                        "are the first 1024 Bytes of m_handlesMemory (" + m_handlesMemory.getSize() + " B = " +
-                        formatSize( m_handlesMemory.getSize() ) + ") :\n" +
-                        BufferPrinter.toString( m_handlesMemory, 0, 1024 ) + "\n";
-                }
+                output +=
+                    "\n[CUDAContext.java:readBlocksList] After reading here " +
+                    "are the first 1024 Bytes of m_objectMemory (" + m_objectMemory.getSize() + " B = " +
+                    formatSize( m_objectMemory.getSize() ) + ") :\n" +
+                    BufferPrinter.toString( m_objectMemory , 0, 1024 ) + "\n" +
+                    "\n[CUDAContext.java:readBlocksList] After reading here " +
+                    "are the first 1024 Bytes of m_handlesMemory (" + m_handlesMemory.getSize() + " B = " +
+                    formatSize( m_handlesMemory.getSize() ) + ") :\n" +
+                    BufferPrinter.toString( m_handlesMemory, 0, 1024 ) + "\n";
             }
         }
         catch ( Exception e )
@@ -873,10 +856,6 @@ public class CUDAContext implements Context
             e.printStackTrace(); // don't throw exception, because Spark would restart then infinitely often
             throw e;
         }
-
-        /* debugging output */
-        if ( Configuration.getPrintMem() )
-            BufferPrinter.print( m_objectMemory, 0, 256 );
 
         watch.stop();
         m_stats.setDeserializationTime( watch.elapsedTimeMillis() );

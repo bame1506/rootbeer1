@@ -188,7 +188,7 @@ public class RootbeerTestAgent {
     int i = 0;
     try {
       Rootbeer rootbeer = new Rootbeer();
-      Configuration.setPrintMem(print_mem);
+      // Configuration.setPrintMem(print_mem); // obsolete @todo somehow print the memory another way
       List<Kernel> known_good_items = creator.create();
       List<Kernel> testing_items = creator.create();
       Stopwatch watch = new Stopwatch();
@@ -224,7 +224,7 @@ public class RootbeerTestAgent {
     int i = 0;
     try {
       Rootbeer rootbeer = new Rootbeer();
-      Configuration.setPrintMem(print_mem);
+      // Configuration.setPrintMem(print_mem); // obsolete @todo somehow print the memory another way
       Kernel known_good_item = creator.create();
       Kernel testing_item = creator.create();
       ThreadConfig thread_config = creator.getThreadConfig();
@@ -279,7 +279,7 @@ public class RootbeerTestAgent {
 
   private void ex_test(TestException creator, boolean print_mem) {
     Rootbeer rootbeer = new Rootbeer();
-    Configuration.setPrintMem(print_mem);
+    // Configuration.setPrintMem(print_mem); // obsolete @todo somehow print the memory another way
     List<Kernel> testing_items = creator.create();
     try {
       rootbeer.run(testing_items);
@@ -318,7 +318,7 @@ public class RootbeerTestAgent {
     public void run() {
       int i = 0;
       try {
-        Configuration.setPrintMem(m_printMem);
+        // Configuration.setPrintMem(m_printMem); // obsolete @todo somehow print the memory another way
         List<Kernel> known_good_items = m_creator.create();
         List<Kernel> testing_items = m_creator.create();
         Stopwatch watch = new Stopwatch();

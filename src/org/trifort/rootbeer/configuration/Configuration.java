@@ -19,6 +19,9 @@ import org.trifort.rootbeer.util.ResourceReader;
  * Basically a C++ struct + boilerplate which saves the configuration
  * of a kernel(?) like what CUDA architecture it depends on or the register
  * count used.
+ *
+ * But weirdly it seems like it is never used at runtime, only for compiling
+ * For runtime only getExceptions is used.
  */
 public class Configuration
 {
@@ -26,7 +29,10 @@ public class Configuration
     public static final int MODE_NEMU = 1;
     public static final int MODE_JEMU = 2;
 
-    /* singleton structure */
+    /* singleton structure
+     * Not compilerInstance is not thread-safe, but it's not that important
+     * except for compiling many programs multithreaded, but then just use
+     * multiple processes ... */
     private static Configuration m_Instance;
     public static Configuration compilerInstance()
     {
@@ -49,7 +55,6 @@ public class Configuration
     }
 
     private static boolean      m_runAll            ;
-    private static boolean      m_printMem          ;
     private int                 m_mode              ;
     private boolean             m_compilerInstance  ;
     private boolean             m_remapAll          ;
@@ -65,10 +70,6 @@ public class Configuration
     private boolean             m_manualCuda        ;
     private String              m_manualCudaFilename;
     private ComputeCapability   m_computeCapability ;
-
-    static {
-        m_printMem = false;
-    }
 
     private Configuration()
     {
@@ -86,7 +87,13 @@ public class Configuration
         m_computeCapability = ComputeCapability.ALL;
     }
 
-    private Configuration( boolean load )
+    /**
+     * Reads the compiler configuration from a config file packed in the
+     * runtime jar. Currently the config only contains the mode which is
+     * ignored on runtime and whether to use exceptions or not which is the
+     * only 'bit' of configuration which is actually used.
+     */
+    public Configuration( boolean load )
     {
         m_compilerInstance = false;
         try {
@@ -99,7 +106,6 @@ public class Configuration
     }
 
     public static void setRunAllTests  ( boolean run_all ) { m_runAll         = run_all; }
-    public static void setPrintMem     ( boolean print   ) { m_printMem       = print  ; }
     public void        setMode         ( int mode        ) { m_mode           = mode   ; }
     public void        setRemapSparse  (                 ) { m_remapAll       = false  ; }
     public void        setMaxRegCount  ( int value       ) { m_maxRegCount    = value  ;
@@ -120,7 +126,6 @@ public class Configuration
     public int                 getMode               () { return m_mode              ; }
     public boolean             getRemapAll           () { return m_remapAll          ; }
     public static boolean      getRunAllTests        () { return m_runAll            ; }
-    public static boolean      getPrintMem           () { return m_printMem          ; }
     public int                 getMaxRegCount        () { return m_maxRegCount       ; }
     public boolean             getArrayChecks        () { return m_arrayChecks       ; }
     public boolean             getDoubles            () { return m_doubles           ; }
