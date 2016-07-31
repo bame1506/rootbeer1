@@ -11,7 +11,6 @@ package org.trifort.rootbeer.generate.bytecode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Stack;
 import java.util.Collections;
 
 import org.trifort.rootbeer.generate.opencl.OpenCLClass;
@@ -37,16 +36,8 @@ import soot.jimple.StringConstant;
 
 public class AbstractVisitorGen
 {
-    protected       Local                   m_thisRef        ;
-    protected final Stack<Local>            m_currThisRef    ;
-    private         int                     m_labelIndex     ;
-    /* these complicated stacks are only for parameter passing.
-     * @todo use simple method arguments instead !!! */
-    protected final Stack<BytecodeLanguage> m_bcl            ;
-    protected final Stack<Local>            m_gcObjVisitor   ;
-    protected final Stack<Local>            m_currMem        ;
-    protected final Stack<Local>            m_objSerializing ;
-    protected final static List<String>     m_classesToIgnore =
+    private int m_labelIndex;
+    protected final static List<String> m_classesToIgnore =
         Collections.unmodifiableList( Arrays.asList(
             "org.trifort.rootbeer.runtime.RootbeerGpu"    ,
             "org.trifort.rootbeer.runtime.Sentinal"       ,
@@ -55,12 +46,7 @@ public class AbstractVisitorGen
 
     public AbstractVisitorGen()
     {
-        m_labelIndex      = 0;
-        m_bcl             = new Stack<BytecodeLanguage>();
-        m_gcObjVisitor    = new Stack<Local>();
-        m_currMem         = new Stack<Local>();
-        m_currThisRef     = new Stack<Local>();
-        m_objSerializing  = new Stack<Local>();
+        m_labelIndex = 0;
     }
 
     protected static boolean differentPackageAndPrivate( final Local thisRef, final RefType ref_inspecting )

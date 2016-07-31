@@ -10,33 +10,33 @@ package org.trifort.rootbeer.generate.bytecode;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.List   ;
+import java.util.Map    ;
+import java.util.Set    ;
+import java.util.Stack  ;
 
-import org.trifort.rootbeer.generate.opencl.OpenCLScene;
-import org.trifort.rootbeer.generate.opencl.OpenCLType;
+import org.trifort.rootbeer.generate.opencl.OpenCLScene       ;
+import org.trifort.rootbeer.generate.opencl.OpenCLType        ;
 import org.trifort.rootbeer.generate.opencl.fields.OpenCLField;
 
-import soot.Local;
-import soot.Scene;
-import soot.SootClass;
-import soot.VoidType;
+import soot.Local      ;
+import soot.Scene      ;
+import soot.SootClass  ;
+import soot.VoidType   ;
 import soot.BooleanType;
-import soot.LongType;
+import soot.LongType   ;
 import soot.RefLikeType;
-import soot.ArrayType;
-import soot.RefType;
-import soot.IntType;
-import soot.PrimType;
-import soot.CharType;
-import soot.Type;
+import soot.ArrayType  ;
+import soot.RefType    ;
+import soot.IntType    ;
+import soot.PrimType   ;
+import soot.CharType   ;
+import soot.Type       ;
 
-import soot.jimple.IntConstant;
-import soot.jimple.LongConstant;
-import soot.jimple.NullConstant;
-import soot.rbclassload.ClassHierarchy;
+import soot.jimple.IntConstant             ;
+import soot.jimple.LongConstant            ;
+import soot.jimple.NullConstant            ;
+import soot.rbclassload.ClassHierarchy     ;
 import soot.rbclassload.RootbeerClassLoader;
 
 
@@ -57,6 +57,13 @@ public final class VisitorReadGen extends AbstractVisitorGen
     private final List<Type>       m_orderedHistory             ;
     private final Set<String>      m_visitedReader              ;
 
+    /* uselessly complex argument stack like in assembler */
+    private       Local                   m_thisRef        ;
+    private final Stack<BytecodeLanguage> m_bcl            ;
+    private final Stack<Local>            m_gcObjVisitor   ;
+    private final Stack<Local>            m_currMem        ;
+    private final Stack<Local>            m_objSerializing ;
+
     public VisitorReadGen
     (
         final List<Type>       ordered_history,
@@ -64,6 +71,10 @@ public final class VisitorReadGen extends AbstractVisitorGen
         final BytecodeLanguage bcl
     )
     {
+        m_bcl                         = new Stack<BytecodeLanguage>();
+        m_gcObjVisitor                = new Stack<Local>();
+        m_currMem                     = new Stack<Local>();
+        m_objSerializing              = new Stack<Local>();
         /* parent no-arg constructor initializes m_bcl, m_gcObjVisitor,
          * m_objSerializing, m_currMem with empty Stacks */
         m_readFromHeapMethodsMade     = new HashMap<Type, Local>();
@@ -356,7 +367,8 @@ public final class VisitorReadGen extends AbstractVisitorGen
             bcl.assign(m_param0, ret);
             bcl.gotoLabel(after_ctors_label);
         }
-        else {
+        else
+        {
             ret = makeCtorReadFromHeapBodyForSootClass((RefType) type, ctor_used, class_number);
             m_ctorReadFromHeapMethodsMade.put(type, ret);
             bcl.assign(m_param0, ret);
@@ -365,9 +377,12 @@ public final class VisitorReadGen extends AbstractVisitorGen
         bcl.label(label);
     }
 
-    private Local makeCtorReadFromHeapBodyForArrayType(ArrayType type,
-            Local ctor_used) {
-
+    private Local makeCtorReadFromHeapBodyForArrayType
+    (
+        final ArrayType type,
+        final Local ctor_used
+    )
+    {
         BytecodeLanguage bcl = m_bcl.peek();
         BclMemory bcl_mem = new BclMemory(bcl, m_currMem.peek());
         bcl_mem.incrementAddress(4);
@@ -382,7 +397,8 @@ public final class VisitorReadGen extends AbstractVisitorGen
         return ret;
     }
 
-    private Local makeReadFromHeapBodyForArrayType(ArrayType type) {
+    private Local makeReadFromHeapBodyForArrayType( final ArrayType type )
+    {
         BytecodeLanguage bcl = m_bcl.peek();
 
         BclMemory bcl_mem = new BclMemory(bcl, m_currMem.peek());
@@ -393,8 +409,9 @@ public final class VisitorReadGen extends AbstractVisitorGen
 
         //optimization for single-dimensional arrays of primitive types.
         //doesn't work for chars yet because they are still stored as ints on the gpu
-        if(type.baseType instanceof PrimType && type.numDimensions == 1 &&
-             type.baseType.equals(CharType.v()) == false){
+        if ( type.baseType instanceof PrimType && type.numDimensions == 1 &&
+             ! type.baseType.equals( CharType.v() ) )
+        {
 
             bcl.pushMethod(m_currMem.peek(), "readArray", VoidType.v(), type);
             bcl.invokeMethodNoRet(m_currMem.peek(), ret);
@@ -417,14 +434,15 @@ public final class VisitorReadGen extends AbstractVisitorGen
 
         Local new_curr;
 
-        if(type.numDimensions != 1){
+        if ( type.numDimensions != 1 )
             new_curr = readFromHeapArray(ret, i, size);
-        } else if(type.baseType instanceof RefType){
+        else if ( type.baseType instanceof RefType )
+        {
             Local temp = readFromHeapArray(ret, i, size);
             new_curr = bcl.cast(type.baseType, temp);
-        } else {
-            new_curr = bcl_mem.readVar(type.baseType);
         }
+        else
+            new_curr = bcl_mem.readVar( type.baseType );
 
         bcl.assignElementToArray(ret, new_curr, i);
 
@@ -484,8 +502,12 @@ public final class VisitorReadGen extends AbstractVisitorGen
         return new_string;
     }
 
-    private Local makeCtorReadFromHeapBodyForSootClass(RefType type,
-            Local ctor_used, Local class_number)
+    private Local makeCtorReadFromHeapBodyForSootClass
+    (
+        final RefType type        ,
+        final Local   ctor_used   ,
+        final Local   class_number
+    )
     {
         BytecodeLanguage bcl = m_bcl.peek();
         BclMemory bcl_mem = new BclMemory(bcl, m_currMem.peek());
@@ -500,7 +522,9 @@ public final class VisitorReadGen extends AbstractVisitorGen
                 Local new_object = bcl.newInstance(name);
                 bcl.assign(object_to_write_to, new_object);
                 return object_to_write_to;
-            } else {
+            }
+            else
+            {
                 JavaNumberTypes number_types = new JavaNumberTypes();
                 String type_string = type.toString();
                 if(number_types.get().contains(type_string)){
@@ -537,13 +561,17 @@ public final class VisitorReadGen extends AbstractVisitorGen
 
                     bcl.returnValue(object_to_write_to);
                     return object_to_write_to;
-                } else {
+                }
+                else
+                {
                     Local object_to_write_to = bcl.local(type);
                     bcl.assign(object_to_write_to, NullConstant.v());
                     return object_to_write_to;
                 }
             }
-        } else {
+        }
+        else
+        {
             Local object_to_write_to = bcl.local(type);
             Local sentinal = bcl.newInstance("org.trifort.rootbeer.runtime.Sentinal");
             Local new_object = bcl.newInstance(name, sentinal);
@@ -552,8 +580,8 @@ public final class VisitorReadGen extends AbstractVisitorGen
         }
     }
 
-    private Local makeReadFromHeapBodyForSootClass(RefType type){
-
+    private Local makeReadFromHeapBodyForSootClass( final RefType type )
+    {
         BytecodeLanguage bcl = m_bcl.peek();
         SootClass soot_class = type.getSootClass();
 
@@ -577,7 +605,8 @@ public final class VisitorReadGen extends AbstractVisitorGen
         return object_to_write_to;
     }
 
-    private void readFields(SootClass curr_class, boolean ref_types){
+    private void readFields( final SootClass curr_class, final boolean ref_types )
+    {
         if(curr_class.isApplicationClass()){
             attachReader(curr_class.getName(), ref_types);
             callBaseClassReader(curr_class.getName(), ref_types);
@@ -586,7 +615,8 @@ public final class VisitorReadGen extends AbstractVisitorGen
         }
     }
 
-    private Local readFromHeapArray(Local object_to_read_from, Local i, Local size) {
+    private Local readFromHeapArray( final Local object_to_read_from, final Local i, final Local size )
+    {
         BytecodeLanguage bcl = m_bcl.peek();
         BclMemory bcl_mem = new BclMemory(bcl, m_currMem.peek());
 

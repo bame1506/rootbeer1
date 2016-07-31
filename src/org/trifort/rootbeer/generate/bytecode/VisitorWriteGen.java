@@ -60,6 +60,10 @@ public final class VisitorWriteGen extends AbstractVisitorGen
     private       List<Value>   m_ValuesWritten        ;
     private       Local         m_Array                ;
 
+    /* uselessly complex argument stack like in assembler */
+    private final Stack<BytecodeLanguage> m_bcl            ;
+    private final Stack<Local>            m_gcObjVisitor   ;
+
     public VisitorWriteGen
     (
         final List<Type>       ordered_history,
@@ -67,6 +71,8 @@ public final class VisitorWriteGen extends AbstractVisitorGen
         final BytecodeLanguage bcl
     )
     {
+        m_bcl                   = new Stack<BytecodeLanguage>();
+        m_gcObjVisitor          = new Stack<Local>();
         /* parent no-arg constructor initializes m_bcl, m_gcObjVisitor */
         m_CurrObj               = new Stack<Local>()    ;
         m_CurrentMem            = new Stack<Local>()    ;
@@ -82,20 +88,20 @@ public final class VisitorWriteGen extends AbstractVisitorGen
         SootClass obj_cls = Scene.v().getSootClass("java.lang.Object");
         BytecodeLanguage bcl = m_bcl.peek();
         bcl.startMethod("doWriteToHeap", VoidType.v(), obj_cls.getType(), BooleanType.v(), LongType.v(), BooleanType.v());
-        m_thisRef = bcl.refThis();
-        m_gcObjVisitor.push(m_thisRef);
-        m_Param0 = bcl.refParameter(0);
-        m_Param1 = bcl.refParameter(1);
-        m_RefParam = bcl.refParameter(2);
-        m_ReadOnlyParam = bcl.refParameter(3);
+        final Local thisRef = bcl.refThis();
+        m_Param0            = bcl.refParameter(0);
+        m_Param1            = bcl.refParameter(1);
+        m_RefParam          = bcl.refParameter(2);
+        m_ReadOnlyParam     = bcl.refParameter(3);
+        m_gcObjVisitor.push( thisRef );
 
-        m_Mem = bcl.refInstanceField(m_thisRef, "mMem");
-        m_TextureMem = bcl.refInstanceField(m_thisRef, "mTextureMem");
+        m_Mem        = bcl.refInstanceField( thisRef, "mMem"        );
+        m_TextureMem = bcl.refInstanceField( thisRef, "mTextureMem" );
 
-        String label1 = getNextLabel();
-        String label2 = getNextLabel();
+        final String label1 = getNextLabel();
+        final String label2 = getNextLabel();
 
-        Local mem = bcl.local(m_Mem.getType());
+        Local mem = bcl.local( m_Mem.getType() );
         bcl.ifStmt(m_ReadOnlyParam, "==", IntConstant.v(1), label1);
         bcl.assign(mem, m_Mem);
         bcl.gotoLabel(label2);
@@ -105,30 +111,29 @@ public final class VisitorWriteGen extends AbstractVisitorGen
         m_CurrentMem.push(mem);
 
         //make writers for java.lang.String and char[]
-        SootClass string_class = Scene.v().getSootClass("java.lang.String");
-        RefType string_type = string_class.getType();
-        String label = getNextLabel();
-        bcl.ifInstanceOfStmt(m_Param0, string_type, label);
-        makeWriteToHeapBodyForString(string_type);
-        mWriteToHeapMethodsMade.add(string_type);
-        bcl.label(label);
+        final SootClass string_class = Scene.v().getSootClass("java.lang.String");
+        final RefType   string_type  = string_class.getType();
+        final String    label        = getNextLabel();
+        bcl.ifInstanceOfStmt( m_Param0, string_type, label );
+        makeWriteToHeapBodyForString( string_type );
+        mWriteToHeapMethodsMade.add ( string_type );
+        bcl.label( label );
 
-        ArrayType char_array_type = ArrayType.v(CharType.v(), 1);
-        label = getNextLabel();
-        bcl.ifInstanceOfStmt(m_Param0, char_array_type, label);
-        makeWriteToHeapBodyForArrayType(char_array_type);
-        mWriteToHeapMethodsMade.add(char_array_type);
-        bcl.label(label);
+        ArrayType char_array_type = ArrayType.v( CharType.v(), 1 );
+        final String label3 = getNextLabel();
+        bcl.ifInstanceOfStmt( m_Param0, char_array_type, label3 );
+        makeWriteToHeapBodyForArrayType( thisRef, char_array_type );
+        mWriteToHeapMethodsMade.add( char_array_type );
+        bcl.label( label3 );
 
-        for(Type type : m_OrderedHistory){
-            makeWriteToHeapMethodForType(type);
-        }
+        for ( final Type type : m_OrderedHistory )
+            makeWriteToHeapMethodForType( thisRef, type );
 
         bcl.returnVoid();
         bcl.endMethod();
     }
 
-    private void makeWriteToHeapMethodForType(Type type)
+    private void makeWriteToHeapMethodForType( final Local thisRef, final Type type )
     {
         if ( type instanceof ArrayType == false &&
              type instanceof RefType   == false   )
@@ -146,7 +151,7 @@ public final class VisitorWriteGen extends AbstractVisitorGen
             final SootClass soot_class = ref_type.getSootClass();
             if ( soot_class.getName().equals("java.lang.Object") )
                 return;
-            if ( differentPackageAndPrivate( m_thisRef, ref_type ) )
+            if ( differentPackageAndPrivate( thisRef, ref_type ) )
                 return;
             if ( soot_class.isInterface() )
                 return;
@@ -162,13 +167,13 @@ public final class VisitorWriteGen extends AbstractVisitorGen
         bcl.ifInstanceOfStmt( m_Param0, type, label );
 
         if ( type instanceof ArrayType )
-            makeWriteToHeapBodyForArrayType((ArrayType) type);
+            makeWriteToHeapBodyForArrayType( thisRef, (ArrayType) type );
         else
-            makeWriteToHeapBodyForRefType( (RefType) type);
-        bcl.label(label);
+            makeWriteToHeapBodyForRefType( (RefType) type );
+        bcl.label( label );
     }
 
-    private void makeWriteToHeapBodyForArrayType(ArrayType type)
+    private void makeWriteToHeapBodyForArrayType( final Local thisRef, final ArrayType type )
     {
         BytecodeLanguage bcl = m_bcl.peek();
         Local object_to_write_from = bcl.cast(type, m_Param0);
@@ -204,12 +209,13 @@ public final class VisitorWriteGen extends AbstractVisitorGen
 
         //optimization for single-dimensional arrays of primitive types.
         //doesn't work for chars yet because they are still stored as ints on the gpu
-        if(type.baseType instanceof PrimType && type.numDimensions == 1 &&
-             type.baseType.equals(CharType.v()) == false){
+        if ( type.baseType instanceof PrimType && type.numDimensions == 1 &&
+             ! type.baseType.equals( CharType.v() ) )
+        {
 
-            bcl.pushMethod(m_CurrentMem.peek(), "writeArray", VoidType.v(), type);
-            bcl.invokeMethodNoRet(m_CurrentMem.peek(), object_to_write_from);
-            bcl_mem.incrementAddress(element_size);
+            bcl.pushMethod( m_CurrentMem.peek(), "writeArray", VoidType.v(), type );
+            bcl.invokeMethodNoRet( m_CurrentMem.peek(), object_to_write_from );
+            bcl_mem.incrementAddress( element_size );
             bcl.returnVoid();
             return;
         }
@@ -226,37 +232,38 @@ public final class VisitorWriteGen extends AbstractVisitorGen
         Local i = bcl.local(IntType.v());
         bcl.assign(i, IntConstant.v(0));
 
-        String end_for_label = getNextLabel();
-        String before_if_label = getNextLabel();
+        final String end_for_label = getNextLabel();
+        final String before_if_label = getNextLabel();
         bcl.label(before_if_label);
         bcl.ifStmt(i, "==", length, end_for_label);
         Local curr = bcl.indexArray(object_to_write_from, i);
 
-        if(type.numDimensions != 1){
+        if ( type.numDimensions != 1 )
+        {
             SootClass object_soot_class = Scene.v().getSootClass("java.lang.Object");
-            bcl.pushMethod(m_thisRef, "writeToHeap", LongType.v(), object_soot_class.getType(), BooleanType.v());
-            Local array_element = bcl.invokeMethodRet(m_thisRef, curr, m_Param1);
+            bcl.pushMethod( thisRef, "writeToHeap", LongType.v(), object_soot_class.getType(), BooleanType.v() );
+            Local array_element = bcl.invokeMethodRet( thisRef, curr, m_Param1 );
             bcl_mem.addIntegerToList(array_element);
-        } else if(type.baseType instanceof RefType){
+        } else if ( type.baseType instanceof RefType )
+        {
             SootClass object_soot_class = Scene.v().getSootClass("java.lang.Object");
-            bcl.pushMethod(m_thisRef, "writeToHeap", LongType.v(), object_soot_class.getType(), BooleanType.v());
-            Local array_element = bcl.invokeMethodRet(m_thisRef, curr, m_Param1);
+            bcl.pushMethod( thisRef, "writeToHeap", LongType.v(), object_soot_class.getType(), BooleanType.v() );
+            Local array_element = bcl.invokeMethodRet( thisRef, curr, m_Param1 );
             bcl_mem.addIntegerToList(array_element);
-        } else {
-            bcl_mem.writeVar(curr);
         }
-        bcl.plus(i, 1);
-        bcl.gotoLabel(before_if_label);
-        bcl.label(end_for_label);
+        else
+            bcl_mem.writeVar( curr );
+        bcl.plus( i, 1 );
+        bcl.gotoLabel( before_if_label );
+        bcl.label( end_for_label );
 
-        if(type.numDimensions != 1 || type.baseType instanceof RefType){
+        if ( type.numDimensions != 1 || type.baseType instanceof RefType )
             bcl_mem.endIntegerList();
-        }
         //return ret;
         bcl.returnVoid();
     }
 
-    private void makeWriteToHeapBodyForString(RefType type)
+    private void makeWriteToHeapBodyForString( final RefType type )
     {
         BytecodeLanguage bcl = m_bcl.peek();
         BclMemory bcl_mem = new BclMemory(bcl, m_CurrentMem.peek());
@@ -318,7 +325,7 @@ public final class VisitorWriteGen extends AbstractVisitorGen
         m_CurrObj.pop();
     }
 
-    private void makeWriteToHeapBodyForRefType(RefType type)
+    private void makeWriteToHeapBodyForRefType( final RefType type )
     {
         BytecodeLanguage bcl = m_bcl.peek();
         BclMemory bcl_mem = new BclMemory(bcl, m_CurrentMem.peek());
@@ -331,14 +338,14 @@ public final class VisitorWriteGen extends AbstractVisitorGen
         int size = ocl_class.getSize();
         int gc_count = ocl_class.getRefFieldsSize();
 
-        bcl_mem.writeByte((byte) gc_count);            //ref_type count [0]
-        bcl_mem.writeByte((byte) 0);                         //garabage collector color [1]
-        bcl_mem.writeByte((byte) 0);                         //reserved [2]
-        bcl_mem.writeByte((byte) 0);                         //ctor used [3]
-        bcl_mem.writeInt(class_id);                            //class number [4]
-        bcl_mem.writeInt(size);                                    //object size [8]
-        bcl_mem.writeInt(0);                                         //reserved [12]
-        bcl_mem.writeInt(-1);                                        //monitor [16]
+        bcl_mem.writeByte( (byte) gc_count ); // ref_type count           [ 0]
+        bcl_mem.writeByte( (byte) 0        ); // garabage collector color [ 1]
+        bcl_mem.writeByte( (byte) 0        ); // reserved                 [ 2]
+        bcl_mem.writeByte( (byte) 0        ); // ctor used                [ 3]
+        bcl_mem.writeInt ( class_id        ); // class number             [ 4]
+        bcl_mem.writeInt ( size            ); // object size              [ 8]
+        bcl_mem.writeInt (  0              ); // reserved                 [12]
+        bcl_mem.writeInt ( -1              ); // monitor                  [16]
 
         int written_size = 1+1+1+1+4+4+4+4;
 
@@ -374,14 +381,14 @@ public final class VisitorWriteGen extends AbstractVisitorGen
         m_CurrObj.pop();
     }
 
-    private void writeFields(boolean ref_fields)
+    private void writeFields( final boolean ref_fields )
     {
-        if(m_CurrClass.isApplicationClass()){
+        if ( m_CurrClass.isApplicationClass() )
+        {
             attachWriter(m_CurrClass.getName(), ref_fields);
             callBaseClassWriter(m_CurrClass.getName(), ref_fields);
-        } else {
+        } else
             insertWriter(m_CurrClass.getName(), ref_fields);
-        }
     }
 
     public void invokeWriteRefs(SootClass curr_class, Local mem_local)

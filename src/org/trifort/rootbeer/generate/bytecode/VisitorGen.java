@@ -51,27 +51,26 @@ public final class VisitorGen extends AbstractVisitorGen
 
     public void generate()
     {
-        m_bcl.push( new BytecodeLanguage() );
-        makeSentinalCtors( m_sentinalCtorsCreated );
-        makeSerializer();
-        addGetSerializerMethod( m_bcl.peek(), m_runtimeBasicBlock, m_className );
-    }
+        final BytecodeLanguage bcl = new BytecodeLanguage();
 
-    private void makeSerializer()
-    {
-        final BytecodeLanguage bcl = m_bcl.peek();
+        makeSentinalCtors( m_sentinalCtorsCreated );
+
+        /********** make serializer **********/
         /* make garbage collector object class */
         String base_name = m_runtimeBasicBlock.getName();
         m_className = base_name + "Serializer";
         bcl.makeClass( m_className, "org.trifort.rootbeer.runtime.Serializer" );
 
-        makeCtor                     ( bcl              ); // static
-        makeWriteStaticsToHeapMethod ( bcl              ); // static
-        makeReadStaticsFromHeapMethod( bcl              ); // static
+        makeCtor                     ( bcl              );
+        makeWriteStaticsToHeapMethod ( bcl              );
+        makeReadStaticsFromHeapMethod( bcl              );
         makeGetSizeMethod            ( bcl              );
         makeGetLengthMethod          ( bcl, m_getSizeMethodsMade );
-        makeWriteToHeapMethod        ( bcl, m_className ); // static
-        makeReadFromHeapMethod       ( bcl, m_className ); // static
+        makeWriteToHeapMethod        ( bcl, m_className );
+        makeReadFromHeapMethod       ( bcl, m_className );
+        /********** end make serializer **********/
+
+        addGetSerializerMethod( bcl, m_runtimeBasicBlock, m_className );
     }
 
     /**

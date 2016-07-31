@@ -9,9 +9,10 @@ package org.trifort.rootbeer.generate.bytecode;
 
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.HashSet  ;
+import java.util.List     ;
+import java.util.Set      ;
+import java.util.Stack    ;
 
 import org.trifort.rootbeer.generate.bytecode.permissiongraph.PermissionGraph;
 import org.trifort.rootbeer.generate.bytecode.permissiongraph.PermissionGraphNode;
@@ -42,13 +43,14 @@ import soot.rbclassload.RootbeerClassLoader;
  */
 public final class VisitorWriteGenStatic extends AbstractVisitorGen
 {
-    private       Local         m_Mem;
-    private final StaticOffsets m_StaticOffsets;
-    private final Set<String>   m_AttachedWriters;
+    private       Local            m_Mem            ;
+    private final StaticOffsets    m_StaticOffsets  ;
+    private final Set<String>      m_AttachedWriters;
+    private final BytecodeLanguage m_bcl            ;
 
     public VisitorWriteGenStatic( final BytecodeLanguage bcl )
     {
-        m_bcl.push( bcl );
+        m_bcl             = bcl;
         m_StaticOffsets   = new StaticOffsets();
         m_AttachedWriters = new HashSet<String>();
     }
@@ -59,21 +61,17 @@ public final class VisitorWriteGenStatic extends AbstractVisitorGen
      */
     public void makeMethod()
     {
-        final BytecodeLanguage bcl = m_bcl.peek();
-        bcl.startMethod( "doWriteStaticsToHeap", VoidType.v() );
+        m_bcl.startMethod( "doWriteStaticsToHeap", VoidType.v() );
 
         /* get 'mMem' variable from Serializer which is of type Memory.java.
          * Then start writing the members of the Kenrel class to it */
-        m_thisRef = bcl.refThis();
-        m_currThisRef .push( m_thisRef );
-        m_gcObjVisitor.push( m_thisRef );
-        m_Mem = bcl.refInstanceField( m_thisRef, "mMem" );
-        m_currMem     .push( m_Mem );
+        final Local thisRef = m_bcl.refThis();
+        m_Mem = m_bcl.refInstanceField( thisRef, "mMem" );
         /* this means BclMemory doesn't extend Memory, it is another boiler-
          * plate code wrapper needed to simplify accessing it using bytecode.
          * This means it's not a problem to change Memory.java if methods are
          * neither used by BclMemory nor FixedMemory */
-        final BclMemory bcl_mem = new BclMemory( bcl, m_Mem );
+        final BclMemory bcl_mem = new BclMemory( m_bcl, m_Mem );
 
 
         bcl_mem.useInstancePointer();
@@ -86,23 +84,23 @@ public final class VisitorWriteGenStatic extends AbstractVisitorGen
             if ( soot_class.isApplicationClass() &&
                 ! m_classesToIgnore.contains( soot_class.getName() ) )
             {
-                attachWriter( soot_class, node.getChildren(), m_thisRef, m_AttachedWriters, m_StaticOffsets, m_classesToIgnore );
+                attachWriter( soot_class, node.getChildren(), thisRef, m_AttachedWriters, m_StaticOffsets, m_classesToIgnore );
                 /* call writer */
-                bcl.pushMethod( soot_class, getWriterName( soot_class ), VoidType.v(),
+                m_bcl.pushMethod( soot_class, getWriterName( soot_class ), VoidType.v(),
                                 Scene.v().getSootClass("org.trifort.rootbeer.runtime.Memory").getType(),
-                                m_gcObjVisitor.peek().getType() );
-                bcl.invokeStaticMethodNoRet( m_currMem.peek(), m_gcObjVisitor.peek() );
+                                thisRef.getType() );
+                m_bcl.invokeStaticMethodNoRet( m_Mem, thisRef );
             }
             else {
                 //doWriter(soot_class, node.getChildren());
-                doWriter( bcl, m_Mem, m_thisRef, soot_class, new ArrayList<SootClass>(), m_StaticOffsets, m_classesToIgnore, m_AttachedWriters );
+                doWriter( m_bcl, m_Mem, thisRef, soot_class, new ArrayList<SootClass>(), m_StaticOffsets, m_classesToIgnore, m_AttachedWriters );
             }
         }
 
         //write .class's for array types
         Set<ArrayType> array_types = RootbeerClassLoader.v().getDfsInfo().getArrayTypes();
         for ( final ArrayType type : array_types )
-            writeType( bcl, m_thisRef, type );
+            writeType( m_bcl, thisRef, type );
 
         bcl_mem.useStaticPointer();
         bcl_mem.setAddress(LongConstant.v(m_StaticOffsets.getLockStart()));
@@ -115,10 +113,8 @@ public final class VisitorWriteGenStatic extends AbstractVisitorGen
             bcl_mem.writeByte((byte) 0);
         bcl_mem.useInstancePointer();
 
-        bcl.returnVoid();
-        bcl.endMethod();
-
-        m_gcObjVisitor.pop();
+        m_bcl.returnVoid();
+        m_bcl.endMethod();
     }
 
     private static String getWriterName( final SootClass soot_class )

@@ -9,14 +9,15 @@ package org.trifort.rootbeer.generate.bytecode;
 
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.HashSet  ;
+import java.util.List     ;
+import java.util.Set      ;
+import java.util.Stack    ;
 
-import org.trifort.rootbeer.generate.bytecode.permissiongraph.PermissionGraph;
+import org.trifort.rootbeer.generate.bytecode.permissiongraph.PermissionGraph    ;
 import org.trifort.rootbeer.generate.bytecode.permissiongraph.PermissionGraphNode;
-import org.trifort.rootbeer.generate.opencl.OpenCLScene;
-import org.trifort.rootbeer.generate.opencl.fields.OpenCLField;
+import org.trifort.rootbeer.generate.opencl.OpenCLScene                          ;
+import org.trifort.rootbeer.generate.opencl.fields.OpenCLField                   ;
 
 import soot.Scene      ;
 import soot.SootClass  ;
@@ -25,10 +26,10 @@ import soot.VoidType   ;
 import soot.BooleanType;
 import soot.LongType   ;
 
-import soot.jimple.ClassConstant;
-import soot.jimple.IntConstant;
-import soot.jimple.LongConstant;
-import soot.jimple.StringConstant;
+import soot.jimple.ClassConstant           ;
+import soot.jimple.IntConstant             ;
+import soot.jimple.LongConstant            ;
+import soot.jimple.StringConstant          ;
 import soot.rbclassload.RootbeerClassLoader;
 
 
@@ -38,8 +39,19 @@ public final class VisitorReadGenStatic extends AbstractVisitorGen
     private final Set<String>   m_attachedReaders;
     private final StaticOffsets m_staticOffsets  ;
 
+    /* uselessly complex argument stack like in assembler */
+    private       Local                   m_thisRef        ;
+    private final Stack<BytecodeLanguage> m_bcl            ;
+    private final Stack<Local>            m_gcObjVisitor   ;
+    private final Stack<Local>            m_currMem        ;
+    private final Stack<Local>            m_objSerializing ;
+
     public VisitorReadGenStatic( final BytecodeLanguage bcl )
     {
+        m_bcl             = new Stack<BytecodeLanguage>();
+        m_gcObjVisitor    = new Stack<Local>();
+        m_currMem         = new Stack<Local>();
+        m_objSerializing  = new Stack<Local>();
         /* parent no-arg constructor initializes m_objSerializing,
          * m_bcl and m_currMem with empty Stacks */
         m_bcl.push(bcl);
@@ -48,26 +60,24 @@ public final class VisitorReadGenStatic extends AbstractVisitorGen
         m_staticOffsets   = new StaticOffsets();
     }
 
-    public void makeMethod(){
-
-        BytecodeLanguage bcl = m_bcl.peek();
-
-        bcl.startMethod("doReadStaticsFromHeap", VoidType.v());
+    public void makeMethod()
+    {
+        final BytecodeLanguage bcl = m_bcl.peek();
+        bcl.startMethod( "doReadStaticsFromHeap", VoidType.v() );
 
         m_thisRef = bcl.refThis();
-        m_mem = bcl.refInstanceField(m_thisRef, "mMem");
-        m_currMem.push(m_mem);
-        m_gcObjVisitor.push(m_thisRef);
+        m_mem     = bcl.refInstanceField( m_thisRef, "mMem" );
+        m_currMem     .push( m_mem     );
+        m_gcObjVisitor.push( m_thisRef );
 
-        PermissionGraph graph = new PermissionGraph();
-        List<PermissionGraphNode> roots = graph.getRoots();
-        for(PermissionGraphNode node : roots){
-            SootClass soot_class = node.getSootClass();
-            if(soot_class.isApplicationClass()){
-                attachAndCallReader(soot_class, node.getChildren());
-            } else {
-                doReader(soot_class);
-            }
+        final List<PermissionGraphNode> roots = new PermissionGraph().getRoots();
+        for ( final PermissionGraphNode node : roots )
+        {
+            final SootClass soot_class = node.getSootClass();
+            if ( soot_class.isApplicationClass() )
+                attachAndCallReader( soot_class, node.getChildren() );
+            else
+                doReader( bcl, m_mem, m_thisRef, soot_class );
         }
 
         bcl.returnVoid();
@@ -107,7 +117,7 @@ public final class VisitorReadGenStatic extends AbstractVisitorGen
             final int index = m_staticOffsets.getIndex( field );
             bcl_mem.setAddress( LongConstant.v( index ) );
             if ( field.getType().isRefType() )
-                readRefField( bcl, gc_visit, memory, m_objSerializing.peek(), field );
+                readRefField( bcl, gc_visit, memory, m_objSerializing.peek() /* @todo Where is this set !!! It seems like this wasn't effectively set in the original Rootbeer version either! */, field );
             else
                 readNonRefField( bcl, memory, null, field );
         }
@@ -141,15 +151,17 @@ public final class VisitorReadGenStatic extends AbstractVisitorGen
         bcl.invokeStaticMethodNoRet(m_currMem.peek(), m_gcObjVisitor.peek());
     }
 
-    private void doReader( final SootClass soot_class )
+    private void doReader
+    (
+        final BytecodeLanguage bcl       ,
+        final Local            memory    ,
+        final Local            gc_visit  ,
+        final SootClass        soot_class
+    )
     {
-        final BytecodeLanguage bcl      = m_bcl         .peek();
-        final Local            memory   = m_currMem     .peek();
-        final Local            gc_visit = m_gcObjVisitor.peek();
-
         final List<OpenCLField> static_fields = m_staticOffsets.getStaticFields(soot_class);
 
-        final BclMemory bcl_mem = new BclMemory(bcl, memory);
+        final BclMemory bcl_mem = new BclMemory( bcl, memory );
         final SootClass obj     = Scene.v().getSootClass("java.lang.Object");
         for ( final OpenCLField field : static_fields )
         {
