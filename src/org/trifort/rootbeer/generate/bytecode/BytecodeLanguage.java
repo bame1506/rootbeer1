@@ -156,27 +156,33 @@ public class BytecodeLanguage
 
     public void continueMethod(UnitAssembler assembler){ m_assembler = assembler; }
 
+    /**
+     * Creates a local variable 'this0' which stores a pointer to this object
+     * In Java 'this' automatically exists, but that's not the case in Jimple.
+     *
+     * @todo This should only be called one time per method I think ?!
+     *       I.e. exactly one time between 'startMethod' and 'endMethod'
+     */
     public Local refThis()
     {
-        String name = "this0";
-        RefType type = m_currClass.getType();
-        Local thislocal = m_jimple.newLocal(name, type);
-        Unit u = m_jimple.newIdentityStmt(thislocal, m_jimple.newThisRef(type));
-        m_assembler.add(u);
+        final RefType type    = m_currClass.getType();
+        final Local thislocal = m_jimple.newLocal( "this0", type );
+        m_assembler.add( m_jimple.newIdentityStmt( thislocal, m_jimple.newThisRef( type ) ) );
         return thislocal;
     }
 
-    public Local refParameter(int index)
+    /**
+     * Copies the non-mutable 'index'-th parameter to a local variable
+     */
+    public Local refParameter( final int index )
     {
-        Type type = m_parameterTypes.get(index);
-        String name = "parameter"+Integer.toString(index);
-        Local parameterI = m_jimple.newLocal(name, type);
-        Unit u = m_jimple.newIdentityStmt(parameterI, m_jimple.newParameterRef(type, index));
-        m_assembler.add(u);
+        final Type type        = m_parameterTypes.get(index);
+        final Local parameterI = m_jimple.newLocal( "parameter" + Integer.toString(index), type );
+        m_assembler.add( m_jimple.newIdentityStmt( parameterI, m_jimple.newParameterRef( type, index ) ) );
         return parameterI;
     }
 
-    public Local binOp(Value lhs, String op, Value rhs)
+    public Local binOp( final Value lhs, final String op, final Value rhs )
     {
         Value binop = null;
         if(op.equals("*")){
@@ -189,7 +195,7 @@ public class BytecodeLanguage
         return ret;
     }
 
-    public void setInstanceField(SootField field, Local field_instance, Value value)
+    public void setInstanceField( final SootField field, final Local field_instance, final Value value )
     {
         Value lhs;
         if(field.isStatic() == false)
@@ -200,7 +206,7 @@ public class BytecodeLanguage
         m_assembler.add(u);
     }
 
-    public void setInstanceField(String field_name, Local field_instance, Value value){
+    public void setInstanceField( final String field_name, final Local field_instance, final Value value ){
         Type type = field_instance.getType();
         if(type instanceof RefType == false)
             throw new RuntimeException("How do we handle this case?");
@@ -210,7 +216,7 @@ public class BytecodeLanguage
         setInstanceField(soot_field, field_instance, value);
     }
 
-    public void setStaticField(SootField field, Value value)
+    public void setStaticField( final SootField field, final Value value )
     {
         Value lhs;
         lhs = m_jimple.newStaticFieldRef(field.makeRef());
