@@ -20,19 +20,20 @@ import org.trifort.rootbeer.runtime.Rootbeer;
 
 public class Main
 {
-    private        int     m_num_args               ;
-    private        boolean m_dontPackFatJar         ;
-    private        boolean m_runTests               ;
-    private        boolean m_runHardTests           ;
-    private        boolean m_disableClassRemapping  ;
-    private        String  m_testCase               ;
-    private        boolean m_simpleCompile          ;
-    private static boolean m_printDeviceInfo = false;
-    private static boolean m_largeMemTests = false  ;
+    private int            m_num_args               ;
+    private boolean        m_dontPackFatJar         ;
+    private boolean        m_runTests               ;
+    private boolean        m_runHardTests           ;
+    private boolean        m_disableClassRemapping  ;
+    private String         m_testCase               ;
+    private boolean        m_simpleCompile          ;
+    private boolean        m_printDeviceInfo        ;
+    private boolean        m_largeMemTests          ;
     private String         m_mainJar                ;
     private List<String>   m_libJars                ;
     private List<String>   m_directories            ;
     private String         m_destJar                ;
+    private Configuration  m_configuration          ;
 
     /* Constructor */
     public Main()
@@ -42,10 +43,9 @@ public class Main
         m_simpleCompile     = false;
         m_runHardTests      = false;
         m_dontPackFatJar    = false;
+        m_printDeviceInfo   = false;
+        m_largeMemTests     = false;
     }
-
-    /* used by org/trifort/rootbeer/test/Main.java */
-    public static boolean largeMemTests(){ return m_largeMemTests; }
 
     /**
      * This sets many of the members of the singleton Configuration.java
@@ -348,7 +348,7 @@ public class Main
         if ( m_runTests )
         {
             RootbeerTest test = new RootbeerTest();
-            test.runTests( m_testCase, m_runHardTests );
+            test.runTests( m_testCase, m_runHardTests, m_largeMemTests );
             return;
         }
 

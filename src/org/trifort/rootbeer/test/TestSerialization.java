@@ -7,13 +7,14 @@
 
 package org.trifort.rootbeer.test;
 
+
 import java.util.List;
 
 import org.trifort.rootbeer.runtime.Kernel;
 
-public interface TestSerialization {
 
-  List<Kernel> create();
-  boolean compare(Kernel original, Kernel from_heap);
-
+public interface TestSerialization
+{
+    List<Kernel> create();
+    boolean compare(Kernel original, Kernel from_heap);
 }

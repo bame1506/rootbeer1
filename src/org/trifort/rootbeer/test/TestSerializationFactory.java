@@ -7,10 +7,12 @@
 
 package org.trifort.rootbeer.test;
 
+
 import java.util.List;
 
-public interface TestSerializationFactory {
 
-  List<TestSerialization> getProviders();
-  void makeHarder();
+public interface TestSerializationFactory
+{
+    List<TestSerialization> getProviders();
+    void makeHarder();
 }
