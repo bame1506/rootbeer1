@@ -7,6 +7,9 @@
 #include <stddef.h>     // NULL
 #include <assert.h>
 
+
+#define DEBUG_CUDA_CONTEXT 0
+
 /* e.g. because of alignment to 16 the last 4 bits will always be 0
  * and can be cut off for compression! */
 #define N_ALIGNED_ZERO_BITS 4
@@ -301,7 +304,7 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_nativeBuild
     s->context_built = 1;
 
     /* debug output, trying to understand rootbeer */
-    #ifndef NDEBUG
+    #if ( ! defined( NDEBUG ) ) && ( DEBUG_CUDA_CONTEXT >= 10 )
         char * output = malloc( 1024*1024 );
         output[0] = '\0';
 
@@ -361,7 +364,7 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
 
     jlong heap_end_long;
     heap_end_long = (*env)->CallLongMethod( env, object_mem, get_heap_end_method );
-    #ifndef NDEBUG
+    #if ( ! defined( NDEBUG ) ) && ( DEBUG_CUDA_CONTEXT >= 10 )
         unsigned int nMaxBytesOutput = 16*1024*1024;
         char * output = malloc( nMaxBytesOutput );
         output[0] = '\0';
@@ -407,7 +410,7 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
     assert( nBytesDeviceMLocal == sizeof( hostMLocal ) );
 
     /* debug output, trying to understand rootbeer */
-    #ifndef NDEBUG
+    #if ( ! defined( NDEBUG ) ) && ( DEBUG_CUDA_CONTEXT >= 10 )
         #define __PRINTI( NAME ) \
             __PRINTOUT( "| %32s = % 10i\n", #NAME, NAME );
         __PRINTOUT( "+-------------- [nativeBuildState] --------------\n" );
@@ -511,7 +514,7 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
         stopwatchTimeMS( &(s->execMemcopyFromDevice ) )
     );
 
-    #ifndef NDEBUG
+    #if ( ! defined( NDEBUG ) ) && ( DEBUG_CUDA_CONTEXT >= 10 )
         {
             __PRINTOUT( "+-------- Handles after GPU call ('!' means they changed !):" );
             int i = 0;

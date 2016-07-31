@@ -9,7 +9,8 @@ if [ -z "$CUDA_INC" ] || [ ! -d "$CUDA_INC" ]; then
 fi
 
 compileSource() {
-    while [ $# -gt 1 ]; do
+    while [ $# -ge 1 ]; do
+        echo "compile $1.c"
         gcc -m64 -fPIC -g -c -o "$1.o"                   \
             -I'/usr/lib/jvm/default-java/include/'       \
             -I'/usr/lib/jvm/default-java/include/linux'  \

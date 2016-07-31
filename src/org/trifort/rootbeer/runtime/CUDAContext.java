@@ -29,7 +29,7 @@ import org.trifort.rootbeer.generate.bytecode.Constants;
 public class CUDAContext implements Context
 {
     /* if true activates debug output for this class */
-    private final static boolean         debugging = true      ;
+    private final static boolean         debugging = false     ;
 
     private final GpuDevice              m_gpuDevice           ;
     private final boolean                m_is32bit             ;

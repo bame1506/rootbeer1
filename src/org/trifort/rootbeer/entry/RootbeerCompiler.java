@@ -52,7 +52,7 @@ import soot.util.JasminOutputStream;
 
 public final class RootbeerCompiler
 {
-    private final static boolean debugging = true;  /* activates some debug output */
+    private final static boolean debugging = false;  /* activates some debug output */
     private       String        m_provider            ;
     private       boolean       m_enableClassRemapping;
     /* functional returning true for classes which Rootbeer shall parse

@@ -4,6 +4,7 @@
 
 #ifndef _Included_org_trifort_rootbeer_runtime_CUDAContext
 #define _Included_org_trifort_rootbeer_runtime_CUDAContext
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,4 +20,5 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
 #ifdef __cplusplus
 }
 #endif
+
 #endif
