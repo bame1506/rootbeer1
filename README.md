@@ -655,6 +655,32 @@ GPU Consulting available for Rootbeer and CUDA. Please email pcpratts@trifort.or
        * The command executed i.e. NATIVE_RUN_LIST is set by
        * CudaContext.runAsync( List<Kernel> )
 
+    Profiling an everchanging bug:
+    
+        nClassCast=3
+        nRuntime=4
+        nNullPointer=0
+        nNoError=0
+        for (( i=0; i<100; i++ )); do
+            output=$(sparkSubmit "$HOME/MontePi.jar" 268435456 2 2 2>&1 | sed '/ INFO /d')
+            echo "$output"
+            if echo "$output" | grep -q 'java.lang.ClassCastException:'; then
+                nClassCast=$((nClassCast + 1))
+            fi
+            if echo "$output" | grep -q 'java.lang.RuntimeException'; then
+                nRuntime=$((nRuntime + 1))
+            fi
+            if echo "$output" | grep -q 'java.lang.NullPointerException'; then
+                nNullPointer=$((nNullPointer + 1))
+            fi
+            if ! echo "$output" | grep -q 'java.lang.[A-Za-z]*Exception'; then
+                nNoError=$((nNoError + 1))
+            fi
+            echo "| nClassCast   = $nClassCast  "
+            echo "| nRuntime     = $nRuntime    "
+            echo "| nNullPointer = $nNullPointer"
+            echo "| nNoError     = $nNoError    "
+        done
 
 ### Authors
 
@@ -1147,9 +1173,11 @@ Singletons in Rootbeer `'grep' -r '\.v[ \t]*([ \t]*)' src/ | sed -r 's|.*[^0-9A-
 
  => Many of the found singletons in the `generate`-folder and therefore hopefully only used when compiling, except RootbeerPaths, but that shouldn't be critical or lead to the observerd exception.
  
- I don't know if all of the used libraries are thread-safe, e.g. com.lmac.disruptor
+I don't know if all of the used libraries are thread-safe, e.g. com.lmac.disruptor
 
-Watch out for non-final [static variables](http://stackoverflow.com/questions/8432327/static-variables-and-multithreading-in-java)! `'grep' -rn 'static' csrc/ src/ > statics.log` and then clean output for static methods and finale static member variables.
+Watch out for [static variables](http://stackoverflow.com/questions/8432327/static-variables-and-multithreading-in-java)! `'grep' -rn 'static' csrc/ src/ > statics.log` and then clean output for static methods and finale static member variables.
+Note that final static variables are still modifiable (except for primitive datatypes)! (This is unlike C++, or rather behavior like `Object *` in C++. Therefore final static types need to be checked whether they are also [mut](http://www.javapractices.com/topic/TopicAction.do?Id=29][able](http://stackoverflow.com/questions/5886439/what-is-the-java-equivalent-of-cs-const-member-function). E.g. final Strings are OK, but not Lists!
+The important classes are those in `runtime` or more generically all needed for running the program. @todo sort out classes needed only for compiling and don't merge those in the final fat jar to save space!
 
 
 ### Memory

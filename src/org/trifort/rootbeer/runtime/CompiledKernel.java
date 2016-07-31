@@ -8,6 +8,7 @@
 package org.trifort.rootbeer.runtime;
 
 
+/* @todo where are these implemented ??? */
 public interface CompiledKernel
 {
     public String     getCodeUnix            ();

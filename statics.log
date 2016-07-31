@@ -1,0 +1,75 @@
+rootbeer/compressor/OpenCLLexer.java:780:    static final String[] DFA1_transitionS = {
+rootbeer/compressor/OpenCLLexer.java:819:    static final short[] DFA1_eot = DFA.unpackEncodedString(DFA1_eotS);
+rootbeer/compressor/OpenCLLexer.java:820:    static final short[] DFA1_eof = DFA.unpackEncodedString(DFA1_eofS);
+rootbeer/compressor/OpenCLLexer.java:821:    static final char[] DFA1_min = DFA.unpackEncodedStringToUnsignedChars(DFA1_minS);
+rootbeer/compressor/OpenCLLexer.java:822:    static final char[] DFA1_max = DFA.unpackEncodedStringToUnsignedChars(DFA1_maxS);
+rootbeer/compressor/OpenCLLexer.java:823:    static final short[] DFA1_accept = DFA.unpackEncodedString(DFA1_acceptS);
+rootbeer/compressor/OpenCLLexer.java:824:    static final short[] DFA1_special = DFA.unpackEncodedString(DFA1_specialS);
+rootbeer/compressor/OpenCLLexer.java:825:    static final short[][] DFA1_transition;
+rootbeer/compressor/OpenCLLexer.java:884:    static final short[] DFA10_eot = DFA.unpackEncodedString(DFA10_eotS);
+rootbeer/compressor/OpenCLLexer.java:885:    static final short[] DFA10_eof = DFA.unpackEncodedString(DFA10_eofS);
+rootbeer/compressor/OpenCLLexer.java:886:    static final char[] DFA10_min = DFA.unpackEncodedStringToUnsignedChars(DFA10_minS);
+rootbeer/compressor/OpenCLLexer.java:887:    static final char[] DFA10_max = DFA.unpackEncodedStringToUnsignedChars(DFA10_maxS);
+rootbeer/compressor/OpenCLLexer.java:888:    static final short[] DFA10_accept = DFA.unpackEncodedString(DFA10_acceptS);
+rootbeer/compressor/OpenCLLexer.java:889:    static final short[] DFA10_special = DFA.unpackEncodedString(DFA10_specialS);
+rootbeer/compressor/OpenCLLexer.java:890:    static final short[][] DFA10_transition;
+
+rootbeer/compressor/OpenCLParser.java:15:    public static final String[] tokenNames = new String[] {
+rootbeer/compressor/OpenCLParser.java:201:    public static final BitSet FOLLOW_set_in_program73 = new BitSet(new long[]{0x0000000000001FF0L});
+rootbeer/compressor/OpenCLParser.java:202:    public static final BitSet FOLLOW_STRING_DELIM_in_program114 = new BitSet(new long[]{0x0000000000001FF0L});
+rootbeer/compressor/OpenCLParser.java:203:    public static final BitSet FOLLOW_VARIABLE_in_program126 = new BitSet(new long[]{0x0000000000001FF0L});
+rootbeer/compressor/OpenCLParser.java:204:    public static final BitSet FOLLOW_EOF_in_program133 = new BitSet(new long[]{0x0000000000000002L});
+
+rootbeer/entry/ForcedFields.java:21:    private final static List<String> m_fields = Arrays.asList(
+rootbeer/entry/Main.java:30:    private static boolean m_printDeviceInfo = false;
+rootbeer/entry/Main.java:31:    private static boolean m_largeMemTests = false  ;
+
+rootbeer/entry/RootbeerCompiler.java:460:    private static String makeJarFileName
+rootbeer/entry/RootbeerCompiler.java:694:    private static String classNameToFileName
+rootbeer/generate/bytecode/RegisterNamer.java:17:    static RegisterNamer mInstance = null;
+rootbeer/generate/opencl/NameMangling.java:22:  private static NameMangling m_instance = null;
+rootbeer/generate/opencl/OpenCLScene.java:67:    private static OpenCLScene       m_instance            ;
+rootbeer/generate/opencl/OpenCLScene.java:68:    private static int               m_curentIdent         ;
+rootbeer/generate/opencl/tweaks/Tweaks.java:14:  private static Tweaks m_Instance;
+
+
+
+/* These are the most multi-htreading problematic !!! */
+/* these two were made immutable */
+rootbeer/util/CudaPath.java:24:    private static String[] m_windowsSearchPaths = {
+rootbeer/util/CudaPath.java:28:    private static String[] m_unixSearchPaths = {
+rootbeer/configuration/Configuration.java:28:    private static Configuration m_Instance;
+rootbeer/configuration/Configuration.java:49:    private static boolean      m_runAll            ;
+rootbeer/configuration/Configuration.java:50:    private static boolean      m_printMem          ;
+/* This looks fatal to me. I.e. one thread writes m_rootbeerhome then the other
+ * and after that both threads keep using the same folder!
+ * (I did not notice any errors of that sort, i.e. problems with the extracted
+ *  shared libraries, which I did solve in the first place by including the
+ *  the process ID in the path)
+ * => simple to test, just output folder path in both after they finish.
+ * In the first place, the class is a singleton, so why make an instance if it
+ * is never used anyway, because all other members are static too ... ...
+ * Singletons are bad for multithreading ...
+ */
+rootbeer/configuration/RootbeerPaths.java:20:    private static RootbeerPaths m_instance;
+rootbeer/configuration/RootbeerPaths.java:21:    private static String        m_rootbeerhome;
+rootbeer/runtime/GpuEvent.java:30:    public final static EventFactory<GpuEvent> EVENT_FACTORY = new EventFactory<GpuEvent>()
+rootbeer/runtime/Serializer.java:34:    private final static Map<Object, Long>  mWriteToGpuCache;
+rootbeer/runtime/Serializer.java:35:    private final static Map<Long, Object>  mReverseWriteToGpuCache;
+rootbeer/runtime/Serializer.java:36:    private final static Map<Long, Object>  mReadFromGpuCache;
+rootbeer/runtime/Serializer.java:37:    private final static Map<Long, Integer> m_classRefToTypeNumber;
+/* I don't use RootbeerGpu inside a kernel, so I hope it is fine, but still, this should be checked for thread-safety */
+rootbeer/runtime/RootbeerGpu.java:25:    private static boolean isOnGpu   ;
+rootbeer/runtime/RootbeerGpu.java:26:    private static byte[]  sharedMem ;
+rootbeer/runtime/RootbeerGpu.java:27:    private static int     threadIdxx;
+rootbeer/runtime/RootbeerGpu.java:28:    private static int     threadIdxy;
+rootbeer/runtime/RootbeerGpu.java:29:    private static int     threadIdxz;
+rootbeer/runtime/RootbeerGpu.java:30:    private static int     blockDimx ;
+rootbeer/runtime/RootbeerGpu.java:31:    private static int     blockDimy ;
+rootbeer/runtime/RootbeerGpu.java:32:    private static int     blockDimz ;
+rootbeer/runtime/RootbeerGpu.java:33:    private static int     blockIdxx ;
+rootbeer/runtime/RootbeerGpu.java:34:    private static int     blockIdxy ;
+rootbeer/runtime/RootbeerGpu.java:35:    private static long    gridDimx  ;
+rootbeer/runtime/RootbeerGpu.java:36:    private static long    gridDimy  ;
+rootbeer/runtime/RootbeerGpu.java:38:    private static Map<Integer, Object> m_sharedArrayMap;
+rootbeer/runtime/nemu/NativeCpuRuntime.java:18:  private static NativeCpuRuntime m_Instance = null;

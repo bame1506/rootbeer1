@@ -21,6 +21,16 @@ public abstract class Serializer
     public final Memory mMem;
     public final Memory mTextureMem;
 
+    /* @todo why are these static in the first place ???
+     * Also why were some functions accessing them made synchronized and others
+     * like the constructor weren't !?
+     * The problem here is that Spark also uses threading (instead of starting
+     * multiple processes per node) So the two Rootbeer threads get mixed up
+     * here, but is it even necessary to share these?
+     * The only multithreading going on in rootbeer is that in CUDAContext.java
+     * using the lmax disruptor, so maybe the original author didn't how to
+     * run the new thread with arguments like this object?
+     */
     private final static Map<Object, Long>  mWriteToGpuCache;
     private final static Map<Long, Object>  mReverseWriteToGpuCache;
     private final static Map<Long, Object>  mReadFromGpuCache;
@@ -83,6 +93,9 @@ public abstract class Serializer
         }
     }
 
+    /**
+     * @see https://docs.oracle.com/javase/tutorial/essential/concurrency/syncmeth.html
+     */
     private static synchronized WriteCacheResult checkWriteCache
     (
         final Object  o        ,

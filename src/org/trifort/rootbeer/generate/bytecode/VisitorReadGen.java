@@ -42,7 +42,7 @@ import soot.rbclassload.RootbeerClassLoader;
 
 public class VisitorReadGen extends AbstractVisitorGen
 {
-    private static boolean debugging = true;
+    private static final boolean debugging = true;
 
     private final Stack<Local> m_currObj;
 

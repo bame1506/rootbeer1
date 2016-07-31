@@ -13,29 +13,30 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * A class which tries all sorts of trickery and sorcery to locate the CUDA
  * binary directory (with trailing /).
  */
-public class CudaPath
+public final class CudaPath
 {
-    private static String[] m_windowsSearchPaths = {
-        "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\",
-        "C:\\Program Files (x86)\\NVIDIA GPU Computing Toolkit\\CUDA\\"
-    };
-    private static String[] m_unixSearchPaths = {
-        "/usr/local/cuda/bin/",
-        "/usr/local/cuda-5.5/bin/",
-        "/usr/lib/nvidia-cuda-toolkit/bin/"
-    };
+    private static final List<String> m_windowsSearchPaths =
+        Collections.unmodifiableList( Arrays.asList(
+            "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\",
+            "C:\\Program Files (x86)\\NVIDIA GPU Computing Toolkit\\CUDA\\"
+        ) );
+    private static final List<String> m_unixSearchPaths =
+        Collections.unmodifiableList( Arrays.asList(
+            "/usr/local/cuda/bin/",
+            "/usr/local/cuda-5.5/bin/",
+            "/usr/lib/nvidia-cuda-toolkit/bin/"
+        ) );
 
-    public static String get() {
-        if ( File.separator.equals("/") )
-          return getUnix();
-        else
-          return getWindows();
+    public static String get()
+    {
+        return File.separator.equals("/") ? getUnix() : getWindows();
     }
 
     /***** Private Methods *****/

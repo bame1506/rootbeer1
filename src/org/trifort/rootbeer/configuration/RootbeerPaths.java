@@ -7,15 +7,17 @@
 
 package org.trifort.rootbeer.configuration;
 
+
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+
 /**
  * Singleton which finds and or creates a working directory for rootbeer
  */
-public class RootbeerPaths
+public final class RootbeerPaths
 {
     private static RootbeerPaths m_instance;
     private static String        m_rootbeerhome;

@@ -4,7 +4,7 @@ package org.trifort.rootbeer.runtime;
  * 100% boiler plate. In C you would use a simple struct to hold all
  * these properties. This is ridiculous.
  */
-public class GpuDevice
+public final class GpuDevice
 {
     public static final int DEVICE_TYPE_CUDA   = 1;
     public static final int DEVICE_TYPE_OPENCL = 2;
