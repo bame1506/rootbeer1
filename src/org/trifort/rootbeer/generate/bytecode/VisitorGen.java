@@ -59,21 +59,19 @@ public final class VisitorGen extends AbstractVisitorGen
 
     private void makeSerializer()
     {
-        makeGcObjectClass();
-        makeCtor();
-        makeWriteStaticsToHeapMethod ( m_bcl.peek()              );
-        makeReadStaticsFromHeapMethod( m_bcl.peek()              );
-        makeGetSizeMethod            ( m_bcl.peek()              );
-        makeGetLengthMethod          ( m_bcl.peek()              );
-        makeWriteToHeapMethod        ( m_bcl.peek(), m_className );
-        makeReadFromHeapMethod       ( m_bcl.peek(), m_className );
-    }
-
-    private void makeGcObjectClass()
-    {
+        final BytecodeLanguage bcl = m_bcl.peek();
+        /* make garbage collector object class */
         String base_name = m_runtimeBasicBlock.getName();
-        m_className = base_name+"Serializer";
-        m_bcl.peek().makeClass(m_className, "org.trifort.rootbeer.runtime.Serializer");
+        m_className = base_name + "Serializer";
+        bcl.makeClass( m_className, "org.trifort.rootbeer.runtime.Serializer" );
+
+        makeCtor                     ( bcl              ); // static
+        makeWriteStaticsToHeapMethod ( bcl              ); // static
+        makeReadStaticsFromHeapMethod( bcl              ); // static
+        makeGetSizeMethod            ( bcl              );
+        makeGetLengthMethod          ( bcl, m_getSizeMethodsMade );
+        makeWriteToHeapMethod        ( bcl, m_className ); // static
+        makeReadFromHeapMethod       ( bcl, m_className ); // static
     }
 
     /**
@@ -83,12 +81,13 @@ public final class VisitorGen extends AbstractVisitorGen
      *     if ( type instanceof short[] )
      * }
      */
-    private void makeGetLengthMethod( final BytecodeLanguage bcl )
+    private void makeGetLengthMethod( final BytecodeLanguage bcl, final Set<Type> getSizeMethodsMade )
     {
-        SootClass object_soot_class = Scene.v().getSootClass( "java.lang.Object" );
+        final SootClass object_soot_class = Scene.v().getSootClass( "java.lang.Object" );
         bcl.startMethod( "doGetSize", IntType.v(), object_soot_class.getType() );
-        m_thisRef = bcl.refThis();
-        m_param0 = bcl.refParameter(0);
+
+        final Local thisRef = bcl.refThis();
+        final Local param0  = bcl.refParameter(0);
 
         List<Type> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefLikeTypes();
         for ( Type type : types )
@@ -99,9 +98,9 @@ public final class VisitorGen extends AbstractVisitorGen
                 continue;
             }
 
-            if ( m_getSizeMethodsMade.contains( type ) )
+            if ( getSizeMethodsMade.contains( type ) )
                 continue;
-            m_getSizeMethodsMade.add( type );
+            getSizeMethodsMade.add( type );
 
             /* Ignore size methods for reference to objects, interfaces and
              * private types */
@@ -113,7 +112,7 @@ public final class VisitorGen extends AbstractVisitorGen
                     continue;
                 if ( soot_class.isInterface() )
                     continue;
-                if ( differentPackageAndPrivate( m_thisRef, ref_type ) )
+                if ( differentPackageAndPrivate( thisRef, ref_type ) )
                     continue;
             }
             if ( ! typeIsPublic( type ) )
@@ -122,7 +121,7 @@ public final class VisitorGen extends AbstractVisitorGen
             final String label = getNextLabel(); // non-static
             /* if argument object is not of this type, skip the next code
              * code block (and test next type) */
-            bcl.ifInstanceOfStmt( m_param0, type, label );
+            bcl.ifInstanceOfStmt( param0, type, label );
 
             if ( type instanceof ArrayType )
             {
@@ -135,8 +134,8 @@ public final class VisitorGen extends AbstractVisitorGen
                     bcl.assign(element_size, IntConstant.v(ocl_type.getSize()));
                 else
                     bcl.assign(element_size, IntConstant.v(4));
-                Local object_to_write_from = bcl.cast(type, m_param0);
-                Local length = bcl.lengthof(object_to_write_from);
+                final Local object_to_write_from = bcl.cast( type, param0 );
+                final Local length               = bcl.lengthof( object_to_write_from );
                 bcl.mult(element_size, length);
                 bcl.plus(size, element_size);
                 bcl.returnValue(size);
@@ -159,10 +158,9 @@ public final class VisitorGen extends AbstractVisitorGen
 
     private void makeGetSizeMethod( final BytecodeLanguage bcl )
     {
-        SootClass object_soot_class = Scene.v().getSootClass("java.lang.Object");
-        bcl.startMethod("getArrayLength", IntType.v(), object_soot_class.getType());
-        m_thisRef = bcl.refThis();
-        m_param0 = bcl.refParameter(0);
+        final SootClass object_soot_class = Scene.v().getSootClass("java.lang.Object");
+        bcl.startMethod( "getArrayLength", IntType.v(), object_soot_class.getType() );
+        final Local param0 = bcl.refParameter(0);
 
         List<Type> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefLikeTypes();
         for ( Type type : types )
@@ -171,8 +169,8 @@ public final class VisitorGen extends AbstractVisitorGen
                 continue;
 
             String label = getNextLabel(); // non-static
-            bcl.ifInstanceOfStmt( m_param0, type, label );
-            bcl.returnValue( bcl.lengthof( bcl.cast( type, m_param0 ) ) );
+            bcl.ifInstanceOfStmt( param0, type, label );
+            bcl.returnValue( bcl.lengthof( bcl.cast( type, param0 ) ) );
             bcl.label( label );
         }
 
@@ -186,10 +184,8 @@ public final class VisitorGen extends AbstractVisitorGen
         final String className
     )
     {
-        List<Type> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefLikeTypes();
-        VisitorWriteGen write_gen = new VisitorWriteGen(types,
-            className, bcl );
-        write_gen.makeWriteToHeapMethod();
+        final List<Type> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefLikeTypes();
+        new VisitorWriteGen( types, className, bcl ).makeWriteToHeapMethod();
     }
 
     private static void makeReadFromHeapMethod
@@ -198,10 +194,8 @@ public final class VisitorGen extends AbstractVisitorGen
         final String className
     )
     {
-        List<Type> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefLikeTypes();
-        VisitorReadGen read_gen = new VisitorReadGen(types,
-            className, bcl );
-        read_gen.makeReadFromHeapMethod();
+        final List<Type> types = RootbeerClassLoader.v().getDfsInfo().getOrderedRefLikeTypes();
+        new VisitorReadGen( types, className, bcl ).makeReadFromHeapMethod();
     }
 
 
@@ -223,28 +217,24 @@ public final class VisitorGen extends AbstractVisitorGen
     )
     {
         bcl.openClass( runtimeBasicBlock );
-        SootClass gc_object_visitor_soot_class = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Serializer");
-        SootClass mem_cls = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Memory");
-        bcl.startMethod("getSerializer", gc_object_visitor_soot_class.getType(), mem_cls.getType(), mem_cls.getType());
-        Local thisref = bcl.refThis();
-        Local param0 = bcl.refParameter(0);
-        Local param1 = bcl.refParameter(1);
-        Local ret = bcl.newInstance( className, param0, param1 );
+        final SootClass mem_cls = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Memory");
+        bcl.startMethod( "getSerializer",
+            Scene.v().getSootClass( "org.trifort.rootbeer.runtime.Serializer" ).getType(),
+            mem_cls.getType(), mem_cls.getType()
+        );
+        final Local ret = bcl.newInstance( className, bcl.refParameter(0), bcl.refParameter(1) );
         bcl.returnValue(ret);
         bcl.endMethod();
     }
 
-    private void makeCtor() {
-        SootClass mem_cls = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Memory");
-
-        m_bcl.peek().startMethod("<init>", VoidType.v(), mem_cls.getType(), mem_cls.getType());
-        Local this_ref = m_bcl.peek().refThis();
-        Local param0 = m_bcl.peek().refParameter(0);
-        Local param1 = m_bcl.peek().refParameter(1);
-        m_bcl.peek().pushMethod("org.trifort.rootbeer.runtime.Serializer", "<init>", VoidType.v(), mem_cls.getType(), mem_cls.getType());
-        m_bcl.peek().invokeMethodNoRet(this_ref, param0, param1);
-        m_bcl.peek().returnVoid();
-        m_bcl.peek().endMethod();
+    private static void makeCtor( final BytecodeLanguage bcl )
+    {
+        final SootClass mem_cls = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Memory");
+        bcl.startMethod( "<init>", VoidType.v(), mem_cls.getType(), mem_cls.getType() );
+        bcl.pushMethod( "org.trifort.rootbeer.runtime.Serializer", "<init>", VoidType.v(), mem_cls.getType(), mem_cls.getType() );
+        bcl.invokeMethodNoRet( bcl.refThis(), bcl.refParameter(0), bcl.refParameter(1) );
+        bcl.returnVoid();
+        bcl.endMethod();
     }
 
     private static void makeSentinalCtors( final Set<String> sentinalCtorsCreated )
