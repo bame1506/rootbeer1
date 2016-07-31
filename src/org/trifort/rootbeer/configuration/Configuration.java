@@ -7,11 +7,13 @@
 
 package org.trifort.rootbeer.configuration;
 
+
 import java.util.List;
 
 import org.trifort.rootbeer.generate.opencl.tweaks.GencodeOptions.CompileArchitecture;
 import org.trifort.rootbeer.generate.opencl.tweaks.GencodeOptions.ComputeCapability;
 import org.trifort.rootbeer.util.ResourceReader;
+
 
 /**
  * Basically a C++ struct + boilerplate which saves the configuration

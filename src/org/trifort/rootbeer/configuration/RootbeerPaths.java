@@ -9,36 +9,63 @@ package org.trifort.rootbeer.configuration;
 
 
 import java.io.File;
-import java.lang.management.ManagementFactory;
+import java.lang.management.ManagementFactory; // for processID
+import java.lang.Thread;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 
 /**
  * Singleton which finds and or creates a working directory for rootbeer
+ * I think it was made a singleton to first buffer the name creation and
+ * also to optimized trying to create the folder every time and third to
+ * not have to bother passing an object.
  */
 public final class RootbeerPaths
 {
-    private static RootbeerPaths m_instance;
-    private static String        m_rootbeerhome;
+    private static final ThreadLocal<RootbeerPaths> m_instance;
+    private final String m_rootbeerhome;
 
-    public static RootbeerPaths v()
+    /**
+     * The returned path may not change between subsequent calls!
+     * I.e. including the time is not a good idea, but the process ID
+     * should not change
+     */
+    private RootbeerPaths()
     {
-        if ( m_instance == null )
-        {
-            m_instance = new RootbeerPaths();
-            m_rootbeerhome = new String("");
-        }
-        return m_instance;
+        final String home = System.getProperty("user.home");
+        final String path = home + File.separator + ".rootbeer" + File.separator
+                          + getHostname() + File.separator
+                          + getProcessId("pid") + "-"
+                          + Thread.currentThread().getId() + "-"
+                          + System.nanoTime()
+                          + File.separator;
+        final File folder = new File( path );
+        if ( ! folder.exists() )
+            folder.mkdirs();
+        m_rootbeerhome = folder.getAbsolutePath() + File.separator;
     }
 
-    public String getConfigFile         (){ return getRootbeerHome() + "config"        ; }
-    public String getJarContentsFolder  (){ return getRootbeerHome() + "jar-contents"  ; }
-    public String getOutputJarFolder    (){ return getRootbeerHome() + "output-jar"    ; }
-    public String getOutputClassFolder  (){ return getRootbeerHome() + "output-class"  ; }
-    public String getOutputShimpleFolder(){ return getRootbeerHome() + "output-shimple"; }
-    public String getOutputJimpleFolder (){ return getRootbeerHome() + "output-jimple" ; }
-    public String getTypeFile           (){ return getRootbeerHome() + "types"         ; }
+    static {
+        m_instance = new ThreadLocal<RootbeerPaths>(){
+            @Override protected RootbeerPaths initialValue() { return new RootbeerPaths(); }
+        };
+        /* using set would be equivalent to overriding the initial value,
+         * but only because this method is synchronized. If not, then
+         * a race condition could appear between creating and setting
+         * m_instance */
+        // m_instance.set( new RootbeerPaths() );
+    }
+
+    public static RootbeerPaths v(){ return m_instance.get(); }
+
+    public static String getConfigFile         (){ return getRootbeerHome() + "config"        ; }
+    public static String getJarContentsFolder  (){ return getRootbeerHome() + "jar-contents"  ; }
+    public static String getOutputJarFolder    (){ return getRootbeerHome() + "output-jar"    ; }
+    public static String getOutputClassFolder  (){ return getRootbeerHome() + "output-class"  ; }
+    public static String getOutputShimpleFolder(){ return getRootbeerHome() + "output-shimple"; }
+    public static String getOutputJimpleFolder (){ return getRootbeerHome() + "output-jimple" ; }
+    public static String getTypeFile           (){ return getRootbeerHome() + "types"         ; }
 
     private static String getHostname()
     {
@@ -87,19 +114,5 @@ public final class RootbeerPaths
         return fallback;
     }
 
-    public String getRootbeerHome()
-    {
-        if ( m_rootbeerhome == null || m_rootbeerhome.isEmpty() )
-        {
-            final String home = System.getProperty("user.home");
-            m_rootbeerhome = home + File.separator + ".rootbeer" + File.separator
-                           + getHostname() + File.separator
-                           + getProcessId("pid") + "-" + System.nanoTime()
-                           + File.separator;
-        }
-        File folder = new File( m_rootbeerhome );
-        if ( ! folder.exists() )
-            folder.mkdirs();
-        return folder.getAbsolutePath() + File.separator;
-    }
+    public static String getRootbeerHome(){ return m_instance.get().m_rootbeerhome; }
 }

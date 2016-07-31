@@ -657,11 +657,11 @@ GPU Consulting available for Rootbeer and CUDA. Please email pcpratts@trifort.or
 
     Profiling an everchanging bug:
     
-        nClassCast=3
-        nRuntime=4
+        nClassCast=0
+        nRuntime=0
         nNullPointer=0
         nNoError=0
-        for (( i=0; i<100; i++ )); do
+        for (( i=0; i<200; i++ )); do
             output=$(sparkSubmit "$HOME/MontePi.jar" 268435456 2 2 2>&1 | sed '/ INFO /d')
             echo "$output"
             if echo "$output" | grep -q 'java.lang.ClassCastException:'; then
@@ -681,6 +681,13 @@ GPU Consulting available for Rootbeer and CUDA. Please email pcpratts@trifort.or
             echo "| nNullPointer = $nNullPointer"
             echo "| nNoError     = $nNoError    "
         done
+        
+    Output:
+    
+        | nClassCast   = 110 
+        | nRuntime     = 39   
+        | nNullPointer = 5
+        | nNoError     = 46
 
 ### Authors
 

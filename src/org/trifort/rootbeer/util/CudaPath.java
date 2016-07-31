@@ -7,6 +7,7 @@
 
 package org.trifort.rootbeer.util;
 
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 
 /**
  * A class which tries all sorts of trickery and sorcery to locate the CUDA
