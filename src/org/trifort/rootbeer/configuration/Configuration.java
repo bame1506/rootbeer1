@@ -32,25 +32,21 @@ public class Configuration
     /* singleton structure
      * Not compilerInstance is not thread-safe, but it's not that important
      * except for compiling many programs multithreaded, but then just use
-     * multiple processes ... */
+     * multiple processes ...
+     *
+     * The uses in these files are a bitch to iron out:
+     *   generate/bytecode/GenerateForKernel.java
+     *   generate/opencl/OpenCLArrayType.java
+     *   generate/opencl/OpenCLMethod.java
+     *   generate/opencl/body/MethodStmtSwitch.java
+     *   generate/opencl/body/OpenCLBody.java
+     *   generate/opencl/fields/OpenCLField.java
+     */
     private static Configuration m_Instance;
+    public static void setInstance( final Configuration configuration ){ m_Instance = configuration; }
     public static Configuration compilerInstance()
     {
-        if ( m_Instance == null )
-            m_Instance = new Configuration();
-        return m_Instance;
-    }
-
-    /**
-     * Only used by CUDAContext.java. Like compilerInstance, but creates a
-     * new singleton if configuration was loaded from config.txt
-     */
-    public static Configuration runtimeInstance()
-    {
-        if ( m_Instance == null )
-            m_Instance = new Configuration(true);
-        else if ( m_Instance.m_compilerInstance )
-            m_Instance = new Configuration(true);
+        assert( m_Instance != null );
         return m_Instance;
     }
 
@@ -71,7 +67,7 @@ public class Configuration
     private String              m_manualCudaFilename;
     private ComputeCapability   m_computeCapability ;
 
-    private Configuration()
+    public Configuration()
     {
         m_compilerInstance  = true;
         m_remapAll          = true;

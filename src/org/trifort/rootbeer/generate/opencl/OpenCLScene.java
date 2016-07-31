@@ -8,104 +8,113 @@
 package org.trifort.rootbeer.generate.opencl;
 
 
-import soot.jimple.NewExpr;
+import soot.jimple.NewExpr                 ;
 import soot.rbclassload.MethodSignatureUtil;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Arrays;
-
-import org.trifort.rootbeer.configuration.Configuration;
-import org.trifort.rootbeer.configuration.RootbeerPaths;
-import org.trifort.rootbeer.entry.ForcedFields;
-import org.trifort.rootbeer.entry.CompilerSetup;
-import org.trifort.rootbeer.generate.bytecode.Constants;
-import org.trifort.rootbeer.generate.bytecode.MethodCodeSegment;
-import org.trifort.rootbeer.generate.bytecode.ReadOnlyTypes;
-import org.trifort.rootbeer.generate.opencl.fields.CompositeField;
+import java.io.BufferedReader              ;
+import java.io.FileReader                  ;
+import java.io.FileWriter                  ;
+import java.io.IOException                 ;
+import java.io.PrintWriter                 ;
+import java.util.ArrayList                 ;
+import java.util.HashMap                   ;
+import java.util.HashSet                   ;
+import java.util.Iterator                  ;
+import java.util.LinkedHashMap             ;
+import java.util.LinkedHashSet             ;
+import java.util.List                      ;
+import java.util.Map                       ;
+import java.util.Set                       ;
+import java.util.Arrays                    ;
+                                                                        ;
+import org.trifort.rootbeer.configuration.Configuration                 ;
+import org.trifort.rootbeer.configuration.RootbeerPaths                 ;
+import org.trifort.rootbeer.entry.ForcedFields                          ;
+import org.trifort.rootbeer.entry.CompilerSetup                         ;
+import org.trifort.rootbeer.generate.bytecode.Constants                 ;
+import org.trifort.rootbeer.generate.bytecode.MethodCodeSegment         ;
+import org.trifort.rootbeer.generate.bytecode.ReadOnlyTypes             ;
+import org.trifort.rootbeer.generate.opencl.fields.CompositeField       ;
 import org.trifort.rootbeer.generate.opencl.fields.CompositeFieldFactory;
-import org.trifort.rootbeer.generate.opencl.fields.FieldCodeGeneration;
-import org.trifort.rootbeer.generate.opencl.fields.FieldTypeSwitch;
-import org.trifort.rootbeer.generate.opencl.fields.OffsetCalculator;
-import org.trifort.rootbeer.generate.opencl.fields.OpenCLField;
-import org.trifort.rootbeer.generate.opencl.tweaks.CompileResult;
-import org.trifort.rootbeer.generate.opencl.tweaks.CudaTweaks;
-import org.trifort.rootbeer.generate.opencl.tweaks.Tweaks;
-import org.trifort.rootbeer.util.ReadFile;
-import org.trifort.rootbeer.util.ResourceReader;
+import org.trifort.rootbeer.generate.opencl.fields.FieldCodeGeneration  ;
+import org.trifort.rootbeer.generate.opencl.fields.FieldTypeSwitch      ;
+import org.trifort.rootbeer.generate.opencl.fields.OffsetCalculator     ;
+import org.trifort.rootbeer.generate.opencl.fields.OpenCLField          ;
+import org.trifort.rootbeer.generate.opencl.tweaks.CompileResult        ;
+import org.trifort.rootbeer.generate.opencl.tweaks.CudaTweaks           ;
+import org.trifort.rootbeer.generate.opencl.tweaks.Tweaks               ;
+import org.trifort.rootbeer.util.ReadFile                               ;
+import org.trifort.rootbeer.util.ResourceReader                         ;
 
-import soot.Scene;
-import soot.SootClass;
-import soot.SootMethod;
-import soot.Local;
-import soot.Type;
-import soot.ArrayType;
-import soot.SootField;
-import soot.VoidType;
-import soot.rbclassload.FieldSignatureUtil;
-import soot.rbclassload.NumberedType;
+import soot.Scene                          ;
+import soot.SootClass                      ;
+import soot.SootMethod                     ;
+import soot.Local                          ;
+import soot.Type                           ;
+import soot.ArrayType                      ;
+import soot.SootField                      ;
+import soot.VoidType                       ;
+import soot.rbclassload.FieldSignatureUtil ;
+import soot.rbclassload.NumberedType       ;
 import soot.rbclassload.RootbeerClassLoader;
 
 
 /**
  * Manual Singleton (need to set and release instance manually) which
  * increments an ID when reinitialized.
+ * The instance is set in compiler/Transform2.java
  */
 public class OpenCLScene
 {
-    private static OpenCLScene       m_instance            ;
-    private static int               m_curentIdent         ;
-    private Map<String, OpenCLClass> m_classes             ;
-    private Set<OpenCLArrayType>     m_arrayTypes          ;
-    private MethodHierarchies        m_methodHierarchies   ;
-    private boolean                  m_usesGarbageCollector; /* by default: false */
-    private SootClass                m_rootSootClass       ;
-    private int                      m_endOfStatics        ;
-    private ReadOnlyTypes            m_readOnlyTypes       ;
-    private List<SootMethod>         m_methods             ;
-    private Set<OpenCLInstanceof>    m_instanceOfs         ;
-    private List<CompositeField>     m_compositeFields     ;
-    private ClassConstantNumbers     m_constantNumbers     ;
-    private FieldCodeGeneration      m_fieldCodeGeneration ;
+    private static OpenCLScene              m_instance            ;
+    private static int                      m_curentIdent         ;
+    private final Map<String, OpenCLClass>  m_classes             ;
+    private final Set<OpenCLArrayType>      m_arrayTypes          ;
+    private final MethodHierarchies         m_methodHierarchies   ;
+    private boolean                         m_usesGarbageCollector; /* by default: false */
+    private SootClass                       m_rootSootClass       ;
+    private int                             m_endOfStatics        ;
+    private ReadOnlyTypes                   m_readOnlyTypes       ;
+    private final List<SootMethod>          m_methods             ;
+    private final Set<OpenCLInstanceof>     m_instanceOfs         ;
+    private List<CompositeField>            m_compositeFields     ;
+    private final ClassConstantNumbers      m_constantNumbers     ;
+    private final FieldCodeGeneration       m_fieldCodeGeneration ;
+    private final Configuration             m_configuration       ;
 
     static { m_curentIdent = 0; }
-    public OpenCLScene(){ }
-
-    public void init()
+    public OpenCLScene( final Configuration configuration )
     {
+        m_configuration        = configuration;
         m_classes              = new LinkedHashMap<String, OpenCLClass>();
-        m_arrayTypes           = new LinkedHashSet<OpenCLArrayType>()    ;
-        m_methodHierarchies    = new MethodHierarchies()                 ;
-        m_instanceOfs          = new HashSet<OpenCLInstanceof>()         ;
-        m_methods              = new ArrayList<SootMethod>()             ;
-        m_constantNumbers      = new ClassConstantNumbers()              ;
-        m_fieldCodeGeneration  = new FieldCodeGeneration()               ;
+        m_arrayTypes           = new LinkedHashSet<OpenCLArrayType>    ();
+        m_methodHierarchies    = new MethodHierarchies                 ();
+        m_methods              = new ArrayList<SootMethod>             ();
+        m_instanceOfs          = new HashSet<OpenCLInstanceof>         ();
+        m_constantNumbers      = new ClassConstantNumbers              ();
+        m_fieldCodeGeneration  = new FieldCodeGeneration               ();
+        /* some dependent classes used by loadTypes need the singleton to be set already! */
+        setInstance( this );
         loadTypes();
     }
 
-    public static OpenCLScene v(){ return m_instance; }
+    public static OpenCLScene v()
+    {
+        if ( m_instance == null )
+            throw new NullPointerException( "setInstance needs to be called before first vall to v()!" );
+        return m_instance;
+    }
     public static void setInstance( OpenCLScene scene ){ m_instance = scene; }
 
+    /* @todo why is this necessary ? */
     public static void releaseV(){
         m_instance = null;
         m_curentIdent++;
     }
-    public String getIdent(){ return "" + m_curentIdent; }
-    public static String getUuid(){ return "ab850b60f96d11de8a390800200c9a66"; }
-    public int getEndOfStatics(){ return m_endOfStatics; }
+    public String        getIdent(){ return "" + m_curentIdent                ; }
+    public static String  getUuid(){ return "ab850b60f96d11de8a390800200c9a66"; }
+    public int    getEndOfStatics(){ return m_endOfStatics                    ; }
 
-    public static int getClassType( SootClass soot_class ){
+    public static int getClassType( final SootClass soot_class ){
         return RootbeerClassLoader.v().getClassNumber(soot_class);
     }
 
@@ -275,9 +284,7 @@ public class OpenCLScene
                 m_instanceOfs.add( to_add );
         }
 
-        final CompositeFieldFactory factory = new CompositeFieldFactory();
-        factory.setup( m_classes );
-        m_compositeFields = factory.getCompositeFields();
+        m_compositeFields = CompositeFieldFactory.getCompositeFields( this, m_classes );
     }
 
     /**
@@ -288,10 +295,11 @@ public class OpenCLScene
      */
     private String[] makeSourceCode() throws Exception
     {
-        if ( Configuration.compilerInstance().isManualCuda() )
+        assert( m_configuration != null );
+        if ( m_configuration.isManualCuda() )
         {
             final String cuda_code = readCode(
-                 Configuration.compilerInstance().getManualCudaFilename()
+                 m_configuration.getManualCudaFilename()
             );
             final String[] ret = new String[2];
             ret[0] = cuda_code;
@@ -381,14 +389,15 @@ public class OpenCLScene
         replacement = replacement.replace( "$", "\\$" );
         cuda_code   = cuda_code.replaceAll( "%%invoke_run%%", replacement );
 
-        int size = Configuration.compilerInstance().getSharedMemSize();
+        assert( m_configuration != null );
+        int size = m_configuration.getSharedMemSize();
         String size_str = ""+size;
         cuda_code = cuda_code.replaceAll("%%shared_mem_size%%", size_str);
 
         cuda_code = cuda_code.replaceAll( "%%MallocAlignZeroBits%%", ""+Constants.MallocAlignZeroBits );
         cuda_code = cuda_code.replaceAll( "%%MallocAlignBytes%%"   , ""+Constants.MallocAlignBytes    );
 
-        boolean exceptions = Configuration.compilerInstance().getExceptions();
+        boolean exceptions = m_configuration.getExceptions();
         String exceptions_str;
         if ( exceptions )
             exceptions_str = "" + 1;
@@ -416,17 +425,16 @@ public class OpenCLScene
 
     public CompileResult[] getCudaCode() throws Exception
     {
+        assert( m_configuration != null );
         String[] source_code = makeSourceCode();
-        return new CudaTweaks().compileProgram(
-            source_code[0],
-            Configuration.compilerInstance().getCompileArchitecture()
-        );
+        return new CudaTweaks().compileProgram( source_code[0], m_configuration );
     }
 
     private String headerString(boolean unix) throws IOException
     {
+        assert( m_configuration != null );
         String defines = "";
-        if ( Configuration.compilerInstance().getArrayChecks() )
+        if ( m_configuration.getArrayChecks() )
             defines += "#define ARRAY_CHECKS\n";
 
         String specific_path;
@@ -457,7 +465,7 @@ public class OpenCLScene
      * BothNativeKernel.c and ( CudaKernel.c xor UnixNativeKernel.c )
      * as a String
      */
-    private String kernelString( final boolean unix ) throws IOException
+    private static String kernelString( final boolean unix ) throws IOException
     {
         final String kernel_path = unix ? Tweaks.v().getUnixKernelPath() :
                                           Tweaks.v().getWindowsKernelPath();
@@ -471,7 +479,7 @@ public class OpenCLScene
         return both_kernel_code + "\n" + specific_kernel_code;
     }
 
-    private String garbageCollectorString() throws IOException
+    private static String garbageCollectorString() throws IOException
     {
         String path = Tweaks.v().getGarbageCollectorPath();
         String ret = ResourceReader.getResource(path);

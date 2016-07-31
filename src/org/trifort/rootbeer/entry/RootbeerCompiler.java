@@ -50,28 +50,30 @@ import soot.rbclassload.RootbeerClassLoader;
 import soot.util.JasminOutputStream;
 
 
-public class RootbeerCompiler
+public final class RootbeerCompiler
 {
     private final static boolean debugging = true;  /* activates some debug output */
-    private       String       m_provider            ;
-    private       boolean      m_enableClassRemapping;
+    private       String        m_provider            ;
+    private       boolean       m_enableClassRemapping;
     /* functional returning true for classes which Rootbeer shall parse
      * i.e. Kernel implementations with gpuMethod */
-    private       MethodTester m_entryDetector       ;
+    private       MethodTester  m_entryDetector       ;
     /* These will be included automatically for classes implementing the Kernel interface */
-    private final Set<String>  m_runtimePackages     ;
-    private       boolean      m_packFatJar          ;
-    private final String       m_JarWithoutRootbeer  ;
+    private final Set<String>   m_runtimePackages     ;
+    private       boolean       m_packFatJar          ;
+    private final String        m_JarWithoutRootbeer  ;
+    private final Configuration m_configuration       ;
 
-    public RootbeerCompiler()
+    public RootbeerCompiler( final Configuration configuration )
     {
         clearOutputFolders();
 
-        if ( Configuration.compilerInstance().getMode() == Configuration.MODE_GPU )
+        if ( configuration.getMode() == Configuration.MODE_GPU )
             Tweaks.setInstance( new CudaTweaks() );
         else // NEMU or JEMU
             Tweaks.setInstance( new NativeCpuTweaks() );
 
+        m_configuration        = configuration;
         m_enableClassRemapping = true;
         m_packFatJar           = true;
         m_runtimePackages      = new HashSet<String>( Arrays.asList(
@@ -120,7 +122,7 @@ public class RootbeerCompiler
         if ( ! rootbeer_jar.equals("") )
             Options.v().set_soot_classpath( rootbeer_jar );
 
-        //Options.v().set_rbcl_remap_all(Configuration.compilerInstance().getRemapAll());
+        //Options.v().set_rbcl_remap_all(m_configuration.getRemapAll());
         Options.v().set_rbcl_remap_all(false);
         Options.v().set_rbcl_remap_prefix("org.trifort.rootbeer.runtime.remap.");
 
@@ -185,7 +187,7 @@ public class RootbeerCompiler
         if ( runtests )
             RootbeerClassLoader.v().addFollowClassTester( new TestCaseFollowTester() );
 
-        if ( Configuration.compilerInstance().getKeepMains() )
+        if ( m_configuration.getKeepMains() )
         {
             MainTester main_tester = new MainTester();
             RootbeerClassLoader.v().addFollowMethodTester( main_tester );
@@ -295,7 +297,7 @@ public class RootbeerCompiler
         }
 
         final Transform2 transform2 = new Transform2();
-        for ( SootMethod kernel_method : kernel_methods )
+        for ( final SootMethod kernel_method : kernel_methods )
         {
             if ( debugging )
             {
@@ -314,7 +316,7 @@ public class RootbeerCompiler
             dfs_info.finalizeTypes();
 
             SootClass soot_class = kernel_method.getDeclaringClass();
-            transform2.run( soot_class.getName() ); /* <- juicy part */
+            transform2.run( soot_class.getName(), m_configuration ); /* <- juicy part */
         }
 
         if ( debugging )
@@ -419,7 +421,7 @@ public class RootbeerCompiler
         for ( File f : output_class_files )
             writeFileToOutput( f, zos, RootbeerPaths.v().getOutputClassFolder() );
 
-        addConfigurationFile(zos);
+        addConfigurationFile( zos, m_configuration );
         zos.flush();
         zos.close();
     }
@@ -487,7 +489,8 @@ public class RootbeerCompiler
      */
     private static void addConfigurationFile
     (
-        final ZipOutputStream zos
+        final ZipOutputStream zos,
+        final Configuration   configuration
     ) throws IOException
     {
         final String folderName = "org/trifort/rootbeer/runtime/";
@@ -496,8 +499,8 @@ public class RootbeerCompiler
         entry.setSize(1);
 
         final byte[] contents = new byte[2];
-        contents[0] = (byte) Configuration.compilerInstance().getMode();
-        contents[1] = (byte) ( Configuration.compilerInstance().getExceptions() ? 1 : 0 );
+        contents[0] = (byte)   configuration.getMode();
+        contents[1] = (byte) ( configuration.getExceptions() ? 1 : 0 );
 
 
         final CRC32 crc = new CRC32();

@@ -7,6 +7,7 @@
 
 package org.trifort.rootbeer.entry;
 
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.trifort.rootbeer.generate.opencl.tweaks.GencodeOptions.ComputeCapabil
 /* needed for printDeviceInfo */
 import org.trifort.rootbeer.runtime.GpuDevice;
 import org.trifort.rootbeer.runtime.Rootbeer;
+
 
 public class Main
 {
@@ -56,6 +58,8 @@ public class Main
      */
     private void parseArgs( final String[] args )
     {
+        m_configuration = new Configuration();
+        Configuration.setInstance( m_configuration );
         m_num_args = args.length;
 
         boolean arch32bit   = false;
@@ -92,7 +96,7 @@ public class Main
                 mode = new Integer( Configuration.MODE_JEMU );
             }
             else if ( arg.equals( "-remap-sparse" ) )
-                Configuration.compilerInstance().setRemapSparse();
+                m_configuration.setRemapSparse();
             else if ( arg.equals( "-disable-class-remapping" ) )
                 m_disableClassRemapping = true;
             else if ( arg.equals( "-mainjar" ) )
@@ -187,23 +191,23 @@ public class Main
             else if ( arg.equals( "-maxrregcount") )
             {
                 final String count = safeGet( args, ++i, "-maxrregcount" );
-                if ( Configuration.compilerInstance().isMaxRegCountSet() )
+                if ( m_configuration.isMaxRegCountSet() )
                 {
                     System.out.println( "Only one -maxrregcount may be specified." );
                     invalidArgs = true;
                 }
-                Configuration.compilerInstance().setMaxRegCount( Integer.parseInt(count) );
+                m_configuration.setMaxRegCount( Integer.parseInt(count) );
             }
             else if ( arg.equals( "-noarraychecks" ) )
-                Configuration.compilerInstance().setArrayChecks(false);
+                m_configuration.setArrayChecks(false);
             else if ( arg.equals( "-nodoubles" ) )
-                Configuration.compilerInstance().setDoubles(false);
+                m_configuration.setDoubles(false);
             else if ( arg.equals( "-norecursion" ) )
-                Configuration.compilerInstance().setRecursion(false);
+                m_configuration.setRecursion(false);
             else if ( arg.equals( "-noexceptions" ) )
-                Configuration.compilerInstance().setExceptions(false);
+                m_configuration.setExceptions(false);
             else if ( arg.equals( "-keepmains" ) )
-                Configuration.compilerInstance().setKeepMains(true);
+                m_configuration.setKeepMains(true);
             else if ( arg.equals( "-shared-mem-size" ) )
             {
                 if ( nBytesSharedMem != null )
@@ -212,7 +216,7 @@ public class Main
                     invalidArgs = true;
                 }
                 nBytesSharedMem = new Integer( safeGet(args, ++i, "-shared-mem-size") );
-                Configuration.compilerInstance().setSharedMemSize( nBytesSharedMem.intValue() );
+                m_configuration.setSharedMemSize( nBytesSharedMem.intValue() );
             }
             else if ( arg.equals( "-32bit" ) )
                 arch32bit = true;
@@ -221,8 +225,8 @@ public class Main
             else if ( arg.equals( "-manualcuda" ) )
             {
                 String filename = safeGet(args, ++i, "-manualcuda");
-                Configuration.compilerInstance().setManualCuda();
-                Configuration.compilerInstance().setManualCudaFilename(filename);
+                m_configuration.setManualCuda();
+                m_configuration.setManualCudaFilename(filename);
             }
             else if ( arg.equals( "-computecapability" ) )
             {
@@ -283,12 +287,12 @@ public class Main
         if ( invalidArgs )
             throw new IllegalArgumentException( "There were illegal arguments specified" );
 
-        if ( Configuration.compilerInstance().getRecursion() && ! m_printDeviceInfo )
+        if ( m_configuration.getRecursion() && ! m_printDeviceInfo )
         {
             System.out.println("warning: sm_12 and sm_11 not supported with recursion. use -norecursion to enable.");
         }
 
-        if ( Configuration.compilerInstance().getDoubles() && ! m_printDeviceInfo )
+        if ( m_configuration.getDoubles() && ! m_printDeviceInfo )
         {
             System.out.println("warning: sm_12 and sm_11 not supported with doubles. use -nodoubles to enable.");
         }
@@ -302,10 +306,10 @@ public class Main
 
         if ( mode == null )
             mode = new Integer( Configuration.MODE_GPU );
-        Configuration.compilerInstance().setMode( mode.intValue() );
-        Configuration.compilerInstance().setCompileArchitecture( arch );
+        m_configuration.setMode( mode.intValue() );
+        m_configuration.setCompileArchitecture( arch );
         if ( comp != null )
-            Configuration.compilerInstance().setComputeCapability( comp );
+            m_configuration.setComputeCapability( comp );
     }
 
     /**
@@ -347,12 +351,11 @@ public class Main
 
         if ( m_runTests )
         {
-            RootbeerTest test = new RootbeerTest();
-            test.runTests( m_testCase, m_runHardTests, m_largeMemTests );
+            RootbeerTest.runTests( m_testCase, m_configuration, m_runHardTests, m_largeMemTests );
             return;
         }
 
-        RootbeerCompiler compiler = new RootbeerCompiler();
+        final RootbeerCompiler compiler = new RootbeerCompiler( m_configuration );
         if ( m_disableClassRemapping )
             compiler.disableClassRemapping();
 

@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.trifort.rootbeer.generate.bytecode.GenerateForKernel;
 import org.trifort.rootbeer.generate.opencl.OpenCLScene;
+import org.trifort.rootbeer.configuration.Configuration;
 
 import soot.Scene;
 import soot.SootMethod;
@@ -24,7 +25,7 @@ import soot.SootMethod;
  * @todo could maybe be merged into GenerateForKernel as GenerateForKernel is
  *       actually only used by this class nowhere else.
  */
-public class Transform2
+public final class Transform2
 {
     private int m_Uuid;
 
@@ -32,11 +33,9 @@ public class Transform2
         m_Uuid = 1;
     }
 
-    public void run( final String cls )
+    public void run( final String cls, final Configuration configuration )
     {
-        final OpenCLScene scene = new OpenCLScene();
-        OpenCLScene.setInstance( scene );
-        scene.init();
+        final OpenCLScene scene = new OpenCLScene( configuration );
 
         final SootMethod method = Scene.v().getSootClass( cls ).getMethod( "void gpuMethod()" );
 

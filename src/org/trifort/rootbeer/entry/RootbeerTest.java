@@ -23,24 +23,20 @@ import soot.Modifier;
 
 public final class RootbeerTest
 {
-    private String destJAR;
-
-    public RootbeerTest()
-    {
-        destJAR = "output.jar";
-    }
+    private final static String destJAR = "output.jar";
 
     /**
      * If not test_case specified, then run all
      */
-    public void runTests
+    public static void runTests
     (
-              String  test_case,
-        final boolean run_hard_tests,
-        final boolean run_large_mem_tests
+              String        test_case       ,
+        final Configuration configuration   ,
+        final boolean       run_hard_tests  ,
+        final boolean       run_large_mem_tests
     )
     {
-        RootbeerCompiler compiler = new RootbeerCompiler();
+        RootbeerCompiler compiler = new RootbeerCompiler( configuration );
         CurrJarName jar_name = new CurrJarName();
         String rootbeer_jar = jar_name.get();
         try
@@ -66,7 +62,7 @@ public final class RootbeerTest
         }
     }
 
-    public void repeatTests()
+    public static void repeatTests()
     {
         try {
             runTestCases( null, false, false );
@@ -76,7 +72,7 @@ public final class RootbeerTest
         }
     }
 
-    private void runTestCases
+    private static void runTestCases
     (
         final String  test_case,
         final boolean run_hard_tests,
@@ -108,7 +104,7 @@ public final class RootbeerTest
     }
 
 
-    private Method findMethodByName( final String name, final Method[] methods )
+    private static Method findMethodByName( final String name, final Method[] methods )
     {
         for ( final Method method : methods )
         {

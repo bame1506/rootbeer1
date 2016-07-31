@@ -7,28 +7,26 @@
 
 package org.trifort.rootbeer.generate.opencl.tweaks;
 
+
 import java.util.List;
 
-public abstract class Tweaks {
 
-  private static Tweaks m_Instance;
+public abstract class Tweaks
+{
+    private static Tweaks m_Instance;
 
-  public static Tweaks v(){
-    return m_Instance;
-  }
+    public static Tweaks v(){ return m_Instance; }
+    public static void setInstance(Tweaks instance){ m_Instance = instance;}
 
-  public static void setInstance(Tweaks instance){
-    m_Instance = instance;
-  }
-
-  public abstract String getUnixHeaderPath();
-  public abstract String getWindowsHeaderPath();
-  public abstract String getBothHeaderPath();
-  public abstract String getBarrierPath();
-  public abstract String getUnixKernelPath();
-  public abstract String getWindowsKernelPath();
-  public abstract String getBothKernelPath();
-  public abstract String getGlobalAddressSpaceQualifier();
-  public abstract String getGarbageCollectorPath();
-  public abstract String getDeviceFunctionQualifier();
+    /* http://stackoverflow.com/questions/370962/why-cant-static-methods-be-abstract-in-java */
+    public abstract String getUnixHeaderPath             ();
+    public abstract String getWindowsHeaderPath          ();
+    public abstract String getBothHeaderPath             ();
+    public abstract String getBarrierPath                ();
+    public abstract String getUnixKernelPath             ();
+    public abstract String getWindowsKernelPath          ();
+    public abstract String getBothKernelPath             ();
+    public abstract String getGlobalAddressSpaceQualifier();
+    public abstract String getGarbageCollectorPath       ();
+    public abstract String getDeviceFunctionQualifier    ();
 }

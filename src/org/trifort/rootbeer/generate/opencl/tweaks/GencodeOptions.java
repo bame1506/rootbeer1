@@ -7,12 +7,14 @@
 
 package org.trifort.rootbeer.generate.opencl.tweaks;
 
+
 import java.io.File;
 import java.util.List;
 
 import org.trifort.rootbeer.configuration.Configuration;
 import org.trifort.rootbeer.util.CmdRunner;
 import org.trifort.rootbeer.util.CudaPath;
+
 
 public class GencodeOptions
 {
@@ -24,7 +26,7 @@ public class GencodeOptions
         ALL, SM_11, SM_12, SM_20, SM_21, SM_30, SM_35, SM_50, SM_52, SM_60, SM_61;
     }
 
-    private boolean versionMatches( String versionString, String version ) {
+    private static boolean versionMatches( final String versionString, final String version ) {
         return versionString.contains( "release "+version );
     }
 
@@ -34,7 +36,7 @@ public class GencodeOptions
      *
      * @see http://docs.nvidia.com/cuda/maxwell-compatibility-guide/#building-maxwell-compatible-apps-using-cuda-5-5
      */
-    public String getOptions()
+    public static String getOptions( final Configuration configuration )
     {
         /* Version will be something like 75 for 7.5 or 50 for 5.0 */
         final int version = getNVCCVersion();
@@ -63,20 +65,20 @@ public class GencodeOptions
         }
 
         //sm_12 doesn't support recursion
-        if ( Configuration.compilerInstance().getRecursion() ) {
+        if ( configuration.getRecursion() ) {
             sm_12 = "";
             sm_11 = "";
         }
 
         //sm_12 doesn't support doubles
-        if ( Configuration.compilerInstance().getDoubles() ) {
+        if ( configuration.getDoubles() ) {
             sm_12 = "";
             sm_11 = "";
         }
 
         if ( 50 <= version && version <= 70 )
         {
-            switch ( Configuration.compilerInstance().getComputeCapability() )
+            switch ( configuration.getComputeCapability() )
             {
                 case ALL:   return sm_35 + sm_30 + sm_21 + sm_20 + sm_12 + sm_11;
                 case SM_11: return sm_11;
@@ -89,7 +91,7 @@ public class GencodeOptions
             }
         } else if ( 32 <= version && version <= 42 )
         {
-            switch ( Configuration.compilerInstance().getComputeCapability() )
+            switch ( configuration.getComputeCapability() )
             {
                 case ALL:   return sm_30 + sm_21 + sm_20 + sm_12 + sm_11;
                 case SM_11: return sm_11;
@@ -101,7 +103,7 @@ public class GencodeOptions
             }
         } else if ( version == 31 || version == 30 )
         {
-            switch ( Configuration.compilerInstance().getComputeCapability() )
+            switch ( configuration.getComputeCapability() )
             {
                 case ALL:   return sm_20 + sm_12 + sm_11;
                 case SM_11: return sm_11;

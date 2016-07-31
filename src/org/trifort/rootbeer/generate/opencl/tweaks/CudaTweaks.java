@@ -24,32 +24,33 @@ import org.trifort.rootbeer.util.WindowsCompile;
 
 public class CudaTweaks extends Tweaks
 {
-  @Override public String getGlobalAddressSpaceQualifier() { return ""; }
-  @Override public String getUnixHeaderPath             () { return "/org/trifort/rootbeer/generate/opencl/CudaHeader.c"; }
-  @Override public String getWindowsHeaderPath          () { return "/org/trifort/rootbeer/generate/opencl/CudaHeader.c"; }
-  @Override public String getBothHeaderPath             () { return null; }
-  @Override public String getBarrierPath                () { return null; }
-  @Override public String getGarbageCollectorPath       () { return "/org/trifort/rootbeer/generate/opencl/GarbageCollector.c"; }
-  @Override public String getUnixKernelPath             () { return "/org/trifort/rootbeer/generate/opencl/CudaKernel.c"; }
-  @Override public String getWindowsKernelPath          () { return "/org/trifort/rootbeer/generate/opencl/CudaKernel.c"; }
-  @Override public String getBothKernelPath             () { return null; }
+    @Override public String getGlobalAddressSpaceQualifier() { return ""; }
+    @Override public String getUnixHeaderPath             () { return "/org/trifort/rootbeer/generate/opencl/CudaHeader.c"; }
+    @Override public String getWindowsHeaderPath          () { return "/org/trifort/rootbeer/generate/opencl/CudaHeader.c"; }
+    @Override public String getBothHeaderPath             () { return null; }
+    @Override public String getBarrierPath                () { return null; }
+    @Override public String getGarbageCollectorPath       () { return "/org/trifort/rootbeer/generate/opencl/GarbageCollector.c"; }
+    @Override public String getUnixKernelPath             () { return "/org/trifort/rootbeer/generate/opencl/CudaKernel.c"; }
+    @Override public String getWindowsKernelPath          () { return "/org/trifort/rootbeer/generate/opencl/CudaKernel.c"; }
+    @Override public String getBothKernelPath             () { return null; }
+    @Override public String getDeviceFunctionQualifier    () { return "__device__"; }
 
-  /**
-   * Compiles CUDA code.
-   *
-   * This is only called by OpenCLScene
-   *
-   * @param cuda_code string containing code.
-   * @param compileArch determine if we need to build 32bit, 64bit or both.
-   * @return an array containing compilation results.
-   *         You can use <tt>is32Bit()</tt> on each element to determine
-   *         if it is 32 bit or 64bit code. If compilation for an architecture
-   *         fails, only the offending element is returned.
-   */
-    public CompileResult[] compileProgram
+    /**
+     * Compiles CUDA code.
+     *
+     * This is only called by OpenCLScene
+     *
+     * @param cuda_code string containing code.
+     * @param compileArch determine if we need to build 32bit, 64bit or both.
+     * @return an array containing compilation results.
+     *         You can use <tt>is32Bit()</tt> on each element to determine
+     *         if it is 32 bit or 64bit code. If compilation for an architecture
+     *         fails, only the offending element is returned.
+     */
+    public static CompileResult[] compileProgram
     (
         String cuda_code,
-        final CompileArchitecture compileArch
+        final Configuration configuration
     )
     {
         PrintWriter writer;
@@ -73,19 +74,13 @@ public class CudaTweaks extends Tweaks
             writer.flush();
             writer.close();
 
-            CudaPath cuda_path = new CudaPath();
-            GencodeOptions options_gen = new GencodeOptions();
-            String gencode_options = options_gen.getOptions();
-
-            return new ParallelCompile().compile( generated, cuda_path,
-                                                  gencode_options, compileArch );
+            return new ParallelCompile().compile( generated, new CudaPath(),
+                                                  GencodeOptions.getOptions( configuration ),
+                                                  configuration.getCompileArchitecture() );
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             throw new RuntimeException( "Failed to compile cuda code.", ex );
         }
     }
-
-  @Override public String getDeviceFunctionQualifier() { return "__device__"; }
-
 }
