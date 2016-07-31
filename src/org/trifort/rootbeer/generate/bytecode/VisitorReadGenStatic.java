@@ -17,7 +17,6 @@ import org.trifort.rootbeer.generate.bytecode.permissiongraph.PermissionGraph;
 import org.trifort.rootbeer.generate.bytecode.permissiongraph.PermissionGraphNode;
 import org.trifort.rootbeer.generate.opencl.OpenCLScene;
 import org.trifort.rootbeer.generate.opencl.fields.OpenCLField;
-import org.trifort.rootbeer.util.Stack;
 
 import soot.Scene      ;
 import soot.SootClass  ;
@@ -51,7 +50,7 @@ public class VisitorReadGenStatic extends AbstractVisitorGen
 
     public void makeMethod(){
 
-        BytecodeLanguage bcl = m_bcl.top();
+        BytecodeLanguage bcl = m_bcl.peek();
 
         bcl.startMethod("doReadStaticsFromHeap", VoidType.v());
 
@@ -108,7 +107,7 @@ public class VisitorReadGenStatic extends AbstractVisitorGen
             final int index = m_staticOffsets.getIndex( field );
             bcl_mem.setAddress( LongConstant.v( index ) );
             if ( field.getType().isRefType() )
-                readRefField( bcl, gc_visit, memory, m_objSerializing.top(), field );
+                readRefField( bcl, gc_visit, memory, m_objSerializing.peek(), field );
             else
                 readNonRefField( bcl, memory, null, field );
         }
@@ -135,18 +134,18 @@ public class VisitorReadGenStatic extends AbstractVisitorGen
 
     private void callReader( final SootClass soot_class )
     {
-        BytecodeLanguage bcl = m_bcl.top();
+        BytecodeLanguage bcl = m_bcl.peek();
         String method_name = getReaderName(soot_class);
         SootClass mem = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Memory");
         bcl.pushMethod(soot_class, method_name, VoidType.v(), mem.getType(), m_thisRef.getType());
-        bcl.invokeStaticMethodNoRet(m_currMem.top(), m_gcObjVisitor.top());
+        bcl.invokeStaticMethodNoRet(m_currMem.peek(), m_gcObjVisitor.peek());
     }
 
     private void doReader( final SootClass soot_class )
     {
-        final BytecodeLanguage bcl      = m_bcl         .top();
-        final Local            memory   = m_currMem     .top();
-        final Local            gc_visit = m_gcObjVisitor.top();
+        final BytecodeLanguage bcl      = m_bcl         .peek();
+        final Local            memory   = m_currMem     .peek();
+        final Local            gc_visit = m_gcObjVisitor.peek();
 
         final List<OpenCLField> static_fields = m_staticOffsets.getStaticFields(soot_class);
 

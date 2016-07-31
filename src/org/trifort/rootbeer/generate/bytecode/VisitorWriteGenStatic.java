@@ -59,7 +59,7 @@ public class VisitorWriteGenStatic extends AbstractVisitorGen
      */
     public void makeMethod()
     {
-        final BytecodeLanguage bcl = m_bcl.top();
+        final BytecodeLanguage bcl = m_bcl.peek();
         bcl.startMethod( "doWriteStaticsToHeap", VoidType.v() );
 
         /* get 'mMem' variable from Serializer which is of type Memory.java.
@@ -124,11 +124,11 @@ public class VisitorWriteGenStatic extends AbstractVisitorGen
     }
 
     private void callWriter(SootClass soot_class){
-        BytecodeLanguage bcl = m_bcl.top();
+        BytecodeLanguage bcl = m_bcl.peek();
         String method_name = getWriterName(soot_class);
         SootClass mem = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Memory");
-        bcl.pushMethod(soot_class, method_name, VoidType.v(), mem.getType(), m_gcObjVisitor.top().getType());
-        bcl.invokeStaticMethodNoRet(m_currMem.top(), m_gcObjVisitor.top());
+        bcl.pushMethod(soot_class, method_name, VoidType.v(), mem.getType(), m_gcObjVisitor.peek().getType());
+        bcl.invokeStaticMethodNoRet(m_currMem.peek(), m_gcObjVisitor.peek());
     }
 
     private String getWriterName(SootClass soot_class){
@@ -146,7 +146,7 @@ public class VisitorWriteGenStatic extends AbstractVisitorGen
         m_bcl.push(bcl);
         bcl.openClass(soot_class);
         SootClass mem = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Memory");
-        bcl.startStaticMethod(method_name, VoidType.v(), mem.getType(), m_gcObjVisitor.top().getType());
+        bcl.startStaticMethod(method_name, VoidType.v(), mem.getType(), m_gcObjVisitor.peek().getType());
 
         Local memory = bcl.refParameter(0);
         Local gc_visit = bcl.refParameter(1);
@@ -165,9 +165,9 @@ public class VisitorWriteGenStatic extends AbstractVisitorGen
 
     private void doWriter(SootClass soot_class, List<SootClass> children)
     {
-        BytecodeLanguage bcl = m_bcl.top();
-        Local memory = m_currMem.top();
-        Local gc_visit = m_gcObjVisitor.top();
+        BytecodeLanguage bcl = m_bcl.peek();
+        Local memory = m_currMem.peek();
+        Local gc_visit = m_gcObjVisitor.peek();
 
         writeType(soot_class.getType());
 
@@ -228,20 +228,20 @@ public class VisitorWriteGenStatic extends AbstractVisitorGen
             return;
 
         final int number = OpenCLScene.v().getClassConstantNumbers().get(type);
-        final Local gc_visit = m_gcObjVisitor.top();
+        final Local gc_visit = m_gcObjVisitor.peek();
 
-        Local class_obj = m_bcl.top().classConstant( type );
+        Local class_obj = m_bcl.peek().classConstant( type );
 
         //getName has to be called to load the name variable
         SootClass str_cls = Scene.v().getSootClass("java.lang.String");
-        m_bcl.top().pushMethod(class_obj, "getName", str_cls.getType());
-        m_bcl.top().invokeMethodRet(class_obj);
+        m_bcl.peek().pushMethod(class_obj, "getName", str_cls.getType());
+        m_bcl.peek().invokeMethodRet(class_obj);
 
         SootClass obj_cls = Scene.v().getSootClass("java.lang.Object");
-        m_bcl.top().pushMethod(gc_visit, "writeToHeap", LongType.v(), obj_cls.getType(), BooleanType.v());
-        Local ref = m_bcl.top().invokeMethodRet(gc_visit, class_obj, IntConstant.v(1));
+        m_bcl.peek().pushMethod(gc_visit, "writeToHeap", LongType.v(), obj_cls.getType(), BooleanType.v());
+        Local ref = m_bcl.peek().invokeMethodRet(gc_visit, class_obj, IntConstant.v(1));
 
-        m_bcl.top().pushMethod(gc_visit, "addClassRef", VoidType.v(), LongType.v(), IntType.v());
-        m_bcl.top().invokeMethodNoRet(gc_visit, ref, IntConstant.v(number));
+        m_bcl.peek().pushMethod(gc_visit, "addClassRef", VoidType.v(), LongType.v(), IntType.v());
+        m_bcl.peek().invokeMethodNoRet(gc_visit, ref, IntConstant.v(number));
     }
 }

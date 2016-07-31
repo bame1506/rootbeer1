@@ -10,11 +10,11 @@ package org.trifort.rootbeer.generate.bytecode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import org.trifort.rootbeer.generate.opencl.OpenCLClass;
 import org.trifort.rootbeer.generate.opencl.OpenCLScene;
 import org.trifort.rootbeer.generate.opencl.fields.OpenCLField;
-import org.trifort.rootbeer.util.Stack;
 
 import soot.Scene      ;
 import soot.SootClass  ;

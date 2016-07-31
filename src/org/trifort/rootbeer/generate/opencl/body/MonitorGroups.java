@@ -8,23 +8,22 @@
 package org.trifort.rootbeer.generate.opencl.body;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Iterator ;
+import java.util.List     ;
+import java.util.Stack    ;
 
-import org.trifort.rootbeer.util.Stack;
-
-import soot.Body;
-import soot.Local;
-import soot.Unit;
-import soot.Value;
+import soot.Body                   ;
+import soot.Local                  ;
+import soot.Unit                   ;
+import soot.Value                  ;
 import soot.jimple.EnterMonitorStmt;
-import soot.jimple.ExitMonitorStmt;
+import soot.jimple.ExitMonitorStmt ;
 
 import soot.toolkits.graph.ExceptionalBlockGraph;
 import soot.toolkits.graph.Block;
 
-public class MonitorGroups {
-
+public class MonitorGroups
+{
   public List<MonitorGroupItem> getItems(Body body){
     //TODO: Look at
     /*
@@ -50,14 +49,14 @@ public class MonitorGroups {
       if(curr instanceof EnterMonitorStmt){
         MonitorGroupItem item = new MonitorGroupItem();
         item.addEnterMonitor(curr);
-        stack.top().addGroup(item);
+        stack.peek().addGroup(item);
         stack.push(item);
         MonitorGroupItem item2 = new MonitorGroupItem();
-        stack.top().addGroup(item2);
+        stack.peek().addGroup(item2);
         stack.push(item2);
       } else if(curr instanceof ExitMonitorStmt){
         if(isLastExit((ExitMonitorStmt) curr, i, units)){
-          stack.top().addUnit(curr);
+          stack.peek().addUnit(curr);
           stack.pop();
           stack.pop();
           stack.pop();
@@ -67,14 +66,14 @@ public class MonitorGroups {
             stack.push(curr_monitor);
           } else {
             curr_monitor = new MonitorGroupItem();
-            stack.top().addGroup(curr_monitor);
+            stack.peek().addGroup(curr_monitor);
             stack.push(curr_monitor);
           }
         } else {
-          stack.top().addUnit(curr);
+          stack.peek().addUnit(curr);
         }
       } else {
-        stack.top().addUnit(curr);
+        stack.peek().addUnit(curr);
       }
     }
     return ret;

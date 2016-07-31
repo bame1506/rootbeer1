@@ -10,13 +10,13 @@ package org.trifort.rootbeer.generate.opencl.body;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import org.trifort.rootbeer.configuration.Configuration;
 import org.trifort.rootbeer.generate.opencl.OpenCLClass;
 import org.trifort.rootbeer.generate.opencl.OpenCLMethod;
 import org.trifort.rootbeer.generate.opencl.OpenCLScene;
 import org.trifort.rootbeer.generate.opencl.OpenCLType;
-import org.trifort.rootbeer.util.Stack;
 
 import soot.Scene;
 import soot.SootClass;
@@ -182,7 +182,7 @@ public class MethodStmtSwitch implements StmtSwitch
     public void caseExitMonitorStmt(ExitMonitorStmt arg0) {
         m_output.append("org_trifort_exitMonitorRef(");
         arg0.getOp().apply(m_valueSwitch);
-        m_output.append(", "+m_oldValueFromMonitorStack.top()+");\n");
+        m_output.append(", "+m_oldValueFromMonitorStack.peek()+");\n");
     }
 
     public void caseGotoStmt(GotoStmt arg0) {

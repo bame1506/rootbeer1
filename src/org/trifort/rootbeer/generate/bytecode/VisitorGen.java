@@ -54,26 +54,26 @@ public class VisitorGen extends AbstractVisitorGen
         m_bcl.push( new BytecodeLanguage() );
         makeSentinalCtors( m_sentinalCtorsCreated );
         makeSerializer();
-        addGetSerializerMethod( m_bcl.top(), m_runtimeBasicBlock, m_className );
+        addGetSerializerMethod( m_bcl.peek(), m_runtimeBasicBlock, m_className );
     }
 
     private void makeSerializer()
     {
         makeGcObjectClass();
         makeCtor();
-        makeWriteStaticsToHeapMethod ( m_bcl.top()              );
-        makeReadStaticsFromHeapMethod( m_bcl.top()              );
-        makeGetSizeMethod            ( m_bcl.top()              );
-        makeGetLengthMethod          ( m_bcl.top()              );
-        makeWriteToHeapMethod        ( m_bcl.top(), m_className );
-        makeReadFromHeapMethod       ( m_bcl.top(), m_className );
+        makeWriteStaticsToHeapMethod ( m_bcl.peek()              );
+        makeReadStaticsFromHeapMethod( m_bcl.peek()              );
+        makeGetSizeMethod            ( m_bcl.peek()              );
+        makeGetLengthMethod          ( m_bcl.peek()              );
+        makeWriteToHeapMethod        ( m_bcl.peek(), m_className );
+        makeReadFromHeapMethod       ( m_bcl.peek(), m_className );
     }
 
     private void makeGcObjectClass()
     {
         String base_name = m_runtimeBasicBlock.getName();
         m_className = base_name+"Serializer";
-        m_bcl.top().makeClass(m_className, "org.trifort.rootbeer.runtime.Serializer");
+        m_bcl.peek().makeClass(m_className, "org.trifort.rootbeer.runtime.Serializer");
     }
 
     /**
@@ -237,14 +237,14 @@ public class VisitorGen extends AbstractVisitorGen
     private void makeCtor() {
         SootClass mem_cls = Scene.v().getSootClass("org.trifort.rootbeer.runtime.Memory");
 
-        m_bcl.top().startMethod("<init>", VoidType.v(), mem_cls.getType(), mem_cls.getType());
-        Local this_ref = m_bcl.top().refThis();
-        Local param0 = m_bcl.top().refParameter(0);
-        Local param1 = m_bcl.top().refParameter(1);
-        m_bcl.top().pushMethod("org.trifort.rootbeer.runtime.Serializer", "<init>", VoidType.v(), mem_cls.getType(), mem_cls.getType());
-        m_bcl.top().invokeMethodNoRet(this_ref, param0, param1);
-        m_bcl.top().returnVoid();
-        m_bcl.top().endMethod();
+        m_bcl.peek().startMethod("<init>", VoidType.v(), mem_cls.getType(), mem_cls.getType());
+        Local this_ref = m_bcl.peek().refThis();
+        Local param0 = m_bcl.peek().refParameter(0);
+        Local param1 = m_bcl.peek().refParameter(1);
+        m_bcl.peek().pushMethod("org.trifort.rootbeer.runtime.Serializer", "<init>", VoidType.v(), mem_cls.getType(), mem_cls.getType());
+        m_bcl.peek().invokeMethodNoRet(this_ref, param0, param1);
+        m_bcl.peek().returnVoid();
+        m_bcl.peek().endMethod();
     }
 
     private static void makeSentinalCtors( final Set<String> sentinalCtorsCreated )
