@@ -108,7 +108,7 @@ public class VisitorReadGenStatic extends AbstractVisitorGen
             final int index = m_staticOffsets.getIndex( field );
             bcl_mem.setAddress( LongConstant.v( index ) );
             if ( field.getType().isRefType() )
-                readRefField( field );
+                readRefField( bcl, gc_visit, memory, m_objSerializing.top(), field );
             else
                 readNonRefField( field );
         }

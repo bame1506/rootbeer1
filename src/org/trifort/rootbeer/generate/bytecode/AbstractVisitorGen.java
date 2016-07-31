@@ -135,16 +135,20 @@ public class AbstractVisitorGen
             return true;
     }
 
-    protected void readRefField(OpenCLField ref_field)
+    protected static void readRefField
+    (
+        final BytecodeLanguage bcl           ,
+        final Local            gc_obj_visit  ,
+        final Local            currMem       ,
+        final Local            objSerializing,
+        final OpenCLField      ref_field
+    )
     {
         SootField soot_field = ref_field.getSootField();
-        SootClass soot_class = Scene.v().getSootClass(soot_field.getDeclaringClass().getName());
+        final SootClass soot_class = Scene.v().getSootClass( soot_field.getDeclaringClass().getName() );
+        final BclMemory bcl_mem = new BclMemory( bcl, currMem );
 
-        BytecodeLanguage bcl = m_bcl.top();
-        Local gc_obj_visit = m_gcObjVisitor.top();
-        BclMemory bcl_mem = new BclMemory(bcl, m_currMem.top());
-
-        Local ref = bcl_mem.readRef();
+        final Local ref = bcl_mem.readRef();
         bcl_mem.useInstancePointer();
         bcl_mem.pushAddress();
         bcl_mem.setAddress(ref);
@@ -159,8 +163,8 @@ public class AbstractVisitorGen
         {
             if ( ref_field.isInstance() )
             {
-                bcl.pushMethod(gc_obj_visit, "readField", obj_class.getType(), obj_class.getType(), string.getType());
-                original_field_value = bcl.invokeMethodRet(gc_obj_visit, m_objSerializing.top(), StringConstant.v(soot_field.getName()));
+                bcl.pushMethod( gc_obj_visit, "readField", obj_class.getType(), obj_class.getType(), string.getType() );
+                original_field_value = bcl.invokeMethodRet( gc_obj_visit, objSerializing, StringConstant.v( soot_field.getName() ) );
             }
             else
             {
@@ -172,7 +176,7 @@ public class AbstractVisitorGen
         else
         {
             if ( ref_field.isInstance() )
-                original_field_value = bcl.refInstanceField( m_objSerializing.top(), ref_field.getName() );
+                original_field_value = bcl.refInstanceField( objSerializing, ref_field.getName() );
             else
                 original_field_value = bcl.refStaticField( soot_class.getType(), ref_field.getName() );
         }
@@ -188,8 +192,8 @@ public class AbstractVisitorGen
         {
             if ( ref_field.isInstance() )
             {
-                bcl.pushMethod(gc_obj_visit, "writeField", VoidType.v(), obj_class.getType(), string.getType(), obj_class.getType());
-                bcl.invokeMethodNoRet(gc_obj_visit, m_objSerializing.top(), StringConstant.v(soot_field.getName()), ret);
+                bcl.pushMethod( gc_obj_visit, "writeField", VoidType.v(), obj_class.getType(), string.getType(), obj_class.getType() );
+                bcl.invokeMethodNoRet( gc_obj_visit, objSerializing, StringConstant.v(soot_field.getName()), ret );
             }
             else
             {
@@ -201,7 +205,7 @@ public class AbstractVisitorGen
         else
         {
             if ( ref_field.isInstance() )
-                bcl.setInstanceField(soot_field, m_objSerializing.top(), ret);
+                bcl.setInstanceField(soot_field, objSerializing, ret);
             else
                 bcl.setStaticField(soot_field, ret);
         }

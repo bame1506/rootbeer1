@@ -696,11 +696,9 @@ public class VisitorReadGen extends AbstractVisitorGen
             for ( final OpenCLField ref_field : ref_fields )
             {
                 //increment the address to get to this location
-                bcl_mem.incrementAddress(inc_size);
+                bcl_mem.incrementAddress( inc_size );
                 inc_size = 0;
-
-                //read the field
-                readRefField(ref_field);
+                readRefField( bcl, m_gcObjVisitor.top(), m_currMem.top(), m_objSerializing.top(), ref_field );
             }
 
             if ( inc_size > 0 )
