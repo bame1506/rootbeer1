@@ -23,12 +23,10 @@ org_trifort_classConstant( int type_num )
 }
 
 __device__  char *
-org_trifort_gc_deref( int handle )
+org_trifort_gc_deref( int compressedAddress )
 {
     char * data_arr = (char *) m_Local[0]; // dpObjectMem
-    long long lhandle = handle;
-    lhandle = lhandle << 4;
-    return &data_arr[lhandle];
+    return &data_arr[ ( (long long) compressedAddress ) << MallocAlignZeroBits ];
 }
 
 
@@ -53,11 +51,13 @@ int __device__ padNumberTo
                        number + multiplier - number % multiplier;
     assert( padded % multiplier == 0 );
     assert( padded >= number );
+    assert( padded <  number + multiplier );
     return padded;
 }
 
 /**
- * Allocate at least the specified size in bytes. Align to 16 Bytes.
+ * Allocate at least the specified size in bytes.
+ * Align to MallocAlignBytes (16) Bytes.
  *
  * gc means garbage collector.
  *
@@ -67,7 +67,7 @@ __device__ int
 org_trifort_gc_malloc_no_fail( int size )
 {
     int const lastAddress = atomicAdd( &global_free_pointer,
-                                       padNumberTo( size, 16 ) / 16 );
+                                       padNumberTo( size, MallocAlignBytes ) / MallocAlignBytes );
     return lastAddress;
 }
 
@@ -87,7 +87,7 @@ org_trifort_gc_malloc( int size )
      * This is floor( size/16 ) + 1. It is stricter than this new version, so
      * it shouldn't have led to a segfault, it was just confusing and lax
      */
-    if ( address + padNumberTo( size, 16 ) / 16 > objectMemSizeDiv16 )
+    if ( address + padNumberTo( size, MallocAlignBytes ) / MallocAlignBytes > objectMemSizeDiv16 )
     {
         assert( false && "Garbage collector ran out of memory!" );
         // this needs to be checked by the caller! Else a segfault before the

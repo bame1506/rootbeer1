@@ -13,6 +13,10 @@
 #include <assert.h>
 
 
+#define MallocAlignZeroBits 4 // %%MallocAlignBytes%%
+#define MallocAlignBytes 16 // %%MallocAlignBytes%%
+
+
 __constant__ size_t m_Local[3]; // dpObjectMem, objectMemSizeDiv16, dpClassMem
 __shared__ char m_shared[%%shared_mem_size%%];
 

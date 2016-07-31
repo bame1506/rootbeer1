@@ -23,7 +23,7 @@ org_trifort_gc_deref(char * gc_info, int handle){
   char * data_arr;
 
   lhandle = handle;
-  lhandle = lhandle << 4;
+  lhandle = lhandle << MallocAlignZeroBits;
   to_space = org_trifort_gc_get_to_space_address(gc_info);
   space_size = org_trifort_getlong(gc_info, 16);
   array = lhandle / space_size;
@@ -53,7 +53,7 @@ org_trifort_gc_malloc(char * gc_info, int size){
 
   while(1){
     ret = atom_add(addr, (long) size);
-    
+
     start_array = ret / space_size;
     end_array = (ret + size) / space_size;
 
@@ -61,7 +61,7 @@ org_trifort_gc_malloc(char * gc_info, int size){
       continue;
     }
 
-    ret = ret >> 4;
+    ret = ret >> MallocAlignZeroBits;
     return (int) ret;
   }
 }
@@ -80,6 +80,6 @@ org_trifort_gc_init(char * gc_info_space,
   org_trifort_setlong(gc_info_space, 0, (long long) to_space);
   org_trifort_setlong(gc_info_space, 8, to_space_free_ptr);
   org_trifort_setlong(gc_info_space, 16, space_size);
-    
+
   return (char *) gc_info_space;
 }

@@ -5,15 +5,15 @@ DWORD run(void * data)
   int block_idxx;
   long long lhandle;
   int exception;
-  int handle;    
+  int handle;
   int index;
 
   lock_thread_id();
   thread_idxx = global_thread_id;
-    
+
   ++global_thread_id;
   unlock_thread_id();
-  
+
   block_idxx = global_block_idxx;
 
   TlsSetValue(blockIdxxKey, (void *) block_idxx);
@@ -23,12 +23,12 @@ DWORD run(void * data)
 
   index = block_idxx * global_block_dimx + thread_idxx;
   lhandle = global_handles[index];
-  lhandle = lhandle >> 4;
+  lhandle = lhandle >> MallocAlignZeroBits;
   handle = (int) lhandle;
   exception = 0;
   %%invoke_run%%(global_gc_info, handle, &exception);
   global_exceptions[index] = exception;
-  
+
   barrier_mutex_lock();
   global_thread_count--;
   barrier_mutex_unlock();
@@ -84,7 +84,7 @@ void entry(char * gc_info_space,
 
     threads = (HANDLE *) malloc(sizeof(HANDLE) * thread_count);
 
-    global_num_cores = 4;
+    global_num_cores = MallocAlignZeroBits;
     global_thread_count = thread_count;
     global_block_idxx = block_i;
     global_thread_id = 0;

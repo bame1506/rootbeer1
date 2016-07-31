@@ -7,6 +7,7 @@
 
 package org.trifort.rootbeer.generate.opencl.tweaks;
 
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,52 +21,18 @@ import org.trifort.rootbeer.util.CompilerRunner;
 import org.trifort.rootbeer.util.CudaPath;
 import org.trifort.rootbeer.util.WindowsCompile;
 
-public class CudaTweaks extends Tweaks {
 
-  @Override
-  public String getGlobalAddressSpaceQualifier() {
-    return "";
-  }
-
-  @Override
-  public String getUnixHeaderPath() {
-    return "/org/trifort/rootbeer/generate/opencl/CudaHeader.c";
-  }
-
-  @Override
-  public String getWindowsHeaderPath() {
-    return "/org/trifort/rootbeer/generate/opencl/CudaHeader.c";
-  }
-
-  @Override
-  public String getBothHeaderPath() {
-    return null;
-  }
-
-  @Override
-  public String getBarrierPath() {
-    return null;
-  }
-
-  @Override
-  public String getGarbageCollectorPath() {
-    return "/org/trifort/rootbeer/generate/opencl/GarbageCollector.c";
-  }
-
-  @Override
-  public String getUnixKernelPath() {
-    return "/org/trifort/rootbeer/generate/opencl/CudaKernel.c";
-  }
-
-  @Override
-  public String getWindowsKernelPath() {
-    return "/org/trifort/rootbeer/generate/opencl/CudaKernel.c";
-  }
-
-  @Override
-  public String getBothKernelPath() {
-    return null;
-  }
+public class CudaTweaks extends Tweaks
+{
+  @Override public String getGlobalAddressSpaceQualifier() { return ""; }
+  @Override public String getUnixHeaderPath             () { return "/org/trifort/rootbeer/generate/opencl/CudaHeader.c"; }
+  @Override public String getWindowsHeaderPath          () { return "/org/trifort/rootbeer/generate/opencl/CudaHeader.c"; }
+  @Override public String getBothHeaderPath             () { return null; }
+  @Override public String getBarrierPath                () { return null; }
+  @Override public String getGarbageCollectorPath       () { return "/org/trifort/rootbeer/generate/opencl/GarbageCollector.c"; }
+  @Override public String getUnixKernelPath             () { return "/org/trifort/rootbeer/generate/opencl/CudaKernel.c"; }
+  @Override public String getWindowsKernelPath          () { return "/org/trifort/rootbeer/generate/opencl/CudaKernel.c"; }
+  @Override public String getBothKernelPath             () { return null; }
 
   /**
    * Compiles CUDA code.
@@ -119,9 +86,6 @@ public class CudaTweaks extends Tweaks {
         }
     }
 
-  @Override
-  public String getDeviceFunctionQualifier() {
-    return "__device__";
-  }
+  @Override public String getDeviceFunctionQualifier() { return "__device__"; }
 
 }

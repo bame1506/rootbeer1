@@ -7,6 +7,11 @@
 #include <stddef.h>     // NULL
 #include <assert.h>
 
+/* e.g. because of alignment to 16 the last 4 bits will always be 0
+ * and can be cut off for compression! */
+#define N_ALIGNED_ZERO_BITS 4
+
+
 #define CE( STATUS )                                                \
 {                                                                   \
     const CUresult status = STATUS;                                 \
@@ -363,20 +368,26 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
 
         __PRINTOUT( "[cudaRun] heap_end_long = %lu\n", heap_end_long );
     #endif
-    jint heap_end_int = (jint)( heap_end_long / 16 ); // same as div 16
-    assert( ( (jlong) heap_end_int ) * 16 == heap_end_long );
+    assert( heap_end_long >= 0 ); /* it also may not be -1 which is sometimes used for null ! */
+    jint heap_end_int = (jint)( heap_end_long >> N_ALIGNED_ZERO_BITS );
+    /* check that compression is reversible (includes check for numbers not fitting into jint) */
+    assert( ( (jlong) heap_end_int ) << N_ALIGNED_ZERO_BITS == heap_end_long );
     s->info_space[0] = heap_end_int;
 
     unsigned long long hostMLocal[3];
     hostMLocal[0] = s->gpu_object_mem;
-    assert( s->cpu_object_mem_size % 16 == 0 );
-    hostMLocal[1] = s->cpu_object_mem_size / 16;    /* WHAT is up with this bitshift ? equiv to div 16 */
-    hostMLocal[2] = s->gpu_class_mem;
+    assert( s->cpu_object_mem_size >= 0 );
+    hostMLocal[1] = s->cpu_object_mem_size >> N_ALIGNED_ZERO_BITS;
+    assert( s->cpu_object_mem_size >= 0 );
+    assert( sizeof(jint) == 4 &&
+            "If this assert fails the assert after this may need to be rewritten!" );
+    assert( hostMLocal[1] < 2147483647 );
     /* equality would be more clean programming, but it just isn't, and if
      * the hostMLocal version is smaller no harm is done, as that size is used
-     * for the rootbeer garbage collector. */
-    assert( s->cpu_object_mem_size >= 0 );
-    assert( hostMLocal[1] * 16 <= (unsigned long long) s->cpu_object_mem_size );
+     * for the rootbeer garbage collector. (Currently the size is set manually
+     * by the user in createContext arguments or with */
+    assert( hostMLocal[1] << N_ALIGNED_ZERO_BITS <= (unsigned long long) s->cpu_object_mem_size );
+    hostMLocal[2] = s->gpu_class_mem;
 
     /* Get address and size of global_free_pointer which is defined in
      * src/org/trifort/rootbeer/generate/opencl/CudaKernel.c
@@ -485,7 +496,7 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
      * This means that nHitsB lies after nHistA in the the rootbeer managed
      * heap.
      */
-    heap_end_long *= 16;
+    heap_end_long <<= N_ALIGNED_ZERO_BITS;
     CE( cuMemcpyDtoH( s->cpu_object_mem, s->gpu_object_mem, heap_end_long ) )
     if ( s->using_exceptions )
         CE( cuMemcpyDtoH(s->cpu_exceptions_mem, s->gpu_exceptions_mem, s->cpu_exceptions_mem_size) )

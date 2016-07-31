@@ -4,7 +4,7 @@ static void * run(void * data){
   int block_idxx;
   long long lhandle;
   int exception;
-  int handle;    
+  int handle;
   int index;
 
   lock_thread_id();
@@ -12,9 +12,9 @@ static void * run(void * data){
 
   ++global_thread_id;
   unlock_thread_id();
-  
+
   block_idxx = global_block_idxx;
-    
+
   pthread_setspecific(blockIdxxKey, (void *) block_idxx);
   pthread_setspecific(blockDimxKey, (void *) global_block_dimx);
   pthread_setspecific(gridDimxKey, (void *) global_grid_dimx);
@@ -22,7 +22,7 @@ static void * run(void * data){
 
   index = block_idxx * global_block_dimx + thread_idxx;
   lhandle = global_handles[index];
-  lhandle = lhandle >> 4;
+  lhandle = lhandle >> MallocAlignZeroBits;
   handle = (int) lhandle;
   exception = 0;
   %%invoke_run%%(global_gc_info, handle, &exception);
@@ -74,7 +74,7 @@ void entry(char * gc_info_space,
   pthread_mutex_init(&thread_id_mutex, NULL);
   pthread_mutex_init(&barrier_mutex, NULL);
   pthread_mutex_init(&thread_gate_mutex, NULL);
-  
+
   for(block_i = 0; block_i < grid_dimx; ++block_i){
     thread_start = block_i * block_dimx;
     thread_stop = (block_i + 1) * block_dimx;
@@ -84,8 +84,8 @@ void entry(char * gc_info_space,
     thread_count = thread_stop - thread_start;
 
     threads = (pthread_t **) malloc(sizeof(pthread_t *) * thread_count);
-    
-    global_num_cores = 4;
+
+    global_num_cores = MallocAlignZeroBits;
     global_thread_count = thread_count;
     global_block_idxx = block_i;
     global_thread_id = 0;
@@ -99,11 +99,11 @@ void entry(char * gc_info_space,
       pthread_create(thread, NULL, &run, NULL);
       threads[i] = thread;
     }
-  
+
     for(i = 0; i < thread_count; ++i){
       thread = threads[i];
       pthread_join(*thread, NULL);
-    } 
+    }
 
     free(threads);
   }

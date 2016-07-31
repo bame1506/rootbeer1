@@ -30,6 +30,7 @@ import org.trifort.rootbeer.configuration.Configuration;
 import org.trifort.rootbeer.configuration.RootbeerPaths;
 import org.trifort.rootbeer.entry.ForcedFields;
 import org.trifort.rootbeer.entry.CompilerSetup;
+import org.trifort.rootbeer.generate.bytecode.Constants;
 import org.trifort.rootbeer.generate.bytecode.MethodCodeSegment;
 import org.trifort.rootbeer.generate.bytecode.ReadOnlyTypes;
 import org.trifort.rootbeer.generate.opencl.fields.CompositeField;
@@ -58,7 +59,7 @@ import soot.rbclassload.RootbeerClassLoader;
 
 
 /**
- * Manual (need to set and release instance manually) Singleton which
+ * Manual Singleton (need to set and release instance manually) which
  * increments an ID when reinitialized.
  */
 public class OpenCLScene
@@ -122,13 +123,6 @@ public class OpenCLScene
 
     public List<SootMethod> getMethods(){ return m_methods; }
 
-    public void addArrayType( OpenCLArrayType array_type )
-    {
-        if(m_arrayTypes.contains(array_type))
-            return;
-        m_arrayTypes.add(array_type);
-    }
-
     public void addInstanceof( final Type type )
     {
         OpenCLInstanceof to_add = new OpenCLInstanceof(type);
@@ -146,12 +140,6 @@ public class OpenCLScene
             m_classes.put(class_name, ocl_class);
             return ocl_class;
         }
-    }
-
-    public void addField( final SootField soot_field )
-    {
-        final SootClass soot_class = soot_field.getDeclaringClass();
-        getOpenCLClass( soot_class ).addField( new OpenCLField( soot_field, soot_class) );
     }
 
     private String getRuntimeBasicBlockClassName()
@@ -235,45 +223,61 @@ public class OpenCLScene
     {
         Set<String> methods = RootbeerClassLoader.v().getDfsInfo().getMethods();
         MethodSignatureUtil util = new MethodSignatureUtil();
-        for ( String method_sig : methods )
+        for ( final String method_sig : methods )
         {
             util.parse(method_sig);
             SootMethod method = util.getSootMethod();
             addMethod(method);
         }
         CompilerSetup compiler_setup = new CompilerSetup();
-        for( String extra_method : compiler_setup.getExtraMethods() )
+        for( final String extra_method : compiler_setup.getExtraMethods() )
         {
             util.parse(extra_method);
             addMethod(util.getSootMethod());
         }
 
         Set<SootField> fields = RootbeerClassLoader.v().getDfsInfo().getFields();
-        for ( SootField field : fields )
-            addField(field);
+        for ( final SootField field : fields )
+        {
+            final SootClass soot_class = field.getDeclaringClass();
+            getOpenCLClass( soot_class ).addField( new OpenCLField( field, soot_class) );
+        }
 
         FieldSignatureUtil field_util = new FieldSignatureUtil();
         ForcedFields forced_fields = new ForcedFields();
-        for(String field_sig : forced_fields.get()){
+        for ( final String field_sig : forced_fields.get() )
+        {
             field_util.parse(field_sig);
-            addField(field_util.getSootField());
+            final SootField field = field_util.getSootField();
+            final SootClass soot_class = field.getDeclaringClass();
+            getOpenCLClass( soot_class ).addField( new OpenCLField( field, soot_class) );
         }
 
         Set<ArrayType> array_types = RootbeerClassLoader.v().getDfsInfo().getArrayTypes();
-        for(ArrayType array_type : array_types){
-            OpenCLArrayType ocl_array_type = new OpenCLArrayType(array_type);
-            addArrayType(ocl_array_type);
+        for ( final ArrayType array_type : array_types )
+        {
+            final OpenCLArrayType ocl_array_type = new OpenCLArrayType(array_type);
+            if ( ! m_arrayTypes.contains( ocl_array_type ) )
+                m_arrayTypes.add( ocl_array_type );
         }
-        for(ArrayType array_type : compiler_setup.getExtraArrayTypes()){
-            OpenCLArrayType ocl_array_type = new OpenCLArrayType(array_type);
-            addArrayType(ocl_array_type);
+        for ( final ArrayType array_type : compiler_setup.getExtraArrayTypes() )
+        {
+            final OpenCLArrayType ocl_array_type = new OpenCLArrayType( array_type );
+            if ( ! m_arrayTypes.contains( ocl_array_type ) )
+                m_arrayTypes.add( ocl_array_type );
         }
 
         Set<Type> instanceofs = RootbeerClassLoader.v().getDfsInfo().getInstanceOfs();
-        for ( Type type : instanceofs )
-            addInstanceof(type);
+        for ( final Type type : instanceofs )
+        {
+            final OpenCLInstanceof to_add = new OpenCLInstanceof(type);
+            if ( ! m_instanceOfs.contains(to_add) )
+                m_instanceOfs.add( to_add );
+        }
 
-        buildCompositeFields(); /* sets m_compositeFields */
+        final CompositeFieldFactory factory = new CompositeFieldFactory();
+        factory.setup( m_classes );
+        m_compositeFields = factory.getCompositeFields();
     }
 
     /**
@@ -380,6 +384,9 @@ public class OpenCLScene
         int size = Configuration.compilerInstance().getSharedMemSize();
         String size_str = ""+size;
         cuda_code = cuda_code.replaceAll("%%shared_mem_size%%", size_str);
+
+        cuda_code = cuda_code.replaceAll( "%%MallocAlignZeroBits%%", ""+Constants.MallocAlignZeroBits );
+        cuda_code = cuda_code.replaceAll( "%%MallocAlignBytes%%"   , ""+Constants.MallocAlignBytes    );
 
         boolean exceptions = Configuration.compilerInstance().getExceptions();
         String exceptions_str;
@@ -559,16 +566,9 @@ public class OpenCLScene
         return soot_class.getName().equals(m_rootSootClass.getName());
     }
 
-    public boolean                  isArrayLocalWrittenTo(Local local){ return true   ; }
-    public ReadOnlyTypes            getReadOnlyTypes     () { return m_readOnlyTypes  ; }
-    public Map<String, OpenCLClass> getClassMap          () { return m_classes        ; }
-    public List<CompositeField>     getCompositeFields   () { return m_compositeFields; }
-
-    private void buildCompositeFields()
-    {
-        CompositeFieldFactory factory = new CompositeFieldFactory();
-        factory.setup(m_classes);
-        m_compositeFields = factory.getCompositeFields();
-    }
-    public ClassConstantNumbers getClassConstantNumbers(){ return m_constantNumbers; }
+    public boolean                  isArrayLocalWrittenTo(Local local){ return true  ; }
+    public ReadOnlyTypes            getReadOnlyTypes     (){ return m_readOnlyTypes  ; }
+    public Map<String, OpenCLClass> getClassMap          (){ return m_classes        ; }
+    public List<CompositeField>     getCompositeFields   (){ return m_compositeFields; }
+    public ClassConstantNumbers   getClassConstantNumbers(){ return m_constantNumbers; }
 }
