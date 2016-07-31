@@ -213,41 +213,61 @@ public class AbstractVisitorGen
         bcl_mem.popAddress();
     }
 
-    protected void readNonRefField(OpenCLField field)
+    protected static void readNonRefField
+    (
+        final BytecodeLanguage bcl           ,
+        final Local            currMem       ,
+        final Local            objSerializing,
+        final OpenCLField      field
+    )
     {
-        SootField soot_field = field.getSootField();
-        String function_name = "read"+getTypeString(soot_field);
+        if ( bcl     == null ) throw new IllegalArgumentException( "bcl may not be null!"     );
+        if ( currMem == null ) throw new IllegalArgumentException( "currMem may not be null!" );
+        if ( field   == null ) throw new IllegalArgumentException( "field may not be null!"   );
+        if ( ! ( objSerializing != null || ! field.isInstance() ) ) throw new IllegalArgumentException( "objSerializing may not be null!" );
 
-        BytecodeLanguage bcl = m_bcl.top();
-        bcl.pushMethod(m_currMem.top(), function_name, soot_field.getType());
-        Local data = bcl.invokeMethodRet(m_currMem.top());
+        final SootField soot_field = field.getSootField();
+        final String function_name = "read" + getTypeString( soot_field );
 
-        SootClass soot_class = Scene.v().getSootClass(soot_field.getDeclaringClass().getName());
-        if(soot_class.isApplicationClass()){
-            if(field.isInstance()){
-                bcl.setInstanceField(soot_field, m_objSerializing.top(), data);
-            } else {
-                bcl.setStaticField(soot_field, data);
-            }
-        } else {
-            SootClass obj = Scene.v().getSootClass("java.lang.Object");
+        bcl.pushMethod( currMem, function_name, soot_field.getType() );
+        final Local data = bcl.invokeMethodRet( currMem );
+
+        final SootClass soot_class = Scene.v().getSootClass( soot_field.getDeclaringClass().getName() );
+        if ( soot_class.isApplicationClass() )
+        {
+            if ( field.isInstance() )
+                bcl.setInstanceField( soot_field, objSerializing, data );
+            else
+                bcl.setStaticField( soot_field, data );
+        }
+        else
+        {
             SootClass string = Scene.v().getSootClass("java.lang.String");
             String static_str;
             SootClass first_param_type;
             Value first_param;
-            if(field.isInstance()){
-                static_str = "";
-                first_param_type = obj;
-                first_param = m_objSerializing.top();
-            } else {
-                static_str = "Static";
-                first_param_type = Scene.v().getSootClass("java.lang.Class");
-                first_param = ClassConstant.v(soot_class.getName());
+            if ( field.isInstance() )
+            {
+                static_str       = "";
+                first_param_type = Scene.v().getSootClass( "java.lang.Object" );
+                first_param      = objSerializing;
             }
-            String private_field_fun_name = "write"+static_str+getTypeString(soot_field);
-            Local private_fields = bcl.newInstance("org.trifort.rootbeer.runtime.PrivateFields");
-            bcl.pushMethod(private_fields, private_field_fun_name, VoidType.v(), first_param_type.getType(), string.getType(), string.getType(), soot_field.getType());
-            bcl.invokeMethodNoRet(private_fields, first_param, StringConstant.v(soot_field.getName()), StringConstant.v(soot_field.getDeclaringClass().getName()), data);
+            else
+            {
+                static_str       = "Static";
+                first_param_type = Scene.v().getSootClass( "java.lang.Class" );
+                first_param      = ClassConstant.v( soot_class.getName() );
+            }
+            final Local private_fields = bcl.newInstance( "org.trifort.rootbeer.runtime.PrivateFields" );
+            bcl.pushMethod( private_fields, "write"+static_str+getTypeString( soot_field ),
+                            VoidType.v(), first_param_type.getType(),
+                            string.getType(), string.getType(), soot_field.getType() );
+            bcl.invokeMethodNoRet(
+                private_fields, first_param,
+                StringConstant.v( soot_field.getName() ),
+                StringConstant.v( soot_field.getDeclaringClass().getName() ),
+                data
+            );
         }
     }
 

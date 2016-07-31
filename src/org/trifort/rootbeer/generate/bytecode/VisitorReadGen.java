@@ -715,8 +715,7 @@ public class VisitorReadGen extends AbstractVisitorGen
                     bcl_mem.incrementAddress(inc_size);
                     inc_size = 0;
                 }
-                //read the field
-                readNonRefField(non_ref_field);
+                readNonRefField( bcl, m_currMem.top(), m_objSerializing.top(), non_ref_field );
             }
             if ( inc_size > 0 )
                 bcl_mem.incrementAddress(inc_size);

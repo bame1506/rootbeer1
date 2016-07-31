@@ -110,7 +110,7 @@ public class VisitorReadGenStatic extends AbstractVisitorGen
             if ( field.getType().isRefType() )
                 readRefField( bcl, gc_visit, memory, m_objSerializing.top(), field );
             else
-                readNonRefField( field );
+                readNonRefField( bcl, memory, null, field );
         }
 
         for ( final SootClass child : children )
