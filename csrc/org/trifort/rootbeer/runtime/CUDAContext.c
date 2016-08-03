@@ -1,11 +1,15 @@
-#include "CUDARuntime.h"
-#include "Stopwatch.h"
+
+#include "CUDAContext.h"
+
 #include <cuda.h>
 #include <stdio.h>      // printf, sprintf
 #include <stdlib.h>     // malloc, free
 #include <string.h>     // strlen
-#include <stddef.h>     // NULL
 #include <assert.h>
+
+#include "PointerCasting.h"
+#include "CUDARuntime.h"
+#include "Stopwatch.h"
 
 
 #define DEBUG_CUDA_CONTEXT 0
@@ -36,9 +40,9 @@
 #define __PRINTOUT(...) sprintf( &output[ strlen( output ) ],  __VA_ARGS__ );
 //#define __PRINTOUT(...) printf( __VA_ARGS__ );
 
+
 /* One reason for using the CUDA driver api is that nvcc isn't needed,
  * instead this can be compiled with gcc! */
-
 struct ContextState
 {
     CUdevice           device                       ;
@@ -153,14 +157,14 @@ JNIEXPORT jlong JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_allocateNa
 {
     struct ContextState * ret = (struct ContextState *) malloc(sizeof(struct ContextState));
     ret->context_built = 0;
-    return (jlong) ret;
+    return pointerToJlong( ret );
 }
 
 JNIEXPORT void JNICALL
 Java_org_trifort_rootbeer_runtime_CUDAContext_freeNativeContext
 ( JNIEnv *env, jobject this_ref, jlong reference )
 {
-    struct ContextState * s /* stateObject */ = (struct ContextState *) reference;
+    struct ContextState * s /* stateObject */ = (struct ContextState *) jlongToPointer( reference );
     if ( s->context_built )
     {
         free        ( s->info_space         );
@@ -209,7 +213,7 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_nativeBuild
 )
 {
     /* just basically an alias + pointer conversion */
-    struct ContextState * const s /* stateObject */ = (struct ContextState *) rNativeContext;
+    struct ContextState * const s /* stateObject */ = (struct ContextState *) jlongToPointer( rNativeContext );
 
     s->block_count_x    = rBlockCountX    ;
     s->block_count_y    = rBlockCountY    ;
@@ -252,10 +256,10 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_nativeBuild
         CE( cuFuncSetCacheConfig( s->function, cache_config_enum ) )
     }
 
-    s->cpu_object_mem     = (void *) (*env)->CallLongMethod( env, rObjectMem    , get_address_method );
-    s->cpu_handles_mem    = (void *) (*env)->CallLongMethod( env, rHandlesMem   , get_address_method );
-    s->cpu_exceptions_mem = (void *) (*env)->CallLongMethod( env, rExceptionsMem, get_address_method );
-    s->cpu_class_mem      = (void *) (*env)->CallLongMethod( env, rClassMem     , get_address_method );
+    s->cpu_object_mem     = jlongToPointer( (*env)->CallLongMethod( env, rObjectMem    , get_address_method ) );
+    s->cpu_handles_mem    = jlongToPointer( (*env)->CallLongMethod( env, rHandlesMem   , get_address_method ) );
+    s->cpu_exceptions_mem = jlongToPointer( (*env)->CallLongMethod( env, rExceptionsMem, get_address_method ) );
+    s->cpu_class_mem      = jlongToPointer( (*env)->CallLongMethod( env, rClassMem     , get_address_method ) );
 
     s->cpu_object_mem_size     = (*env)->CallLongMethod( env, rObjectMem    , get_size_method );
     s->cpu_handles_mem_size    = (*env)->CallLongMethod( env, rHandlesMem   , get_size_method );
@@ -358,7 +362,7 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
     jobject  stats_row
 )
 {
-    struct ContextState * const s = (struct ContextState *) nativeContext;
+    struct ContextState * const s = (struct ContextState *) jlongToPointer( nativeContext );
 
     stopwatchStart(&(s->execMemcopyToDevice));
 

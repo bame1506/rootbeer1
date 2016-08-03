@@ -9,7 +9,8 @@ if [ -z "$CUDA_INC" ] || [ ! -d "$CUDA_INC" ]; then
 fi
 
 compileSource() {
-    while [ $# -gt 1 ]; do
+    while [ $# -ge 1 ]; do
+        echo "compile $1.c"
         gcc -m32 -fPIC -g -c -o "$1.o"                   \
             -I'/usr/lib/jvm/default-java/include/'       \
             -I'/usr/lib/jvm/default-java/include/linux'  \
@@ -22,8 +23,10 @@ compileSource() {
 }
 compileSource FixedMemory CUDARuntime CUDAContext Stopwatch
 
+echo "Link rootbeer_x86.so.1"
 gcc -m32 -shared -Wl,-soname,rootbeer -o rootbeer_x86.so.1 FixedMemory.o -lc
 
-gcc -shared -L'/usr/lib32/nvidia-current/'                   \
-    -m32 -Wl,-soname,rootbeer_cuda -o rootbeer_cuda_x86.so.1 \
+echo "Link rootbeer_cuda_x86.so.1"
+gcc -m32 -shared -L'/usr/lib32/nvidia-current/'         \
+    -Wl,-soname,rootbeer_cuda -o rootbeer_cuda_x86.so.1 \
     CUDARuntime.o CUDAContext.o Stopwatch.o -lc -lcuda

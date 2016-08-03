@@ -1,7 +1,12 @@
+
 #include "FixedMemory.h"
+
 #include <cuda.h>
 #include <stdlib.h>     // calloc, free
 #include <assert.h>
+
+#include "PointerCasting.h"
+
 
 /* These functions here are used by FixedMemory.java as part of the
  * serialization process. I guess this isn't possible in Java, because
@@ -33,7 +38,7 @@ Java_org_trifort_rootbeer_runtime_FixedMemory_doRead##NAME              \
     /* first go ptr bytes onward, starting from cpu_base, then cast     \
      * to wanted type pointer and read / write to it. jlong is          \
      * basically tp be handled like uintptr_t */                        \
-    return ( (TYPE*)( cpu_base + ptr ) )[0];                            \
+    return ( (TYPE*) jlongToPointer( cpu_base + ptr ) )[0];             \
 }                                                                       \
                                                                         \
 JNIEXPORT void JNICALL                                                  \
@@ -58,7 +63,7 @@ Java_org_trifort_rootbeer_runtime_FixedMemory_doWrite##NAME             \
     assert( sizeof( jlong    ) == 8 );                                  \
                                                                         \
     assert( ptr % sizeof( TYPE ) == 0 );                                \
-    ( (TYPE*) ( cpu_base + ptr ) )[0] = value;                          \
+    ( (TYPE*) jlongToPointer( cpu_base + ptr ) )[0] = value;            \
 }                                                                       \
                                                                         \
 JNIEXPORT void JNICALL                                                  \
@@ -72,7 +77,7 @@ Java_org_trifort_rootbeer_runtime_FixedMemory_doRead##NAME##Array       \
     jint         len                                                    \
 )                                                                       \
 {                                                                       \
-    JTYPE* dest = (JTYPE *)( ref + start );                             \
+    JTYPE* dest = (JTYPE *)jlongToPointer( ref + start );               \
     (*env)->Set##NAME##ArrayRegion( env, array, start, len, dest );     \
 }                                                                       \
                                                                         \
@@ -87,7 +92,7 @@ Java_org_trifort_rootbeer_runtime_FixedMemory_doWrite##NAME##Array      \
     jint         len                                                    \
 )                                                                       \
 {                                                                       \
-    JTYPE * dest = (JTYPE *)( ref + start );                            \
+    JTYPE * dest = (JTYPE *) jlongToPointer( ref + start );             \
     (*env)->Get##NAME##ArrayRegion( env, array, start, len, dest );     \
 }                                                                       \
 
@@ -105,11 +110,11 @@ __FIXED_MEMORY_WRAPPER( Long   , jlong   , jlong  )  /* Signature: ()J */
 JNIEXPORT jlong JNICALL Java_org_trifort_rootbeer_runtime_FixedMemory_malloc
 ( JNIEnv *env, jobject this_obj, jlong size )
 {
-    return (jlong) calloc(size, 1);
+    return pointerToJlong( calloc(size, 1) );
 }
 
 JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_FixedMemory_free
 ( JNIEnv *env, jobject this_obj, jlong address )
 {
-    free( (void *) address );
+    free( jlongToPointer( address ) );
 }
