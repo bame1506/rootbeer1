@@ -221,6 +221,9 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_nativeBuild
 
     CE( cuDeviceGet( &(s->device) , rDeviceIndex ) )
     CE( cuCtxCreate( &(s->context), CU_CTX_MAP_HOST, s->device ) )
+    #if ( ! defined( NDEBUG ) ) && ( DEBUG_CUDA_CONTEXT >= 9 )
+        printf( "Created CUDA Context for device number %i (cuDevice: %i)\n", rDeviceIndex, s->device );
+    #endif
 
     /* Loads fatCubin (device code for multiple architectures) into a module */
     void * fatcubin = malloc( rCubinLength ); // holds cubin in memory
@@ -467,6 +470,11 @@ JNIEXPORT void JNICALL Java_org_trifort_rootbeer_runtime_CUDAContext_cudaRun
     /** launch **/
     stopwatchStart( &s->execGpuRun );
 
+    #if ( ! defined( NDEBUG ) ) && ( DEBUG_CUDA_CONTEXT >= 9 )
+        CUdevice deviceWhereLaunched = 0;
+        CE( cuCtxGetDevice( &deviceWhereLaunched ) )
+        printf( "Launching kernel on CUdevice: %i\n", deviceWhereLaunched );
+    #endif
     CE( cuParamSeti ( s->function, s->using_kernel_templates_offset, using_kernel_templates ) )
     CE( cuLaunchGrid( s->function, s->block_count_x, s->block_count_y) )
     CE( cuCtxSynchronize() )
