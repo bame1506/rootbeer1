@@ -24,9 +24,9 @@ compileSource() {
 compileSource FixedMemory CUDARuntime CUDAContext Stopwatch
 
 echo "Link rootbeer_x86.so.1"
-gcc -m32 -shared -Wl,-soname,rootbeer -o rootbeer_x86.so.1 FixedMemory.o -lc
+gcc -m32 -shared -Wl,-soname,rootbeer -o rootbeer_x86.so.1 FixedMemory.o PointerCasting.o -lc
 
 echo "Link rootbeer_cuda_x86.so.1"
 gcc -m32 -shared -L'/usr/lib32/nvidia-current/'         \
     -Wl,-soname,rootbeer_cuda -o rootbeer_cuda_x86.so.1 \
-    CUDARuntime.o CUDAContext.o Stopwatch.o -lc -lcuda
+    CUDARuntime.o CUDAContext.o Stopwatch.o PointerCasting.o -lc -lcuda

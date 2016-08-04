@@ -12,12 +12,13 @@ public final class GpuDevice
     public static final int DEVICE_TYPE_JAVA   = 4;
 
     /* Constructor which saves whether to use CUDA, OpenCL, ... */
-    public GpuDevice( final int device_type )
+    private GpuDevice( final int device_type )
     {
         m_deviceType = device_type;
     }
 
-    public static GpuDevice newCudaDevice
+    /* this is used by CUDARuntime.c only */
+    private static GpuDevice newCudaDevice
     (
         final int     device_id                     ,
         final int     major_version                 ,
@@ -77,7 +78,7 @@ public final class GpuDevice
         return ret;
     }
 
-    private int     m_deviceType                 ;
+    private final int m_deviceType               ;
     private int     m_deviceId                   ;
     private int     m_majorVersion               ;
     private int     m_minorVersion               ;
@@ -160,6 +161,13 @@ public final class GpuDevice
         return (float) m_multiProcessorCount * getCudaCoresPerMultiprocessor() * m_clockRateHz;
     }
 
+    // public long getFreeGlobalMemoryBytes()
+    // {
+    //     if ( m_freeGlobalMemoryBytes == -1 )
+    //         m_freeGlobalMemoryBytes = /* some JNI function which needs to be written ... */
+    //     return m_freeGlobalMemoryBytes;
+    // }
+
     /* why is there no define. Why even bother making accessor methods ... */
     public int     getDeviceType                 (){ return m_deviceType  ; }
     public int     getDeviceId                   (){ return m_deviceId    ; }
@@ -177,7 +185,6 @@ public final class GpuDevice
     public int     getMaxGridDimX                (){ return m_maxGridDimX ; }
     public int     getMaxGridDimY                (){ return m_maxGridDimY ; }
     public int     getMaxGridDimZ                (){ return m_maxGridDimZ ; }
-    public long    getFreeGlobalMemoryBytes      (){ return m_freeGlobalMemoryBytes      ; }
     public long    getTotalGlobalMemoryBytes     (){ return m_totalGlobalMemoryBytes     ; }
     public int     getMaxRegistersPerBlock       (){ return m_maxRegistersPerBlock       ; }
     public int     getMaxThreadsPerBlock         (){ return m_maxThreadsPerBlock         ; }

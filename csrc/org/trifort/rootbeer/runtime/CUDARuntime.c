@@ -69,15 +69,15 @@ Java_org_trifort_rootbeer_runtime_CUDARuntime_loadGpuDevices
         int    major_version    ;
         int    minor_version    ;
         char   device_name[4096];
-        size_t free_mem         ;
         size_t total_mem        ;
-        CUcontext context       ;
 
         CE( cuDeviceComputeCapability( &major_version, &minor_version, device ) );
         CE( cuDeviceGetName( device_name, 4096, device ) );
-        CE( cuCtxCreate ( &context, CU_CTX_MAP_HOST, device ) );
-        CE( cuMemGetInfo( &free_mem, &total_mem ) );
-        CE( cuCtxDestroy( context ) );
+        CE( cuDeviceTotalMem( &total_mem, device ) );
+        /* cuCtxCreate and Destroy are VERY expensive (~0.5s) and would only be necessary for free mem */
+        // CE( cuCtxCreate ( &context, CU_CTX_MAP_HOST, device ) );
+        // CE( cuMemGetInfo( &free_mem, &total_mem ) );
+        // CE( cuCtxDestroy( context ) );
 
         /* makes use of https://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html
          * to be able to write the constructor call, variable declaration and
@@ -106,7 +106,7 @@ Java_org_trifort_rootbeer_runtime_CUDARuntime_loadGpuDevices
             major_version                           ,  // major_version
             minor_version                           ,  // minor_version
             (*env)->NewStringUTF(env, device_name)  ,  // device_name
-            (jlong) free_mem                        ,  // free_global_mem_size
+            -1                                      ,  // free_global_mem_size
             (jlong) total_mem                       ,  // total_global_mem_size
             CUATTR( MAX_REGISTERS_PER_BLOCK        ),  // max_registers_per_block
             CUATTR( WARP_SIZE                      ),  // warp_size

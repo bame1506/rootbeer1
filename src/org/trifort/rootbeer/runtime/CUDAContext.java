@@ -290,7 +290,7 @@ public class CUDAContext implements Context
      */
     private void findMemorySize()
     {
-        final long freeMemSizeGPU = m_gpuDevice.getFreeGlobalMemoryBytes();
+        //final long freeMemSizeGPU = m_gpuDevice.getFreeGlobalMemoryBytes();
         final long freeMemSizeCPU = Runtime.getRuntime().freeMemory(); /* bytes */
 
         //objectMemory  = new FixedMemoryDummy( 1024 );
@@ -334,7 +334,7 @@ public class CUDAContext implements Context
 
         final String debugOutput =
             "  Debugging Output:\n"                                              +
-            "    GPU size         : " + freeMemSizeGPU                    + " B\n" +
+            //"    GPU size         : " + freeMemSizeGPU                    + " B\n" +
             "    CPU_SIZE         : " + freeMemSizeCPU                    + " B\n" +
             "    Exceptions size  : " + m_exceptionsMemory.getSize()      + " B\n" +
             "    class memory size: " + m_classMemory.getSize()           + " B\n" +
@@ -344,7 +344,7 @@ public class CUDAContext implements Context
             "    alignment        : " + Constants.MallocAlignBytes        + " B\n" ;
         if ( debugging )
             System.out.print( debugOutput );
-        if ( neededMemory > Math.min( freeMemSizeGPU, freeMemSizeCPU ) ) {
+        /*if ( neededMemory > Math.min( freeMemSizeGPU, freeMemSizeCPU ) ) {
             final String error =
                 "OutOfMemory while allocating Java CPU and GPU memory.\n"     +
                 "  Try increasing the max Java Heap Size using -Xmx and the " +
@@ -352,7 +352,7 @@ public class CUDAContext implements Context
                 "  Try reducing the number of threads you are using.\n"       +
                 "  Try using kernel templates.\n"                             ;
             throw new RuntimeException( error + debugOutput );
-        }
+        }*/
         m_memorySize = neededMemory;
     }
 
