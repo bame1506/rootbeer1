@@ -36,6 +36,8 @@ public class WindowsCompile {
     m_visualStudioPaths.add("C:\\Program Files\\Microsoft Visual Studio 11.0\\VC\\vcvarsall.bat");
     m_visualStudioPaths.add("C:\\Program Files (x86)\\Microsoft Visual Studio 11.0\\VC\\vcvarsall.bat");
 
+    m_visualStudioPaths.add("C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\14.0\\VC\\vcvarsall.bat");
+
     m_jdkPaths = new ArrayList<String>();
     m_jdkPaths.add("C:\\Program Files\\Java\\");
     m_jdkPaths.add("C:\\Program Files (x86)\\Java\\");

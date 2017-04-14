@@ -23,7 +23,7 @@ public class GencodeOptions
     }
 
     public enum ComputeCapability {
-        ALL, SM_11, SM_12, SM_20, SM_21, SM_30, SM_35, SM_50, SM_52, SM_60, SM_61;
+        ALL, SM_11, SM_12, SM_20, SM_21, SM_30, SM_35, SM_50, SM_52, SM_53, SM_60, SM_61;
     }
 
     private static boolean versionMatches( final String versionString, final String version ) {
@@ -41,14 +41,23 @@ public class GencodeOptions
         /* Version will be something like 75 for 7.5 or 50 for 5.0 */
         final int version = getNVCCVersion();
 
+        String sm_61;
+        String sm_60;
+        String sm_53;
+        String sm_52;
+        String sm_50;
         String sm_35;
         String sm_30;
         String sm_21;
         String sm_20;
         String sm_12;
         String sm_11;
-        if ( File.separator.equals("/") ) /* if not Windows */
-        {
+        if(File.separator.equals("/")){
+            sm_61 = "--generate-code arch=compute_61,code=\"sm_61,compute_61\" ";
+            sm_60 = "--generate-code arch=compute_60,code=\"sm_60,compute_60\" ";
+            sm_53 = "--generate-code arch=compute_53,code=\"sm_53,compute_53\" ";
+            sm_52 = "--generate-code arch=compute_52,code=\"sm_52,compute_52\" ";
+            sm_50 = "--generate-code arch=compute_50,code=\"sm_50,compute_50\" ";
             sm_35 = "--generate-code arch=compute_35,code=\"sm_35,compute_35\" ";
             sm_30 = "--generate-code arch=compute_30,code=\"sm_30,compute_30\" ";
             sm_21 = "--generate-code arch=compute_20,code=\"sm_21,compute_20\" ";
@@ -56,6 +65,11 @@ public class GencodeOptions
             sm_12 = "--generate-code arch=compute_12,code=\"sm_12,compute_12\" ";
             sm_11 = "--generate-code arch=compute_11,code=\"sm_11,compute_11\" ";
         } else {
+            sm_61 = "--generate-code arch=compute_61,code=\"sm_61\" ";
+            sm_60 = "--generate-code arch=compute_60,code=\"sm_60\" ";
+            sm_53 = "--generate-code arch=compute_53,code=\"sm_53\" ";
+            sm_52 = "--generate-code arch=compute_52,code=\"sm_52\" ";
+            sm_50 = "--generate-code arch=compute_50,code=\"sm_50\" ";
             sm_35 = "--generate-code arch=compute_35,code=\"sm_35\" ";
             sm_30 = "--generate-code arch=compute_30,code=\"sm_30\" ";
             sm_21 = "--generate-code arch=compute_20,code=\"sm_21\" ";
@@ -76,7 +90,21 @@ public class GencodeOptions
             sm_11 = "";
         }
 
-        if ( 50 <= version && version <= 70 )
+
+        if ( 70 <= version && version <= 80 )
+        {
+            switch ( configuration.getComputeCapability() )
+            {
+                case ALL:   return sm_61 + sm_53 + sm_52 + sm_50 + sm_35 + sm_30;
+                case SM_30: return sm_30;
+                case SM_35: return sm_35;
+                case SM_50: return sm_50;
+                case SM_52: return sm_52;
+                case SM_53: return sm_53;
+                case SM_61: return sm_61;
+                default:    return sm_61 + sm_53 + sm_52 + sm_50 + sm_35 + sm_30;
+            }
+        } else if ( 50 <= version && version <= 70 )
         {
             switch ( configuration.getComputeCapability() )
             {
