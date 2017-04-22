@@ -7,12 +7,7 @@
 
 package org.trifort.rootbeer.generate.opencl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.trifort.rootbeer.generate.opencl.tweaks.Tweaks;
 
@@ -54,11 +49,11 @@ public class OpenCLPolymorphicMethod {
     return ret.toString();
   }
 
-  private List<String> getMethodDecls(){
-    if(shouldOutput() == false){
-      return new ArrayList<String>();
-    }
-    List<SootMethod> virtual_methods = getVirtualMethods();
+  private List<String> getMethodDecls() {
+    List<SootMethod> virtual_methods
+            = shouldOutput()
+            ? Arrays.asList(m_sootMethod)
+            : getVirtualMethods();
 
     List<String> ret = new ArrayList<String>();
     for(SootMethod virtual_method : virtual_methods){
@@ -76,9 +71,9 @@ public class OpenCLPolymorphicMethod {
   }
 
   public Set<String> getMethodBodies(){
-    if(shouldOutput() == false){
+    /*if(shouldOutput() == false){
       return new HashSet<String>();
-    }
+    }*/
     if(m_sootMethod.getName().equals("<init>"))
       return new HashSet<String>();
     List<String> decls = getMethodDecls();
@@ -149,7 +144,7 @@ public class OpenCLPolymorphicMethod {
         List<SootMethod> used_methods = new ArrayList<SootMethod>();
         for(SootMethod method : virtual_methods){
           SootClass sclass = method.getDeclaringClass();
-          if(sclass.isInterface()){
+          if(!method.isConcrete()){
             continue;
           }
           String invoke_string = getInvokeString(sclass);
