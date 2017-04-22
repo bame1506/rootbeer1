@@ -140,18 +140,6 @@
 	<version>2.9</version>
       </plugin>
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-javadoc-plugin</artifactId>
-	<version>2.6.1</version>
-        <configuration>
-	  <source>${java.version}</source>
-          <target>${java.version}</target>
-          <excludes>
-            <exclude>**/testcases/**</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
           <archive>
@@ -163,6 +151,44 @@
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>with-dep</shadedClassifierName> <!-- Any name that makes sense -->
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>org.trifort.rootbeer.entry.Main</mainClass>
+                </transformer>
+              </transformers>
+              <artifactSet>
+                <includes>
+                  <include>*:*</include>
+                </includes>
+              </artifactSet>
+              <filters>
+                <filter>
+                  <artifact>soot:soot</artifact>
+                  <excludes>
+                    <exclude>soot/rbclassload/ClassHierarchy.class</exclude>
+                    <exclude>soot/rbclassload/HierarchyGraph.class</exclude>
+                    <exclude>soot/rbclassload/HierarchyValueSwitch.class</exclude>
+                    <exclude>soot/rbclassload/RootbeerClassLoader.class</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
