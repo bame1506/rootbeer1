@@ -12,10 +12,7 @@ import java.util.*;
 import org.trifort.rootbeer.generate.opencl.tweaks.Tweaks;
 
 import soot.*;
-import soot.rbclassload.ClassHierarchy;
-import soot.rbclassload.HierarchyGraph;
-import soot.rbclassload.MethodSignatureUtil;
-import soot.rbclassload.RootbeerClassLoader;
+import soot.rbclassload.*;
 
 /**
  * Represents an OpenCL function that dispatches to the real OpenCL function
@@ -130,7 +127,20 @@ public class OpenCLPolymorphicMethod {
       ret.append(";\n");
       ret.append("}\n");
       ret.append("thisref_deref = org_trifort_gc_deref(thisref);\n");
-      if(virtual_methods.size() == 1){
+
+      // Get all sub-classes
+      Set<Integer> methodConsumers = RootbeerClassLoader.v().getClassHierarchy().getHierarchyGraph().getDescendants(
+              RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(
+                      m_sootMethod.getDeclaringClass().getType().toString()
+              ).getClassNumber()
+      );
+      methodConsumers.add(
+              RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(
+                      m_sootMethod.getDeclaringClass().getType().toString()
+              ).getClassNumber()
+      );
+
+      if(virtual_methods.size() == 1 && methodConsumers.size() == 1) {
         SootClass sclass = virtual_methods.get(0).getDeclaringClass();
         String invoke_string = getInvokeString(sclass);
         if(m_sootMethod.getReturnType() instanceof VoidType == false){
@@ -153,12 +163,39 @@ public class OpenCLPolymorphicMethod {
           }
           used_methods.add(method);
         }
+
+        Map<Integer, Set<Integer>> methodConsumerMap = new HashMap<Integer, Set<Integer>>(used_methods.size());
+        for(SootMethod method : used_methods)
+          methodConsumerMap.put(
+                  RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(method.getDeclaringClass().getName()).getClassNumber(),
+                  new HashSet<Integer>()
+          );
+
+        for(int childNum : methodConsumers) {
+          HierarchySootClass cclass = RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(childNum);
+          HierarchySootClass sclass = cclass;
+          while(sclass != null) {
+            if(methodConsumerMap.containsKey(sclass.getClassNumber())) {
+              methodConsumerMap.get(sclass.getClassNumber()).add(RootbeerClassLoader.v().getClassNumber(cclass.getName()));
+              break;
+            }
+            if(!sclass.hasSuperClass()) break;
+            sclass = RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(sclass.getSuperClassNumber());
+          }
+        }
+
         Collections.sort(used_methods, new VirtualMethodComparator());
         for(SootMethod method : used_methods){
           SootClass sclass = method.getDeclaringClass();
           String invoke_string = getInvokeString(sclass);
+          int sclassNumber = RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(sclass.getName()).getClassNumber();
+          Set<Integer> methodUsers = methodConsumerMap.get(sclassNumber);
+          Iterator<Integer> methodUserIterator = methodUsers.iterator();
 
-          ret.append("else if(derived_type == "+RootbeerClassLoader.v().getClassNumber(sclass)+"){\n");
+          ret.append("else if(derived_type == " +methodUserIterator.next());
+          while(methodUserIterator.hasNext())
+            ret.append(" || derived_type == " +methodUserIterator.next());
+          ret.append("){\n");
           if(m_sootMethod.getReturnType() instanceof VoidType == false){
             ret.append("return ");
           }

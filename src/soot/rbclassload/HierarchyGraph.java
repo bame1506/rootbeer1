@@ -49,11 +49,32 @@ public class HierarchyGraph {
         return new HashSet<Integer>();
     }
 
+    public Set<Integer> getDescendants(Integer parent) {
+        Set<Integer> ret = new HashSet<>();
+        for(int child : getChildren(parent))
+        {
+            ret.add(child);
+            ret.addAll(getChildren(child));
+        }
+        return ret;
+    }
+
     public Set<Integer> getParents(Integer child) {
         if (this.m_parents.containsKey(child)) {
             return this.m_parents.get(child);
         }
         return new HashSet<Integer>();
+    }
+
+
+    public Set<Integer> getAncestors(Integer child) {
+        Set<Integer> ret = new HashSet<>();
+        for(int parent : getParents(child))
+        {
+            ret.add(parent);
+            ret.addAll(getParents(parent));
+        }
+        return ret;
     }
 
     public Set<Integer> getAllClasses() {

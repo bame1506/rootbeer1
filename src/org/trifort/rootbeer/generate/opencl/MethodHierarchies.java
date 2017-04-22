@@ -132,7 +132,7 @@ public class MethodHierarchies {
       Integer lhs_number = StringNumbers.v().addString(lhs_class.getName());
       Integer rhs_number = StringNumbers.v().addString(rhs_class.getName());
       HierarchyGraph hgraph = RootbeerClassLoader.v().getClassHierarchy().getHierarchyGraph();
-      if(hgraph.getParents(rhs_number).contains(lhs_number)){
+      if(hgraph.getAncestors(rhs_number).contains(lhs_number)){
         return true;
       }
       return false;
