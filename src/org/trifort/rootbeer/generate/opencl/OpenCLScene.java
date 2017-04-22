@@ -528,7 +528,7 @@ public class OpenCLScene
         /* add all different kinds of bodies i.e. code */
         List<OpenCLMethod> methods = m_methodHierarchies.getMethods();
         for ( OpenCLMethod method : methods )
-            if(method.getSootMethod().isConcrete())
+            if(method.hasBody())
                 bodies.add( method.getMethodBody() );
         List<OpenCLPolymorphicMethod> poly_methods = m_methodHierarchies.getPolyMorphicMethods();
         for ( OpenCLPolymorphicMethod poly_method : poly_methods )

@@ -76,6 +76,11 @@ public class HierarchyValueSwitch {
         }
         this.m_method = method;
         HierarchySootClass hclass = method.getHierarchySootClass();
+
+        // Add new invokes for super classe (e.g. in case there are references to super)
+        if(hclass.hasSuperClass())
+            m_newInvokes.add(hclass.getSuperClassNumber());
+
         if (!method.isConcrete()) {
             return;
         }

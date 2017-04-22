@@ -9,5 +9,14 @@ package org.trifort.rootbeer.testcases.rootbeertest.serialization;
 
 public abstract class AbstractTestBaseClass {
 
-  public abstract int add(int x, int y);
+  public abstract int op(int x, int y);
+
+  public static abstract class AbstractTestBaseClassExtension extends AbstractTestBaseClass {
+    @Override
+    public int op(int x, int y) {
+      return abstractOp(x, y);
+    }
+
+    public abstract int abstractOp(int x, int y);
+  }
 }

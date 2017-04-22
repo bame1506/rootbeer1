@@ -386,13 +386,15 @@ public class ClassHierarchy {
         while (virt_map.containsKey((Object)trace_method)) {
           HierarchySignature trace_sig = (trace_method = (HierarchySootMethod)virt_map.get((Object)trace_method)).getHierarchySignature();
           if (visited_sigs.contains((Object)trace_sig)) {
-            List<HierarchySignature> extended_path = new ArrayList<>(this.m_virtualMethodSignatures.get(trace_sig));
+            List<HierarchySignature> extended_path = this.m_virtualMethodSignatures.get(trace_sig);// new ArrayList<>(this.m_virtualMethodSignatures.get(trace_sig));
             for(HierarchySignature path_sig : path)
               if(!extended_path.contains(path_sig))
                 extended_path.add(0, path_sig);
             this.m_virtualMethodSignatures.put(trace_sig, extended_path);
           } else {
             visited_sigs.add(trace_sig);
+            // Make a copy of path to prevent modifying paths already set.
+            path = new ArrayList<>(path);
             path.add(trace_sig);
             this.m_virtualMethodSignatures.put(trace_sig, path);
           }

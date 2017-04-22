@@ -13,8 +13,15 @@ class AbstractTestDerivedClass extends AbstractTestBaseClass {
   }
 
   @Override
-  public int add(int x, int y) {
+  public int op(int x, int y) {
     return x + y;
+  }
+
+  public static class AbstractTestDerivedClassOverride extends AbstractTestDerivedClass {
+    @Override
+    public int op(int x, int y) {
+      return x << y;
+    }
   }
 
 }

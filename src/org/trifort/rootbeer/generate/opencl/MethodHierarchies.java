@@ -16,10 +16,7 @@ import soot.Hierarchy;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
-import soot.rbclassload.ClassHierarchy;
-import soot.rbclassload.HierarchyGraph;
-import soot.rbclassload.MethodSignatureUtil;
-import soot.rbclassload.RootbeerClassLoader;
+import soot.rbclassload.*;
 
 /**
  * Represents all the versions of methods in a class Hierarchy
@@ -38,11 +35,17 @@ public class MethodHierarchies {
   public void addMethod(SootMethod method){
     MethodHierarchy new_hierarchy = new MethodHierarchy(method);
 
-    for(MethodHierarchy curr : m_hierarchies){
-      if(curr.contains(new_hierarchy)){
-        return;
+
+    if(!(method.getName().equals("<init>") || method.getName().equals("<clinit>")))
+      for(MethodHierarchy curr : m_hierarchies){
+        if(curr.contains(new_hierarchy)){
+          return;
+        }
+        if(new_hierarchy.contains(curr)) {
+          m_hierarchies.remove(curr);
+          break;
+        }
       }
-    }
 
     m_hierarchies.add(new_hierarchy);
   }
@@ -124,10 +127,12 @@ public class MethodHierarchies {
 
       SootClass lhs_class = m_method.getDeclaringClass();
       SootClass rhs_class = other.m_method.getDeclaringClass();
-      Integer lhs_number = RootbeerClassLoader.v().getClassNumber(lhs_class);
-      Integer rhs_number = RootbeerClassLoader.v().getClassNumber(rhs_class);
+      /*Integer lhs_number = RootbeerClassLoader.v().getClassNumber(lhs_class);
+      Integer rhs_number = RootbeerClassLoader.v().getClassNumber(rhs_class);*/
+      Integer lhs_number = StringNumbers.v().addString(lhs_class.getName());
+      Integer rhs_number = StringNumbers.v().addString(rhs_class.getName());
       HierarchyGraph hgraph = RootbeerClassLoader.v().getClassHierarchy().getHierarchyGraph();
-      if(hgraph.sameHierarchy(lhs_number, rhs_number)){
+      if(hgraph.getParents(rhs_number).contains(lhs_number)){
         return true;
       }
       return false;
