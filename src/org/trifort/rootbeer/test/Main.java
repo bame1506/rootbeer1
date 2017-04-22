@@ -138,6 +138,7 @@ public class Main implements TestSerializationFactory {
         ret.add( new GpuVectorMapTest            () );
         ret.add( new StringBuilderTest4          () );
         ret.add( new AtomicGlobalsTest           () );
+        ret.add( new InterfaceTest               () );
         if ( m_largeMemTests )
             ret.add( new LargeMemTest() );
 

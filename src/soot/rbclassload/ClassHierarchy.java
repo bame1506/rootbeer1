@@ -414,10 +414,14 @@ public class ClassHierarchy {
         curr_sig = method.getHierarchySignature();
         if (visited_sigs.contains((Object)curr_sig)) continue;
         visited_sigs.add(curr_sig);
-        for (Integer iface : hclass.getInterfaceNumbers()) {
+        LinkedList<Integer> ifaceQueue = new LinkedList<>(hclass.getInterfaceNumbers());
+        while(!ifaceQueue.isEmpty()) {
+          Integer iface = ifaceQueue.removeFirst();
           HierarchySootMethod iface_method;
           HierarchySootClass iface_hclass = this.getHierarchySootClass(iface);
-          if (iface_hclass == null || (iface_method = iface_hclass.findMethodBySubSignature(method)) == null) continue;
+          if (iface_hclass == null) continue;
+          ifaceQueue.addAll(iface_hclass.getInterfaceNumbers());
+          if ((iface_method = iface_hclass.findMethodBySubSignature(method)) == null) continue;
           List<HierarchySignature> path = this.m_virtualMethodSignatures.get((Object)curr_sig);
           HierarchySignature iface_sig = iface_method.getHierarchySignature();
           if (this.m_virtualMethodSignatures.containsKey((Object)iface_sig)) {

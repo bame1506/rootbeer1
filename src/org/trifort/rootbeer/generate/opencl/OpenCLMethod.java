@@ -312,7 +312,7 @@ public class OpenCLMethod
     }
 
     public boolean hasBody() {
-        return m_sootMethod.isConcrete() || new ConcreteMethods().get(m_sootMethod.getSignature()).size() == 1;
+        return !m_sootClass.isInterface() && (m_sootMethod.isConcrete() || new ConcreteMethods().get(m_sootMethod.getSignature()).size() == 1);
     }
 
     public String getConstructorBodyInvokeString(SpecialInvokeExpr arg0)
