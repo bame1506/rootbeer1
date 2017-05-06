@@ -57,7 +57,14 @@ public class ReadOnlyTypes
         /* I don't think this check should ever succeed, because
          * m_Inspected is set to an empty Set in the constructor right
          * before calling this method. Also this method is private */
-        assert ! m_Inspected.contains( method.getSignature() );
+
+        //assert ! m_Inspected.contains( method.getSignature() );
+
+        /*
+         * Actually, this will fail for any recursive function call.
+         */
+        if(m_Inspected.contains( method.getSignature())) return;
+
         m_Inspected.add( method.getSignature() );
 
         if ( ! method.isConcrete() || ! method.hasActiveBody() )

@@ -209,8 +209,8 @@ public class ClassHierarchy {
     if (this.m_numberedTypeMap.containsKey(str)) {
       return this.m_numberedTypeMap.get(str);
     }
-    System.out.println("cannot find numbered type: " + str);
-    Iterator<String> iter = this.m_numberedTypeMap.keySet().iterator();
+    throw new RuntimeException("cannot find numbered type: " + str);
+    /*Iterator<String> iter = this.m_numberedTypeMap.keySet().iterator();
     while (iter.hasNext()) {
       System.out.println("  " + iter.next());
     }
@@ -221,7 +221,7 @@ public class ClassHierarchy {
       ex.printStackTrace(System.out);
       System.exit(0);
       return null;
-    }
+    }*/
   }
 
   public void numberBuiltInType(String name, int number) {

@@ -117,7 +117,7 @@ public final class VisitorReadGenStatic extends AbstractVisitorGen
             final int index = m_staticOffsets.getIndex( field );
             bcl_mem.setAddress( LongConstant.v( index ) );
             if ( field.getType().isRefType() )
-                readRefField( bcl, gc_visit, memory, m_objSerializing.peek() /* @todo Where is this set !!! It seems like this wasn't effectively set in the original Rootbeer version either! */, field );
+                readRefField( bcl, gc_visit, memory, null /* m_objSerializing.peek() @todo Where is this set !!! It seems like this wasn't effectively set in the original Rootbeer version either! */, field );
             else
                 readNonRefField( bcl, memory, null, field );
         }

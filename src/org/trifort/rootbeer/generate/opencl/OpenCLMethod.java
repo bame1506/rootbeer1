@@ -250,7 +250,8 @@ public class OpenCLMethod
                     } catch(Exception ex){
                         ex.printStackTrace();
                         System.out.println("soot_method: "+body_method.getSignature());
-                        System.exit(1);
+                        //System.exit(1);
+                        throw(ex);
                     }
                     if(isSynchronized()){
                         if(isLinux()){

@@ -139,6 +139,8 @@ public class Main implements TestSerializationFactory {
         ret.add( new StringBuilderTest4          () );
         ret.add( new AtomicGlobalsTest           () );
         ret.add( new InterfaceTest               () );
+        ret.add( new EnumTest                    () );
+        ret.add( new RuntimeExceptionTest        () );
         if ( m_largeMemTests )
             ret.add( new LargeMemTest() );
 

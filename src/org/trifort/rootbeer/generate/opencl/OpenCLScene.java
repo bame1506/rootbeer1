@@ -540,7 +540,11 @@ public class OpenCLScene
         for ( OpenCLArrayType array_type : m_arrayTypes )
             bodies.add( array_type.getBodies() );
         for ( OpenCLInstanceof type : m_instanceOfs )
-            bodies.add( type.getBody() );
+            try{
+                bodies.add( type.getBody() );
+            } catch (Exception e) {
+                System.out.println("Failed to create instanceof method for " + type.getPrototype() + ": " + e.getMessage());
+            }
 
         /* join all bodies together to one string (why not do it above? */
         ret.append( type_switch.getFunctions() );

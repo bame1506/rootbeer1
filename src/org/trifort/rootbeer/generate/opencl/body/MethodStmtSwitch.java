@@ -10,6 +10,7 @@ package org.trifort.rootbeer.generate.opencl.body;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 import org.trifort.rootbeer.configuration.Configuration;
@@ -279,6 +280,7 @@ public class MethodStmtSwitch implements StmtSwitch
         if(m_sootMethod.isSynchronized()){
             m_output.append("org_trifort_exitMonitorMem(mem, old);\n");
         }
+        checkException();
         m_output.append("return");
         if(methodReturnsAValue())
             m_output.append(" 0;\n");
@@ -326,13 +328,12 @@ public class MethodStmtSwitch implements StmtSwitch
             m_output.append("if(0){}\n");
             for(TrapItem item : m_trapItems){
                 m_output.append("else if(");
-                List<NumberedType> types = RootbeerClassLoader.v().getDfsInfo().getNumberedHierarchyUp(item.getException());
-                for(int i = 0; i < types.size(); ++i){
-                    m_output.append("ex_type == "+types.get(i).getNumber());
-                    if(i < types.size() - 1){
-                        m_output.append(" || ");
-                    }
-                }
+                int exceptionNum = RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(item.getException().getName()).getClassNumber();
+                Set<Integer> exceptionTypes = RootbeerClassLoader.v().getClassHierarchy().getHierarchyGraph().getDescendants(exceptionNum);
+                m_output.append("ex_type == "+ RootbeerClassLoader.v().classNumToHierarchyNum(exceptionNum));
+                for(int type : exceptionTypes)
+                    if(RootbeerClassLoader.v().isInbuilt(type) || RootbeerClassLoader.v().isInDfs(type))
+                        m_output.append(" || ex_type == "+RootbeerClassLoader.v().classNumToHierarchyNum(type));
                 m_output.append("){\n");
                 m_output.append("goto trap"+item.getTrapNum()+";\n");
                 m_output.append("}\n");

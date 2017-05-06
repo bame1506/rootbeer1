@@ -659,7 +659,11 @@ public class RootbeerClassLoader {
             class_name = methodUtil.getClassName();
             SootClass soot_class = Scene.v().getSootClass(class_name);
             if (!soot_class.declaresMethod(method.getSubSignature()) || !(soot_method = soot_class.getMethod(method.getSubSignature())).isConcrete()) continue;
-            soot_method.retrieveActiveBody();
+            try {
+                soot_method.retrieveActiveBody();
+            } catch( Exception e) {
+                throw new RuntimeException("Error generating body for method " + soot_method.toString(), e);
+            }
         }
         System.out.println("Total loaded classes: " + all_classes.size());
         System.out.println("Total loaded methods: " + all_sigs.size());
@@ -919,5 +923,21 @@ public class RootbeerClassLoader {
 
     public DfsInfo getDfsInfo() {
         return this.m_currDfsInfo;
+    }
+
+    public int classNumToHierarchyNum(int classNum) {
+        HierarchySootClass hclass = RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(classNum);
+        return getClassNumber(hclass.getName());
+    }
+
+    public boolean isInbuilt(int classNum) {
+        HierarchySootClass hclass = RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(classNum);
+        return this.m_toHierarchyClasses.contains(hclass.getName());
+    }
+
+    public boolean isInDfs(int classNum) {
+        HierarchySootClass hclass = RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(classNum);
+        SootClass sootClass = hclass == null ? null : Scene.v().getSootClass(hclass.getName());
+        return sootClass != null && RootbeerClassLoader.v().getDfsInfo().getDfsTypes().contains(sootClass.getType());
     }
 }

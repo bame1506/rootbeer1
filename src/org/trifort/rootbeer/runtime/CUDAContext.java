@@ -897,7 +897,8 @@ public class CUDAContext implements Context
                         "array        : " + gpu_except.m_array       + "\n"
                     );
                 } else
-                    throw new RuntimeException( (Throwable) except );
+                    System.out.println("Unhandled exception." + (except == null ? "" : ((Throwable) except).getMessage()));
+                    // throw new RuntimeException( (Throwable) except );
             }
         }
     }

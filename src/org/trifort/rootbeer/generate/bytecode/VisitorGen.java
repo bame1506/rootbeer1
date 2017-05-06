@@ -17,16 +17,10 @@ import org.trifort.rootbeer.generate.opencl.OpenCLClass;
 import org.trifort.rootbeer.generate.opencl.OpenCLScene;
 import org.trifort.rootbeer.generate.opencl.OpenCLType;
 
-import soot.Scene;
-import soot.SootClass;
-import soot.IntType;
-import soot.VoidType;
-import soot.RefType;
-import soot.ArrayType;
-import soot.Type;
-import soot.Local;
+import soot.*;
 import soot.jimple.IntConstant;
 import soot.jimple.NullConstant;
+import soot.jimple.StringConstant;
 import soot.rbclassload.NumberedType;
 import soot.rbclassload.RootbeerClassLoader;
 import soot.rbclassload.StringToType;
@@ -289,7 +283,11 @@ public final class VisitorGen extends AbstractVisitorGen
                 {
                     bcl.pushMethod(parent_name, "<init>", VoidType.v());
                     bcl.invokeMethodNoRet(thisref);
-                } else {
+                } else if(parent_name.equals("java.lang.Enum")) {
+                    bcl.pushMethod(parent_name, "<init>", VoidType.v(), RefType.v("java.lang.String"), IntType.v());
+                    bcl.invokeMethodNoRet(thisref, StringConstant.v(""), IntConstant.v(-1));
+                }
+                else {
                     System.out.println("Library class "+parent_name+" on the GPU does not have a void constructor");
                     System.exit(-1);
                 }

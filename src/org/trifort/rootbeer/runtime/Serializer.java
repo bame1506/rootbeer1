@@ -145,12 +145,13 @@ public abstract class Serializer
 
     public long writeToHeap( Object o, boolean write_data )
     {
-        if ( o == null )
-            throw new IllegalArgumentException( "[Serializer.java:writeToHeap] Argument 'o' = null is not allowed!" );
+        /*if ( o == null )
+            throw new IllegalArgumentException( "[Serializer.java:writeToHeap] Argument 'o' = null is not allowed!" );*/
 
         /* not sure if this is a good idea, because calling functions only rarely check */
-        //if ( o == null )
-        //    return -1;
+        /* I assume -1 is a null pointer */
+        if ( o == null )
+            return -1;
 
         final int size = doGetSize(o);
         final boolean read_only = false;

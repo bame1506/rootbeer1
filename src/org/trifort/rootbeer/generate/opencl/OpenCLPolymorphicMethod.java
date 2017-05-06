@@ -129,16 +129,26 @@ public class OpenCLPolymorphicMethod {
       ret.append("thisref_deref = org_trifort_gc_deref(thisref);\n");
 
       // Get all sub-classes
-      Set<Integer> methodConsumers = RootbeerClassLoader.v().getClassHierarchy().getHierarchyGraph().getDescendants(
+      Set<Integer> allMethodConsumers = RootbeerClassLoader.v().getClassHierarchy().getHierarchyGraph().getDescendants(
               RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(
                       m_sootMethod.getDeclaringClass().getType().toString()
               ).getClassNumber()
       );
-      methodConsumers.add(
+      allMethodConsumers.add(
               RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(
                       m_sootMethod.getDeclaringClass().getType().toString()
               ).getClassNumber()
       );
+      // Filter those that are on classes we are actually interested in
+      Set<Integer> methodConsumers = new HashSet<>();
+      for(Integer classNum : allMethodConsumers) {
+        HierarchySootClass clazz = RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(classNum);
+        SootClass sootClass = clazz == null ? null : Scene.v().getSootClass(clazz.getName());
+        if( sootClass != null &&
+            RootbeerClassLoader.v().getDfsInfo().getDfsTypes().contains(sootClass.getType())
+          )
+          methodConsumers.add(classNum);
+      }
 
       if(virtual_methods.size() == 1 && methodConsumers.size() == 1) {
         SootClass sclass = virtual_methods.get(0).getDeclaringClass();
@@ -161,7 +171,8 @@ public class OpenCLPolymorphicMethod {
           if(invoke_string == ""){
             continue;
           }
-          used_methods.add(method);
+          if(RootbeerClassLoader.v().getDfsInfo().getMethods().contains(method.getSignature()))
+            used_methods.add(method);
         }
 
         Map<Integer, Set<Integer>> methodConsumerMap = new HashMap<Integer, Set<Integer>>(used_methods.size());
@@ -176,7 +187,11 @@ public class OpenCLPolymorphicMethod {
           HierarchySootClass sclass = cclass;
           while(sclass != null) {
             if(methodConsumerMap.containsKey(sclass.getClassNumber())) {
-              methodConsumerMap.get(sclass.getClassNumber()).add(RootbeerClassLoader.v().getClassNumber(cclass.getName()));
+              try {
+                methodConsumerMap.get(sclass.getClassNumber()).add(RootbeerClassLoader.v().getClassNumber(cclass.getName()));
+              } catch (Exception e) {
+                e.printStackTrace(System.out);
+              }
               break;
             }
             if(!sclass.hasSuperClass()) break;
@@ -190,18 +205,21 @@ public class OpenCLPolymorphicMethod {
           String invoke_string = getInvokeString(sclass);
           int sclassNumber = RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(sclass.getName()).getClassNumber();
           Set<Integer> methodUsers = methodConsumerMap.get(sclassNumber);
-          Iterator<Integer> methodUserIterator = methodUsers.iterator();
+          // methodUsers.add(RootbeerClassLoader.v().getClassNumber(sclass));
+          if(methodUsers.size() > 0) {
+            Iterator<Integer> methodUserIterator = methodUsers.iterator();
 
-          ret.append("else if(derived_type == " +methodUserIterator.next());
-          while(methodUserIterator.hasNext())
-            ret.append(" || derived_type == " +methodUserIterator.next());
-          ret.append("){\n");
-          if(m_sootMethod.getReturnType() instanceof VoidType == false){
-            ret.append("return ");
+            ret.append("else if(derived_type == " + methodUserIterator.next());
+            while (methodUserIterator.hasNext())
+              ret.append(" || derived_type == " + methodUserIterator.next());
+            ret.append("){\n");
+            if (m_sootMethod.getReturnType() instanceof VoidType == false) {
+              ret.append("return ");
+            }
+            ret.append(invoke_string + "\n");
+            ret.append("}\n");
+            count++;
           }
-          ret.append(invoke_string+"\n");
-          ret.append("}\n");
-          count++;
         }
       }
     }
