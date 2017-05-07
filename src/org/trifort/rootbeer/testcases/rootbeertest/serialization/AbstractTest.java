@@ -18,14 +18,14 @@ public class AbstractTest implements TestSerialization {
   public List<Kernel> create() {
     List<Kernel> ret = new ArrayList<Kernel>();
     for(int i = 0; i < 2; ++i){
-      ret.add(new AbstractRunOnGpu());
+      ret.add(new AbstractTestClasses.AbstractRunOnGpu());
     }
     return ret;
   }
 
   public boolean compare(Kernel original, Kernel from_heap) {
-    AbstractRunOnGpu lhs = (AbstractRunOnGpu) original;
-    AbstractRunOnGpu rhs = (AbstractRunOnGpu) from_heap;
+    AbstractTestClasses.AbstractRunOnGpu lhs = (AbstractTestClasses.AbstractRunOnGpu) original;
+    AbstractTestClasses.AbstractRunOnGpu rhs = (AbstractTestClasses.AbstractRunOnGpu) from_heap;
     return lhs.compare(rhs);
   }
 

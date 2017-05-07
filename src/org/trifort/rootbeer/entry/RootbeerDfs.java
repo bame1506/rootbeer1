@@ -13,14 +13,7 @@ import java.util.List;
 import java.util.Set;
 import soot.SootField;
 import soot.Type;
-import soot.rbclassload.ClassHierarchy;
-import soot.rbclassload.DfsInfo;
-import soot.rbclassload.FieldSignatureUtil;
-import soot.rbclassload.HierarchySignature;
-import soot.rbclassload.HierarchyValueSwitch;
-import soot.rbclassload.RootbeerClassLoader;
-import soot.rbclassload.StringNumbers;
-import soot.rbclassload.StringToType;
+import soot.rbclassload.*;
 
 /**
  *
@@ -93,6 +86,17 @@ public class RootbeerDfs {
     for(HierarchySignature method_sig : value_switch.getMethodRefsHierarchy()){
       m_currDfsInfo.addMethod(signature.toString());
       queue.add(method_sig);
+
+      // If the method is inherited, include the effective method.
+      HierarchySootClass hclass = RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(method_sig.getClassName());
+      HierarchySootMethod hmethod = hclass.findMethodBySubSignature(method_sig.getSubSignatureString());
+      if(hmethod == null) {
+        do {
+          hclass = RootbeerClassLoader.v().getClassHierarchy().getHierarchySootClass(hclass.getSuperClassNumber());
+          hmethod = hclass.findMethodBySubSignature(method_sig.getSubSignatureString());
+        } while(hmethod == null);
+        queue.add(hmethod.getHierarchySignature());
+      }
     }
 
     for(String field_ref : value_switch.getFieldRefs()){
