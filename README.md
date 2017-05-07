@@ -1,12 +1,6 @@
 # About this Fork
 
-The main-objective of this fork is to make Rootbeer thread-safe in order to use it from Spark, see [Known Bugs](#known-bugs).
-It also adds some smaller bugfixes, because the original development seems to be halted (2016)
-
-In order to do that this fork adds quite some code comments, reduces and simplifies code and also changes the code style of sighted files to something more similar to e.g. [imresh](https://github.com/ComputationalRadiationPhysics/imresh) i.e. braces on new line, 4 spaces instead of 2 indentation and alignment of similar and especially of boiler-plate code. 
-
-The reason behind this is trying to understand and get a feel for the code.
-
+The purpose of this fork is to bug-fix and extend Rootbeer so that more programs compile and run correctly. See [Known Bugs](#known-bugs) for outstanding work.
 
 # Rootbeer
 
@@ -610,13 +604,11 @@ now.
 See [here](https://github.com/pcpratts/rootbeer1/tree/master/examples) for a variety of
 examples.
 
-
-### Consulting
-
-GPU Consulting available for Rootbeer and CUDA. Please email pcpratts@trifort.org
-
-
 ### Known Bugs
+ - No support for `instanceof` method for array types. To be implemented in `org.trifort.rootbeer.generate.opencl.OpenCLInstanceof`
+ - No Serialization / de-serialization for non-application types. E.g. ArrayList
+ - Objects are cloned during (de-) serialization. Singleton objects (like enums) get duplicated
+ - Call-graph and type analysis include too many classes & types. For example, if the List interface is usedin a kernel several 10'000 lines of code are generated.
 
  - `fatal error: bits/c++config.h: No such file or directory` when running `./Rootbeer.jar -runeasytests`
    Install cross-compiling libraries:
@@ -708,7 +700,7 @@ GPU Consulting available for Rootbeer and CUDA. Please email pcpratts@trifort.or
 
  - Phil Pratt-Szeliga http://trifort.org/
  - Maximilian Knespel
-
+ - Bernhard Elsner
 
 ### File Structure
 
